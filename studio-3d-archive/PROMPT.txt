@@ -1,0 +1,620 @@
+Build a premium scroll-driven 3D circular project archive — vanilla HTML + CSS + JS with GSAP (no build, no framework). Reproduce the implementation EXACTLY. Do not invent features, do not redesign, do not "improve" values. The prose (PART A) explains intent so you never paraphrase the load-bearing logic; PART B lists the exact bugs that appear when you DO paraphrase — avoid them; PART C is the verbatim engine you must reproduce (script.js is the heart of the project, like a 3D scene file — reproduce it value-for-value); PART D is run + verify. If a value appears here, use it. If a behaviour appears here, implement it.
+
+#######################################################################
+PART A — SPEC
+#######################################################################
+
+═══ 1. PROJECT GOAL ═══
+A minimal, editorial architecture-studio project archive for a fictional brand STUDIO® (inspired in spirit only by clouarchitects.com/projects — never copy its logo/branding/content). 136 thin landscape image cards are turned EDGE-ON and revolved around a tilted 3D ring (transform-origin orbit), forming a hollow elliptical archive of "slivers" with a hollow centre. Off-white bg, black editorial type, generous whitespace. A typography-only loader appears first; then the REAL ring spins one full turn into place; then it becomes interactive. ONE codebase, two fully-built experiences switched at 768px:
+- Desktop: full CENTRED elliptical ring (a CLOSED ellipse, never a half/spiral). Page scroll rotates the ring. Hovering a card pulls it gently outward. Subtle mouse parallax. Custom black-dot cursor that FOLLOWS the mouse. Centre shows "We are STUDIO." and swaps to a hovered project's preview.
+- Mobile: the SAME ring becomes a cropped arc entering from the lower-right, under a top project-preview block. No hover, no cursor, no scroll-rotation. A finger-draggable hitbox (with inertia) rotates the ring; the nearest card to a focus angle becomes the selected project and updates the top preview with a crossfade.
+
+═══ 2. TECH STACK (strict) ═══
+- Plain static site, exactly three files: index.html, styles.css, script.js. NO bundler, NO npm, NO framework, NO TypeScript.
+- GSAP 3.12.5 + ScrollTrigger from cdnjs (the ONLY remote dependency):
+  https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js
+  https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js
+- Images LOCAL only. No remote images, no icon libs, no web fonts (system stack only).
+- Served by any static server (python3 -m http.server 5179). No build step.
+
+═══ 3. FILE STRUCTURE ═══
+index.html
+styles.css
+script.js
+public/  -> image-1..image-12.png, image-15.png, 13.png, 14.png   (15 images)
+
+═══ 4. REQUIRED ASSETS ═══
+15 landscape architectural photos in public/, named EXACTLY: image-1.png..image-12.png, image-15.png, 13.png, 14.png. Repeated + Fisher–Yates shuffled into a pool to fill 136 cards, so every image is used and randomly/evenly distributed. Missing files -> broken images only; keep building.
+
+═══ 5. DESIGN TOKENS ═══
+--bg #f4f3f1 ; --ink #0d0d0d ; --muted #8a8a86 ; --line rgba(0,0,0,0.16)
+font: "Helvetica Neue","Inter",-apple-system,BlinkMacSystemFont,Arial,sans-serif
+Header: fixed, STUDIO® brand + nav (Projects/Info/Contact, active underlined) + lang "EN / 中文" + a hamburger button (desktop hidden). Corners: "Filter Projects +" / "Grid view +" (underlined). Centre title clamp(34px,4.4vw,60px) weight 500, <em> italic 400. Cursor dot: 13px black circle, border-radius 999px, pointer-events none, z-index 99999.
+
+═══ 6. CORE GEOMETRY (transform-origin orbit — do NOT switch to flat x/y placement) ═══
+- .scene: position:fixed; inset:0; overflow:hidden; perspective:1600px.
+- .gallery: a ZERO-size point at screen centre (top:50%; left:50%; width:0; height:0), transform-style:preserve-3d, tilted rotateX(TILT=58deg).
+- Each card = TWO nested elements:
+  * .item (HITBOX, 78x60px): carries the orbit, NEVER animates on hover. gsap.set once: xPercent:-50, yPercent:-50, transformOrigin:"50% {radius}px", rotationZ: angleOf(card). The far transform-origin pivot means changing only rotationZ revolves the card around the ring.
+  * .item-card (VISIBLE child, pointer-events:none): fixed rotationY:ROT_Y=86 (edge-on) FOREVER; only this element animates the hover/selection pull (x/y/z/scale). Its rotation/perspective NEVER changes.
+- 136 cards are distributed over a FULL 360deg (INC = 360/136). The result MUST be a closed ellipse.
+- Vertical centring: yOffset = radius*cos(TILT) * PERSPECTIVE/(PERSPECTIVE - radius*sin(TILT)); desktop gsap.set(gallery,{x:0, y:-yOffset}).
+- Depth: depthOpacity(rotZ) = 1 - (cos(rotZ)+1)*0.25  -> back≈0.50, sides≈0.75, front≈1.0 (set as each card's opacity).
+- Shared rotation var used by scroll, drag AND the intro:
+    angleOf(card) = card.index*INC - 90 + ringRot + introOffset
+
+═══ 7. EXACT CONSTANTS (final) ═══
+PERSPECTIVE 1600 ; ITEM_COUNT 136 ; TURNS 1 ; TILT 58 ; ROT_Y 86 ; RING_SCALE 0.88 ; PARALLAX 4
+HOVER_OUT 16 ; HOVER_Z 12 ; HOVER_SCALE 1.02 ; HOVER_DURATION 0.32
+MOBILE breakpoint "(max-width: 768px)"
+MOBILE_SELECTED_OUT 8 ; MOBILE_SELECTED_Z 2 ; MOBILE_SELECTED_SCALE 1.005 ; MOBILE_TRANSITION 0.25 ; MOBILE_FOCUS_ANGLE -35 ; MOBILE_DRAG_SPEED 0.35
+desktop radius = RING_SCALE * max(300, min(vw*0.32, vh*0.55)) ; mobile radius = vw*0.74
+PROJECTS = 15 {title,category} ; CATEGORIES = 15 {name,count}: Shopping Mall 42, Showroom 12, Sports 15, Store Design 12, Transport 6, Education 9, Mixed Use 31, Cultural 13, High Rise 18, Hospitality 17, Leisure 26, Office 34, Outdoor Retail 38, Renovation 19, Residential 24.
+
+═══ 8. DESKTOP BEHAVIOUR ═══
+- Scroll rotation: body 350vh tall; .scene fixed (pinned). ONE ScrollTrigger (trigger:"body", start:"top top", end:"bottom bottom", scrub:1.4); onUpdate -> ringRot=progress*360*TURNS; updateRing(). Slow, never dizzy.
+- Hover (live pointer, no delay): single pointermove on .scene -> document.elementFromPoint(x,y).closest(".item") -> setActive(card). Activate under cursor immediately, restore previous at the same time, clear on empty/leave. Hit-testing on the stable hitboxes (inner card pointer-events:none) so it never flickers/sticks. OTHER CARDS ARE NOT DIMMED.
+- Pull-out math (screen-space radial -> inner-card local, so direction is correct everywhere and the card NEVER changes orientation): see PART C pullOut(). Restore = back to {x:0,y:0,z:0,scale:1}. NEVER touch rotationY/rotationZ/the .gallery transform on hover.
+- Centre preview: hovering swaps image/category/title and crossfades over "We are STUDIO.".
+- Parallax: mousemove -> gsap.to(gallery,{rotationX:TILT+py*PARALLAX, rotationY:-px*PARALLAX}).
+- Custom cursor: a 13px black dot that FOLLOWS the mouse via gsap.quickTo (NOT static). Native OS cursor hidden (body{cursor:none}) only under @media (pointer:fine) and (hover:hover). Dot scales 1.25 over the ring, 0.6 over nav/corners. Must NOT block card hit-testing.
+- Labels: 15 categories on an ellipse lrx=radius+245, lry=radius*cos(TILT)+160, start top (-90) clockwise; pointer-events:none.
+
+═══ 9. MOBILE BEHAVIOUR (<=768px) ═══
+- body{height:auto}; .scene{height:100svh}. Hide .center, .labels, custom cursor. Header = logo + hamburger (hide nav + lang). Corners -> top:3.6em.
+- Top preview block (#mobilePreview, fixed, top:6.2em): category(10px) -> title(23px) ABOVE a full-width 16/10 image, then "View project +" BELOW.
+- Ring placement (content-anchored): radius=vw*0.74; measure preview bottom -> archiveTop=previewBottom+26; ringCenterX=vw*0.98; gsap.set(gallery,{x:ringCenterX-vw/2, y:archiveTop-vh/2}). Only a cropped arc enters the lower-right, starting just under "View project +".
+- Finger drag: fixed #ringHitbox over the arc, touch-action:none, z-index:20, top=archiveTop-12. pointerdown->setPointerCapture(try/catch); pointermove->preventDefault, delta=dx*MOBILE_DRAG_SPEED+dy*0.12, target+=delta, velocity=delta; pointerup/cancel release. wheel->target+=deltaY*0.18.
+- rAF loop: if not dragging -> target+=velocity; velocity*=0.92 (zero below 0.01); current+=(target-current)*0.16; ringRot=current; updateRing(); updateMobileSelection().
+- selectedIndex (no hover): nearestMobileCard = round((MOBILE_FOCUS_ANGLE+90-ringRot)/INC) mod ITEM_COUNT. On change: restore previous, pull new with MOBILE_OPTS, update preview (image swap + quick fade, overwrite-safe). EXACTLY ONE card pulled out.
+- Mode switch: matchMedia(MQ).onchange -> location.reload().
+
+═══ 10. LOADING + REVEAL ═══
+1. Typography-only loader (#loadingScreen z-index 999999): STUDIO® / LOADING ARCHIVE (pulsing) / 1px underline that grows 0->100%. NO mini ring, NO 3D, NO cloned gallery inside the loader.
+2. body:not(.page-ready) .scene{opacity:0} keeps the real ring hidden (but laid out) during load.
+3. init() builds the gallery + applies all transforms while hidden (for BOTH desktop AND mobile). initLoader() runs Promise.all([min 1400ms, Promise.allSettled(preload all IMAGES via new Image(); onerror also resolves)]).
+4. On resolve: introOffset=0; computeGeometry(); updateRing(); -> await rAF x2 (paint the COMPLETE ring while hidden) -> add body.page-ready -> loader.is-hidden -> revealUI() (fade header/corners + center/labels desktop, preview mobile; .center opacity-only) -> runIntro() -> fade out + remove loader.
+5. runIntro() spins the REAL ring ONE full turn by tweening introOffset -360->0 (1.6s power3.out), updateRing() each frame. NEVER touches the .gallery transform/scale/tilt/position. On mobile, updateMobileSelection is gated by introPlaying so the preview stays steady.
+
+═══ 11. RESPONSIVE / NON-NEGOTIABLES ═══
+- Breakpoint 768px (@media in CSS, matchMedia read once as isMobile in JS).
+- Desktop path: buildLabels+initParallax+initScroll+initCursor + scene pointermove/leave. Mobile path: initMobile() only.
+- Scrollbar hidden visually (scrollbar-width:none + ::-webkit-scrollbar{display:none}) but scrolling PRESERVED — never overflow:hidden on html/body.
+- Orbit only (never flat billboards). Hover/selection change ONLY x/y/z/scale of .item-card. Loader typography only; real ring animates in via introOffset; no duplicate ring; ring fully painted before reveal.
+
+#######################################################################
+PART B — COMMON REPRODUCTION FAILURES (the exact bugs to avoid)
+#######################################################################
+
+BUG 1 — RING RENDERS AS A HALF / "C" / SPIRAL (not a closed ellipse).
+Cause: backface-visibility:hidden left on the cards, OR cards not distributed over full 360, OR the gallery not centred. FIX: the cards MUST NOT have backface-visibility:hidden (both faces visible), index runs 0..ITEM_COUNT-1 over INC=360/ITEM_COUNT, and the gallery is centred via gsap y:-yOffset (desktop). The visible result must be a FULL closed ellipse, centred, with "We are STUDIO." in the hollow.
+
+BUG 2 — MOBILE SHOWS THE TOP PREVIEW BUT NO RING ARC.
+Cause: building the gallery only in the desktop branch, or wrong mobile positioning so the arc is off-screen. FIX: buildGallery()+setupItems()+updateRing() run for BOTH modes inside init() BEFORE the isMobile branch. On mobile the ring is the SAME gallery, only repositioned (radius=vw*0.74, centre off bottom-right anchored to the preview bottom) and rotated by the rAF loop in initMobile(). After load you MUST see a cropped image arc entering the lower-right under "View project +".
+
+BUG 3 — ONLY A STATIC BLACK DOT; NO WORKING CURSOR.
+Cause: the dot was rendered but never bound to the pointer. FIX: the black dot must FOLLOW the mouse every move via gsap.quickTo bound to a window "pointermove" listener (see initCursor in PART C). The native OS cursor is hidden (body{cursor:none}) and the dot replaces it; over nav/corners the dot scales to 0.6, over the ring to 1.25. The dot must track the mouse smoothly — never sit still.
+
+#######################################################################
+PART C — EXACT FILES (reproduce verbatim; this is the load-bearing engine)
+#######################################################################
+
+──────── index.html ────────
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>STUDIO — Project Archive</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="loading-screen" id="loadingScreen" role="status" aria-label="Loading archive">
+      <div class="loading-inner">
+        <div class="loading-brand">STUDIO<span>®</span></div>
+        <div class="loading-text">Loading Archive</div>
+        <div class="loading-bar"><span></span></div>
+      </div>
+    </div>
+
+    <header class="site-header">
+      <div class="header-left">
+        <div class="brand">STUDIO<span class="brand-dot">®</span></div>
+        <nav class="nav">
+          <a href="#" class="is-active">Projects</a>
+          <a href="#">Info</a>
+          <a href="#">Contact</a>
+        </nav>
+      </div>
+      <div class="lang">
+        <span>EN</span><span class="sep">/</span><span class="muted">中文</span>
+      </div>
+      <button class="menu-toggle" type="button" aria-label="Menu"><span></span><span></span></button>
+    </header>
+
+    <button class="corner corner--left" type="button">Filter Projects <i>+</i></button>
+    <button class="corner corner--right" type="button">Grid view <i>+</i></button>
+
+    <div class="scene">
+      <div class="gallery" id="gallery"></div>
+      <div class="center" id="center">
+        <div class="center-default" id="centerDefault">
+          <p class="center-eyebrow">Selected Works — 2014 / 2026</p>
+          <h1 class="center-title">We are <em>STUDIO.</em></h1>
+          <p class="center-sub">An independent architecture &amp; spatial design practice.</p>
+        </div>
+        <div class="center-project" id="centerProject">
+          <div class="preview-img" id="previewImg"><img src="public/image-1.png" alt="" /></div>
+          <p class="preview-cat" id="previewCat">Store Design</p>
+          <h2 class="preview-title" id="previewTitle">Untitled</h2>
+        </div>
+      </div>
+      <div class="labels" id="labels"></div>
+    </div>
+
+    <div class="mobile-preview" id="mobilePreview">
+      <p class="mp-cat" id="mpCat">Store Design</p>
+      <h1 class="mp-title" id="mpTitle">Duhui Peninsula</h1>
+      <div class="mp-img" id="mpImg"><img src="public/image-1.png" alt="" /></div>
+      <a class="mp-view" href="#">View project <i>+</i></a>
+    </div>
+
+    <div class="mobile-ring-hitbox" id="ringHitbox"></div>
+    <div class="custom-cursor" id="cursor"></div>
+
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="script.js"></script>
+  </body>
+</html>
+
+──────── styles.css ────────
+:root{
+  --bg:#f4f3f1; --ink:#0d0d0d; --muted:#8a8a86; --line:rgba(0,0,0,0.16);
+  --font:"Helvetica Neue","Inter",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html,body{
+  width:100%; background:var(--bg); color:var(--ink); font-family:var(--font);
+  -webkit-font-smoothing:antialiased;
+  scrollbar-width:none; -ms-overflow-style:none;        /* hide scrollbar, keep scroll */
+}
+html::-webkit-scrollbar, body::-webkit-scrollbar{ display:none; width:0; height:0; }
+body{ height:350vh; }                                   /* desktop scroll height drives rotation */
+a{ color:inherit; text-decoration:none; }
+
+.site-header{ position:fixed; inset:0 0 auto 0; z-index:50; display:flex; align-items:center;
+  justify-content:space-between; padding:1.9em 2.4em; font-size:13px; letter-spacing:0.02em; }
+.header-left{ display:flex; align-items:center; gap:3em; }
+.brand{ font-weight:600; font-size:16px; letter-spacing:0.06em; }
+.brand-dot{ font-size:9px; vertical-align:super; margin-left:2px; }
+.nav{ display:flex; gap:2.2em; font-weight:500; }
+.nav a{ position:relative; opacity:0.62; transition:opacity .3s ease; }
+.nav a.is-active, .nav a:hover{ opacity:1; }
+.nav a.is-active::after{ content:""; position:absolute; left:0; bottom:-6px; width:100%; height:1px; background:var(--ink); }
+.lang{ display:flex; gap:0.5em; font-weight:500; }
+.menu-toggle{ display:none; flex-direction:column; justify-content:center; gap:5px; width:26px; height:18px;
+  padding:0; background:none; border:none; cursor:pointer; }
+.menu-toggle span{ display:block; width:100%; height:1.5px; background:var(--ink); }
+.lang .sep, .lang .muted{ opacity:0.4; }
+
+.corner{ position:fixed; bottom:2.2em; z-index:50; background:none; border:none; cursor:pointer;
+  font-family:var(--font); font-size:13px; font-weight:500; letter-spacing:0.02em; color:var(--ink);
+  padding-bottom:4px; border-bottom:1px solid var(--ink); transition:opacity .3s ease; }
+.corner:hover{ opacity:0.55; }
+.corner i{ font-style:normal; margin-left:0.4em; }
+.corner--left{ left:2.4em; }
+.corner--right{ right:2.4em; }
+
+.scene{ position:fixed; inset:0; overflow:hidden; perspective:1600px; perspective-origin:50% 50%; }
+.gallery{ position:absolute; top:50%; left:50%; width:0; height:0; transform-style:preserve-3d; will-change:transform; }
+
+/* CARD = stable hitbox. IMPORTANT: NO backface-visibility:hidden (it would hide half the ring -> "C"/spiral). */
+.item{ position:absolute; top:0; left:0; width:78px; height:60px; transform-style:preserve-3d; }
+.item-card{ position:absolute; inset:0; transform-style:preserve-3d; pointer-events:none;
+  border:1px solid rgba(255,255,255,0.65); transition:box-shadow .4s ease; }
+.item-card img{ width:100%; height:100%; object-fit:cover; display:block; filter:saturate(0.92) brightness(0.99); }
+.item-card.is-active{ box-shadow:0 6px 16px -10px rgba(0,0,0,0.35); }
+
+.center{ position:absolute; top:43%; left:50%; transform:translate(-50%,-50%); width:min(520px,42vw);
+  text-align:center; pointer-events:none; z-index:5; }
+.center-eyebrow{ font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-bottom:1.4em; }
+.center-title{ font-size:clamp(34px,4.4vw,60px); font-weight:500; line-height:1.02; letter-spacing:-0.02em; }
+.center-title em{ font-style:italic; font-weight:400; }
+.center-sub{ margin-top:1.3em; font-size:14px; color:var(--muted); }
+.center-default,.center-project{ transition:opacity .55s ease; }
+.center-project{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; }
+.center.show-project .center-default{ opacity:0; }
+.center.show-project .center-project{ opacity:1; }
+.preview-img{ width:380px; height:210px; flex-shrink:0; overflow:hidden; background:#e7e6e3; }
+.preview-img img{ width:100%; height:100%; object-fit:cover; }
+.preview-cat{ margin-top:1.1em; font-size:12px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); }
+.preview-title{ margin-top:0.4em; font-size:clamp(20px,2vw,26px); font-weight:500; letter-spacing:-0.01em; }
+
+.labels{ position:absolute; inset:0; pointer-events:none; }
+.label{ position:absolute; transform:translate(-50%,-50%); white-space:nowrap; font-size:14px; font-weight:500;
+  letter-spacing:0.01em; pointer-events:none; opacity:0.85; }
+.label .ul{ border-bottom:1px solid var(--ink); padding-bottom:2px; }
+.label sup{ font-size:10px; color:var(--muted); margin-left:3px; }
+
+.mobile-preview{ display:none; }
+.mobile-ring-hitbox{ display:none; }
+
+@media (max-width:768px){
+  .mobile-ring-hitbox{ display:block; position:fixed; left:0; right:0; bottom:0; top:50%;
+    z-index:20; touch-action:none; pointer-events:auto; }
+  body{ height:auto; }
+  .scene{ height:100svh; overflow:hidden; }
+  .center, .labels{ display:none; }
+  .custom-cursor{ display:none !important; }
+  .site-header{ padding:1.15em 1em; align-items:center; }
+  .nav, .lang{ display:none; }
+  .menu-toggle{ display:flex; }
+  .corner{ bottom:auto; top:3.6em; font-size:13px; }
+  .corner--left{ left:1em; }
+  .corner--right{ right:1em; }
+  .mobile-preview{ display:block; position:fixed; top:6.2em; left:0; right:0; z-index:6; padding:0 1em; pointer-events:none; }
+  .mp-cat{ font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }
+  .mp-title{ font-size:23px; line-height:1.05; font-weight:500; letter-spacing:-0.01em; margin-bottom:14px; }
+  .mp-img{ width:100%; aspect-ratio:16/10; overflow:hidden; background:#e7e6e3; }
+  .mp-img img{ width:100%; height:100%; object-fit:cover; display:block; }
+  .mp-view{ display:inline-block; margin-top:11px; font-size:14px; font-weight:700;
+    border-bottom:1px solid var(--ink); padding-bottom:2px; pointer-events:auto; }
+  .mp-view i{ font-style:normal; margin-left:0.35em; }
+}
+
+.custom-cursor{ display:none; }
+@media (pointer:fine) and (hover:hover){
+  body{ cursor:none; }                                  /* dot replaces the OS cursor */
+  .custom-cursor{ display:block; position:fixed; top:0; left:0; width:13px; height:13px;
+    border-radius:999px; background:#000; pointer-events:none; z-index:99999; will-change:transform; transition:opacity .3s ease; }
+  .custom-cursor.is-hidden{ opacity:0; }
+}
+
+body:not(.page-ready) .scene{ opacity:0; }              /* hide ring until fully built+painted */
+
+.loading-screen{ position:fixed; inset:0; z-index:999999; background:var(--bg);
+  display:flex; align-items:center; justify-content:center; cursor:default; }
+.loading-screen.is-hidden{ pointer-events:none; }
+.loading-inner{ text-align:center; opacity:0; animation:load-in .8s ease forwards; }
+.loading-brand{ font-weight:600; font-size:20px; letter-spacing:0.06em; }
+.loading-brand span{ font-size:10px; vertical-align:super; margin-left:2px; }
+.loading-text{ margin-top:1.1em; font-size:11px; letter-spacing:0.26em; text-transform:uppercase;
+  color:var(--muted); animation:load-pulse 1.8s ease-in-out infinite; }
+.loading-bar{ width:120px; height:1px; margin:1.6em auto 0; background:rgba(0,0,0,0.12); overflow:hidden; }
+.loading-bar span{ display:block; width:100%; height:100%; background:var(--ink); transform:scaleX(0);
+  transform-origin:left center; animation:load-bar 1.4s ease-in-out forwards; }
+@keyframes load-in{ to{ opacity:1; } }
+@keyframes load-pulse{ 0%,100%{ opacity:0.45; } 50%{ opacity:1; } }
+@keyframes load-bar{ to{ transform:scaleX(1); } }
+@media (max-width:768px){ .loading-screen{ height:100svh; } }
+
+──────── script.js ────────
+gsap.registerPlugin(ScrollTrigger);
+
+const DEG = Math.PI / 180;
+const PERSPECTIVE = 1600;
+const ITEM_COUNT = 136;
+const TURNS = 1;
+const TILT = 58;
+const ROT_Y = 86;
+const RING_SCALE = 0.88;
+const PARALLAX = 4;
+const HOVER_OUT = 16, HOVER_Z = 12, HOVER_SCALE = 1.02, HOVER_DURATION = 0.32;
+const MOBILE_MQ = "(max-width: 768px)";
+const MOBILE_SELECTED_OUT = 8, MOBILE_SELECTED_Z = 2, MOBILE_SELECTED_SCALE = 1.005;
+const MOBILE_TRANSITION = 0.25, MOBILE_FOCUS_ANGLE = -35, MOBILE_DRAG_SPEED = 0.35;
+
+const IMAGES = [
+  "image-1","image-2","image-3","image-4","image-5","image-6",
+  "image-7","image-8","image-9","image-10","image-11","image-12",
+  "image-15","13","14",
+].map((n) => `public/${n}.png`);
+
+const PROJECTS = [
+  { title:"Duhui Peninsula", category:"Store Design" },
+  { title:"Linhe Riverside Mall", category:"Shopping Mall" },
+  { title:"Nanshan Showroom", category:"Showroom" },
+  { title:"Arena Tangshan", category:"Sports" },
+  { title:"Maison Qiantan", category:"Store Design" },
+  { title:"Greenfield Academy", category:"Education" },
+  { title:"Harbour Mixed Block", category:"Mixed Use" },
+  { title:"Cloud Pavilion", category:"Cultural" },
+  { title:"Meridian Tower", category:"High Rise" },
+  { title:"The Quiet Hotel", category:"Hospitality" },
+  { title:"Lakeside Commons", category:"Leisure" },
+  { title:"North Loop Office", category:"Office" },
+  { title:"Market Court", category:"Outdoor Retail" },
+  { title:"Old Mill Revival", category:"Renovation" },
+  { title:"Pine Terrace Homes", category:"Residential" },
+];
+
+const CATEGORIES = [
+  { name:"Shopping Mall", count:42 }, { name:"Showroom", count:12 }, { name:"Sports", count:15 },
+  { name:"Store Design", count:12 }, { name:"Transport", count:6 }, { name:"Education", count:9 },
+  { name:"Mixed Use", count:31 }, { name:"Cultural", count:13 }, { name:"High Rise", count:18 },
+  { name:"Hospitality", count:17 }, { name:"Leisure", count:26 }, { name:"Office", count:34 },
+  { name:"Outdoor Retail", count:38 }, { name:"Renovation", count:19 }, { name:"Residential", count:24 },
+];
+
+const INC = 360 / ITEM_COUNT;
+let radius = 470, yOffset = 0, ringRot = 0, introOffset = 0, introPlaying = false;
+const items = [];
+let activeCard = null;
+const isMobile = window.matchMedia(MOBILE_MQ).matches;
+let mobileSelectedCard = null, mobileCurrentRotation = 0, mobileTargetRotation = 0;
+
+const scene = document.querySelector(".scene");
+const gallery = document.getElementById("gallery");
+const center = document.getElementById("center");
+const previewImg = document.querySelector("#previewImg img");
+const previewCat = document.getElementById("previewCat");
+const previewTitle = document.getElementById("previewTitle");
+const labelsWrap = document.getElementById("labels");
+const mpImg = document.querySelector("#mpImg img");
+const mpCat = document.getElementById("mpCat");
+const mpTitle = document.getElementById("mpTitle");
+const mobilePreview = document.getElementById("mobilePreview");
+const ringHitbox = document.getElementById("ringHitbox");
+
+function computeGeometry() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  if (isMobile) { radius = vw * 0.74; }
+  else { radius = RING_SCALE * Math.max(300, Math.min(vw * 0.32, vh * 0.55)); }
+  const localY = radius * Math.cos(TILT * DEG);
+  const depthZ = radius * Math.sin(TILT * DEG);
+  yOffset = localY * (PERSPECTIVE / (PERSPECTIVE - depthZ));
+  if (isMobile) {
+    const pr = mobilePreview.getBoundingClientRect();
+    const archiveTop = (pr.bottom > 0 ? pr.bottom : vh * 0.46) + 26;
+    const ringCenterX = vw * 0.98;
+    gsap.set(gallery, { x: ringCenterX - vw / 2, y: archiveTop - vh / 2 });
+    if (ringHitbox) ringHitbox.style.top = Math.round(archiveTop - 12) + "px";
+  } else {
+    gsap.set(gallery, { x: 0, y: -yOffset });
+  }
+}
+
+function angleOf(card) { return card.index * INC - 90 + ringRot + introOffset; }
+function depthOpacity(rotZdeg) { const back = Math.cos(rotZdeg * DEG); return 1 - (back + 1) * 0.25; }
+
+function placeResting(card) {
+  const rotZ = angleOf(card); card.depth = depthOpacity(rotZ);
+  gsap.set(card.el, { rotationZ: rotZ }); gsap.set(card.cardEl, { opacity: card.depth });
+}
+function updateRing() {
+  for (const card of items) {
+    const rotZ = angleOf(card); card.depth = depthOpacity(rotZ);
+    gsap.set(card.el, { rotationZ: rotZ }); gsap.set(card.cardEl, { opacity: card.depth });
+  }
+}
+
+function buildGallery() {
+  const pool = [];
+  while (pool.length < ITEM_COUNT) pool.push(...IMAGES);
+  for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
+  const frag = document.createDocumentFragment();
+  for (let i = 0; i < ITEM_COUNT; i++) {
+    const el = document.createElement("div"); el.className = "item";
+    const cardEl = document.createElement("div"); cardEl.className = "item-card";
+    const img = document.createElement("img"); img.src = pool[i]; img.alt = "";
+    cardEl.appendChild(img); el.appendChild(cardEl); frag.appendChild(el);
+    const card = { el, cardEl, index: i, project: PROJECTS[i % PROJECTS.length], img: img.src, hovered: false, depth: 1 };
+    el._card = card; items.push(card);
+  }
+  gallery.appendChild(frag);
+}
+
+function setupItems() {
+  for (const card of items) {
+    gsap.set(card.el, { xPercent: -50, yPercent: -50, transformOrigin: `50% ${radius}px`, rotationZ: angleOf(card) });
+    gsap.set(card.cardEl, { rotationY: ROT_Y, x: 0, y: 0, z: 0, scale: 1, opacity: card.depth });
+  }
+}
+
+function onPointerMove(e) {
+  if (isMobile) return;
+  const target = document.elementFromPoint(e.clientX, e.clientY);
+  const hit = target && target.closest(".item");
+  setActive(hit ? hit._card : null);
+}
+function setActive(card) {
+  if (card === activeCard) return;
+  const prev = activeCard; activeCard = card;
+  if (prev) restoreCard(prev);
+  if (card) { pullOut(card); setPreview(card); } else { center.classList.remove("show-project"); }
+}
+
+function pullOut(card, opts) {
+  const out = opts ? opts.out : HOVER_OUT, fwd = opts ? opts.z : HOVER_Z;
+  const scl = opts ? opts.scale : HOVER_SCALE, dur = opts ? opts.duration : HOVER_DURATION;
+  card.cardEl.classList.add("is-active");
+  const Cx = window.innerWidth / 2, Cy = window.innerHeight / 2;
+  const rect = card.el.getBoundingClientRect();
+  const px = rect.left + rect.width / 2, py = rect.top + rect.height / 2;
+  const len = Math.hypot(px - Cx, py - Cy) || 1;
+  const dxs = ((px - Cx) / len) * out, dys = ((py - Cy) / len) * out;
+  const T = TILT * DEG;
+  const gx = dxs, gy = dys * Math.cos(T) + fwd * Math.sin(T), gz = -dys * Math.sin(T) + fwd * Math.cos(T);
+  const phi = angleOf(card) * DEG, cosP = Math.cos(phi), sinP = Math.sin(phi);
+  gsap.to(card.cardEl, { x: gx * cosP + gy * sinP, y: -gx * sinP + gy * cosP, z: gz,
+    scale: scl, duration: dur, ease: "power3.out", overwrite: true });
+}
+function restoreCard(card, duration) {
+  card.cardEl.classList.remove("is-active");
+  gsap.to(card.cardEl, { x: 0, y: 0, z: 0, scale: 1, duration: duration || HOVER_DURATION, ease: "power2.out", overwrite: true });
+}
+function setPreview(card) {
+  previewImg.src = card.img; previewCat.textContent = card.project.category; previewTitle.textContent = card.project.title;
+  center.classList.add("show-project");
+  gsap.fromTo(previewImg, { opacity: 0.35 }, { opacity: 1, duration: 0.5 });
+}
+
+const MOBILE_OPTS = { out: MOBILE_SELECTED_OUT, z: MOBILE_SELECTED_Z, scale: MOBILE_SELECTED_SCALE, duration: MOBILE_TRANSITION };
+function nearestMobileCard() {
+  let idx = Math.round((MOBILE_FOCUS_ANGLE + 90 - ringRot) / INC);
+  idx = ((idx % ITEM_COUNT) + ITEM_COUNT) % ITEM_COUNT; return items[idx];
+}
+function updateMobileSelection() {
+  if (introPlaying) return;
+  const card = nearestMobileCard();
+  if (card === mobileSelectedCard) return;
+  if (mobileSelectedCard) restoreCard(mobileSelectedCard, MOBILE_TRANSITION);
+  mobileSelectedCard = card; pullOut(card, MOBILE_OPTS); updateMobilePreview(card);
+}
+function updateMobilePreview(card) {
+  mpCat.textContent = card.project.category; mpTitle.textContent = card.project.title; mpImg.src = card.img;
+  gsap.fromTo(mpImg, { opacity: 0.3 }, { opacity: 1, duration: MOBILE_TRANSITION, overwrite: true });
+}
+
+let mobileDragging = false, mobileVelocity = 0;
+function mobileTick() {
+  if (!mobileDragging) { mobileTargetRotation += mobileVelocity; mobileVelocity *= 0.92; if (Math.abs(mobileVelocity) < 0.01) mobileVelocity = 0; }
+  mobileCurrentRotation += (mobileTargetRotation - mobileCurrentRotation) * 0.16;
+  ringRot = mobileCurrentRotation; updateRing(); updateMobileSelection();
+  requestAnimationFrame(mobileTick);
+}
+function initMobile() {
+  mobileCurrentRotation = mobileTargetRotation = ringRot;
+  let lastX = 0, lastY = 0;
+  ringHitbox.addEventListener("pointerdown", (e) => {
+    mobileDragging = true; mobileVelocity = 0; lastX = e.clientX; lastY = e.clientY;
+    try { ringHitbox.setPointerCapture(e.pointerId); } catch (_) {}
+  });
+  ringHitbox.addEventListener("pointermove", (e) => {
+    if (!mobileDragging) return; e.preventDefault();
+    const dx = e.clientX - lastX, dy = e.clientY - lastY; lastX = e.clientX; lastY = e.clientY;
+    const delta = dx * MOBILE_DRAG_SPEED + dy * 0.12; mobileTargetRotation += delta; mobileVelocity = delta;
+  });
+  const endDrag = (e) => { if (!mobileDragging) return; mobileDragging = false;
+    try { if (ringHitbox.hasPointerCapture(e.pointerId)) ringHitbox.releasePointerCapture(e.pointerId); } catch (_) {} };
+  ringHitbox.addEventListener("pointerup", endDrag);
+  ringHitbox.addEventListener("pointercancel", endDrag);
+  ringHitbox.addEventListener("wheel", (e) => { e.preventDefault(); mobileTargetRotation += e.deltaY * 0.18; }, { passive: false });
+  updateMobileSelection();
+  requestAnimationFrame(mobileTick);
+}
+
+function initParallax() {
+  window.addEventListener("mousemove", (e) => {
+    const px = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+    const py = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+    gsap.to(gallery, { rotationX: TILT + py * PARALLAX, rotationY: -px * PARALLAX, duration: 1, ease: "power2.out", overwrite: "auto" });
+  });
+}
+
+function initCursor() {
+  if (!window.matchMedia("(pointer: fine) and (hover: hover)").matches) return;
+  const cursor = document.getElementById("cursor");
+  gsap.set(cursor, { xPercent: -50, yPercent: -50, scale: 1 });
+  const xTo = gsap.quickTo(cursor, "x", { duration: 0.2, ease: "power3.out" });
+  const yTo = gsap.quickTo(cursor, "y", { duration: 0.2, ease: "power3.out" });
+  window.addEventListener("pointermove", (e) => { xTo(e.clientX); yTo(e.clientY); });   // <-- dot FOLLOWS the mouse
+  document.addEventListener("mouseleave", () => cursor.classList.add("is-hidden"));
+  document.addEventListener("mouseenter", () => cursor.classList.remove("is-hidden"));
+  const setScale = (s) => gsap.to(cursor, { scale: s, duration: 0.3, ease: "power3.out", overwrite: "auto" });
+  scene.addEventListener("pointerenter", () => setScale(1.25));
+  scene.addEventListener("pointerleave", () => setScale(1));
+  document.querySelectorAll(".nav a, .corner").forEach((el) => {
+    el.addEventListener("pointerenter", () => setScale(0.6));
+    el.addEventListener("pointerleave", () => setScale(1));
+  });
+}
+
+function initScroll() {
+  ScrollTrigger.create({ trigger: "body", start: "top top", end: "bottom bottom", scrub: 1.4,
+    onUpdate: (self) => { ringRot = self.progress * 360 * TURNS; updateRing(); } });
+}
+
+function buildLabels() {
+  const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
+  const lrx = radius + 245, lry = radius * Math.cos(TILT * DEG) + 160, n = CATEGORIES.length;
+  labelsWrap.innerHTML = "";
+  CATEGORIES.forEach((cat, i) => {
+    const angle = -90 + (360 / n) * i, rad = angle * DEG;
+    const x = cx + Math.cos(rad) * lrx, y = cy + Math.sin(rad) * lry;
+    const el = document.createElement("div"); el.className = "label";
+    el.style.left = `${x}px`; el.style.top = `${y}px`;
+    el.innerHTML = `<span class="ul">${cat.name}</span><sup>(${cat.count})</sup>`;
+    labelsWrap.appendChild(el);
+  });
+}
+
+function initLoader() {
+  const overlay = document.getElementById("loadingScreen");
+  if (!overlay) return;
+  const minLoad = new Promise((res) => setTimeout(res, 1400));
+  const imageLoad = Promise.allSettled(IMAGES.map((src) => new Promise((res) => {
+    const im = new Image(); im.onload = res; im.onerror = res; im.src = src;
+  })));
+  Promise.all([minLoad, imageLoad]).then(async () => {
+    introOffset = 0; computeGeometry(); updateRing();
+    await new Promise(requestAnimationFrame);
+    await new Promise(requestAnimationFrame);
+    document.body.classList.add("page-ready");
+    overlay.classList.add("is-hidden");
+    revealUI();
+    runIntro();
+    gsap.timeline({ onComplete: () => overlay.remove() })
+      .to(".loading-inner", { opacity: 0, y: -6, duration: 0.4, ease: "power2.in" })
+      .to(overlay, { opacity: 0, duration: 0.6, ease: "power3.out" }, "-=0.1");
+  });
+}
+
+function runIntro() {
+  introPlaying = true; introOffset = -360; updateRing();
+  gsap.to({ v: -360 }, { v: 0, duration: 1.6, ease: "power3.out",
+    onUpdate() { introOffset = this.targets()[0].v; updateRing(); },
+    onComplete() { introOffset = 0; introPlaying = false; updateRing(); } });
+}
+
+function revealUI() {
+  const slideUi = [document.querySelector(".site-header"), ...document.querySelectorAll(".corner")];
+  if (isMobile && mobilePreview) slideUi.push(mobilePreview);
+  gsap.fromTo(slideUi.filter(Boolean), { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.06 });
+  if (!isMobile) {
+    gsap.fromTo(center, { opacity: 0 }, { opacity: 1, duration: 0.9, ease: "power3.out" });
+    gsap.fromTo(".label", { opacity: 0 }, { opacity: 0.85, duration: 0.8, ease: "power2.out", stagger: 0.012, delay: 0.15 });
+  }
+}
+
+function onResize() {
+  computeGeometry(); setupItems(); updateRing();
+  if (!isMobile) { buildLabels(); ScrollTrigger.refresh(); }
+}
+
+function init() {
+  initLoader();
+  computeGeometry();
+  buildGallery();      // <-- runs for BOTH desktop AND mobile (BUG 2 fix)
+  setupItems();
+  updateRing();
+  gsap.set(gallery, { rotationX: TILT });
+  if (isMobile) {
+    initMobile();
+  } else {
+    buildLabels(); initParallax(); initScroll(); initCursor();
+    scene.addEventListener("pointermove", onPointerMove);
+    scene.addEventListener("pointerleave", () => setActive(null));
+  }
+  requestAnimationFrame(onResize);
+  setTimeout(onResize, 300);
+  window.addEventListener("load", onResize);
+  let rt;
+  window.addEventListener("resize", () => { clearTimeout(rt); rt = setTimeout(onResize, 150); });
+  window.matchMedia(MOBILE_MQ).addEventListener("change", () => location.reload());
+}
+
+window.addEventListener("DOMContentLoaded", init);
+
+#######################################################################
+PART D — RUN, VERIFY, LIVE PREVIEW (final step, do not skip)
+#######################################################################
+1. Write the three files; ensure the 15 images exist in public/.
+2. Start a static server as a BACKGROUND process and KEEP IT ALIVE: python3 -m http.server 5179 (project root). Verify http://localhost:5179/ returns 200.
+3. DESKTOP check: typography loader -> fades -> a FULL CLOSED ellipse ring spins one turn into place (NOT a half/C/spiral) -> labels around it + "We are STUDIO." centred in the hollow -> scrolling rotates the ring -> hovering a card pulls it slightly outward (orientation unchanged, others NOT dimmed) and the centre swaps to that project -> a black dot FOLLOWS the mouse (scales 1.25 over ring, 0.6 over nav/corners) -> no visible scrollbar but page still scrolls.
+4. MOBILE check (<=768px, e.g. 430x932): logo + hamburger; Filter/Grid under header; category + title above a full-width image, "View project +" below; a CROPPED IMAGE ARC enters the lower-right under the preview (it MUST be visible — see BUG 2); finger drag rotates the ring with inertia and updates the top preview via crossfade; exactly one card pulled out; no hover, no cursor.
+5. As the LAST line of your reply, print the clickable live URL on its own line, nothing after it:
+   > Live preview: http://localhost:5179
+
+End of spec. Reproduce value-for-value. Avoid the three failures in PART B. Do not change the constants, the orbit technique, the hover/selection model, the loader->intro flow, or the mobile layout.
