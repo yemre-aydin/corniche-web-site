@@ -12,6 +12,7 @@ const HOVER_OUT = 16, HOVER_Z = 12, HOVER_SCALE = 1.02, HOVER_DURATION = 0.32;
 const MOBILE_MQ = "(max-width: 768px)";
 const MOBILE_SELECTED_OUT = 8, MOBILE_SELECTED_Z = 2, MOBILE_SELECTED_SCALE = 1.005;
 const MOBILE_TRANSITION = 0.25, MOBILE_FOCUS_ANGLE = -35, MOBILE_DRAG_SPEED = 0.35;
+const CATEGORY_DIM = 0.28;   // how far an unselected category recedes
 
 /* ── Content and language ───────────────────────────────────────────────────
    Every project lives in projects.json, so content can be edited without
@@ -36,8 +37,6 @@ const STRINGS = {
     "nav.projects": "Projeler",
     "nav.about": "Hakkımızda",
     "nav.services": "Hizmetlerimiz",
-    "nav.furniture": "Furniture",
-    "nav.accessories": "Accessories",
     "nav.showroom": "Showroom",
     "nav.contact": "İletişim",
   },
@@ -49,10 +48,8 @@ const STRINGS = {
     "ui.selectedWorks": "Selected Works",
     "ui.tagline": "[Studio description]",
     "nav.projects": "Projects",
-    "nav.about": "About",
-    "nav.services": "Services",
-    "nav.furniture": "Furniture",
-    "nav.accessories": "Accessories",
+    "nav.about": "About Us",
+    "nav.services": "Our Services",
     "nav.showroom": "Showroom",
     "nav.contact": "Contact",
   },
@@ -89,7 +86,6 @@ let LANG = "tr";
 let CATEGORIES = DEFAULT_CONTENT.categories;
 let PROJECTS = DEFAULT_CONTENT.projects;
 let activeCategory = null;
-let visibleProjects = [];
 
 const thumbOf = (p) => THUMB_DIR + p.image;
 const fullOf = (p) => IMAGE_DIR + p.image;
@@ -116,10 +112,8 @@ async function loadContent() {
   const projs = (data.projects || []).filter((p) => p && p.image && p.title);
   CATEGORIES = cats.length ? cats : DEFAULT_CONTENT.categories;
   PROJECTS = projs.length ? projs : DEFAULT_CONTENT.projects;
-  // The approved design opens on the first category, which is Hospitality.
+  // The ring opens on the first category listed, which is Villa.
   activeCategory = CATEGORIES.length ? CATEGORIES[0].id : null;
-  visibleProjects = projectsIn(activeCategory);
-  if (!visibleProjects.length) visibleProjects = PROJECTS.slice();
 }
 
 const INC = 360 / ITEM_COUNT;
@@ -164,25 +158,56 @@ function computeGeometry() {
 function angleOf(card) { return card.index * INC - 90 + ringRot + introOffset; }
 function depthOpacity(rotZdeg) { const back = Math.cos(rotZdeg * DEG); return 1 - (back + 1) * 0.25; }
 
-function placeResting(card) {
-  const rotZ = angleOf(card); card.depth = depthOpacity(rotZ);
-  gsap.set(card.el, { rotationZ: rotZ }); gsap.set(card.cardEl, { opacity: card.depth });
+// A card's opacity combines how far round the ring it sits with whether its
+// category is the selected one. Unselected categories recede rather than
+// disappear, so the whole archive stays readable at a glance.
+function cardOpacity(card, rotZ) {
+  const depth = depthOpacity(rotZ === undefined ? angleOf(card) : rotZ);
+  const inFocus = !activeCategory || card.project.category === activeCategory;
+  return depth * (inFocus ? 1 : CATEGORY_DIM);
 }
+
 function updateRing() {
   for (const card of items) {
-    const rotZ = angleOf(card); card.depth = depthOpacity(rotZ);
-    gsap.set(card.el, { rotationZ: rotZ }); gsap.set(card.cardEl, { opacity: card.depth });
+    const rotZ = angleOf(card);
+    card.depth = depthOpacity(rotZ);
+    gsap.set(card.el, { rotationZ: rotZ });
+    gsap.set(card.cardEl, { opacity: cardOpacity(card, rotZ) });
   }
 }
 
 // The pool holds whole projects rather than bare filenames, so a card's photo
-// and the title it shows always belong to the same project. It draws from the
-// selected category only.
-function makePool() {
-  const source = visibleProjects.length ? visibleProjects : PROJECTS;
+// and the title it shows always belong to the same project.
+//
+// Cards are grouped: each category takes one contiguous arc of the ring, in the
+// order projects.json lists them, sized by how many projects it holds. Nothing
+// is shuffled — the grouping is the point, so a visitor can see a category as a
+// run of its own work rather than scattered through the whole archive.
+function buildPool() {
+  const groups = CATEGORIES
+    .map((cat) => projectsIn(cat.id))
+    .filter((list) => list.length);
+  if (!groups.length) {
+    return Array.from({ length: ITEM_COUNT }, (_, i) => PROJECTS[i % Math.max(1, PROJECTS.length)]);
+  }
+
+  // Largest-remainder apportionment, so the arcs add up to ITEM_COUNT exactly.
+  // Plain rounding overshoots and the trim then clips the last category's arc.
+  const total = groups.reduce((n, list) => n + list.length, 0);
+  const exact = groups.map((list) => (list.length / total) * ITEM_COUNT);
+  const shares = exact.map((x) => Math.max(1, Math.floor(x)));
+  const byRemainder = exact
+    .map((x, i) => ({ rest: x - Math.floor(x), i }))
+    .sort((a, b) => b.rest - a.rest);
+  let left = ITEM_COUNT - shares.reduce((a, b) => a + b, 0);
+  for (let k = 0; left > 0 && byRemainder.length; k++, left--) shares[byRemainder[k % byRemainder.length].i]++;
+
   const pool = [];
-  while (pool.length < ITEM_COUNT) pool.push(...source);
-  for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
+  groups.forEach((list, i) => {
+    for (let j = 0; j < shares[i]; j++) pool.push(list[j % list.length]);
+  });
+  pool.length = Math.min(pool.length, ITEM_COUNT);
+  while (pool.length < ITEM_COUNT) pool.push(pool[pool.length - 1]);
   return pool;
 }
 
@@ -195,7 +220,7 @@ function dressCard(card, project) {
 }
 
 function buildGallery() {
-  const pool = makePool();
+  const pool = buildPool();
   const frag = document.createDocumentFragment();
   for (let i = 0; i < ITEM_COUNT; i++) {
     const el = document.createElement("div"); el.className = "item";
@@ -216,21 +241,30 @@ function buildGallery() {
   gallery.appendChild(frag);
 }
 
-// Switching category re-dresses the existing 136 cards instead of rebuilding
-// them, so the ring keeps its rotation and nothing is laid out again.
-function refillCards() {
-  const pool = makePool();
-  items.forEach((card, i) => dressCard(card, pool[i]));
-}
-
+// Selecting a category never rebuilds the ring. Every category stays on it;
+// the chosen one comes forward and the rest recede.
 function applyCategory(id) {
   activeCategory = id;
-  visibleProjects = projectsIn(id);
-  if (!visibleProjects.length) visibleProjects = PROJECTS.slice();
-  refillCards();
   renderCatRow();
-  if (isMobile) { mobileSelectedCard = null; updateMobileSelection(); }
-  else { buildLabels(); setActive(null); }
+  if (isMobile) {
+    turnRingTo(id);
+    mobileSelectedCard = null;
+  } else {
+    buildLabels();
+    setActive(null);
+  }
+  updateRing();
+}
+
+// On mobile the ring also turns so the chosen category's arc reaches the focus
+// angle, taking the shorter way round. The drag loop eases into the new target.
+function turnRingTo(id) {
+  const mine = items.filter((c) => c.project.category === id);
+  if (!mine.length) return;
+  const middle = mine[Math.floor(mine.length / 2)];
+  const target = MOBILE_FOCUS_ANGLE + 90 - middle.index * INC;
+  const delta = (((target - mobileTargetRotation + 180) % 360) + 360) % 360 - 180;
+  mobileTargetRotation += delta;
 }
 
 function renderCatRow() {
@@ -256,7 +290,7 @@ function renderCatRow() {
 function setupItems() {
   for (const card of items) {
     gsap.set(card.el, { xPercent: -50, yPercent: -50, transformOrigin: `50% ${radius}px`, rotationZ: angleOf(card) });
-    gsap.set(card.cardEl, { rotationY: ROT_Y, x: 0, y: 0, z: 0, scale: 1, opacity: card.depth });
+    gsap.set(card.cardEl, { rotationY: ROT_Y, x: 0, y: 0, z: 0, scale: 1, opacity: cardOpacity(card) });
   }
 }
 

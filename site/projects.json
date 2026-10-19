@@ -1,37 +1,62 @@
 {
-  "_comment": "The single content list for the archive. Edit this file to add, change or remove projects — nothing else needs touching. 'image' is a filename inside public/; its small copy in public/thumb/ is generated automatically. 'category' is an id from the categories list below. Titles and category labels carry both languages.",
+  "_comment": "The single content list for the archive. Edit this file to add, change or remove projects — nothing else needs touching. 'image' is a filename inside public/; its small copy in public/thumb/ is generated automatically. 'category' is an id from the categories list below. Titles and category labels carry both languages. The ring groups cards by category in the order given here, and opens on the first one.",
 
-  "_placeholder": "Every title below is a bracketed placeholder, not a Corniche project. They exist only so the ring has something to show, and they are replaced when the real photographs and project names arrive. The categories are real.",
+  "_placeholder": "Nothing here is real Corniche content yet. Every title is a bracketed placeholder and every image is a flat tonal panel generated from the brand palette by tools/make-placeholders.mjs — there is no third-party photography in this repository. Replace both when the real photographs and project names arrive.",
 
-  "_categoryLabels": "Both languages are set to the English term, matching the approved mobile design. The site map's Turkish readings (Otel Projeleri, Konut / Daire, Yenileme, Ticari Mekanlar) can replace the 'tr' values whenever wanted — one edit each, nothing else changes.",
+  "_categoryLabels": "Both languages are set to the English term, matching the agreed ring wording. Turkish readings (Çocuk Odaları, Özel Üretim Mobilya, Tekstil, Sanat, Yenileme) can replace the 'tr' values whenever wanted — one edit each, nothing else changes.",
 
   "categories": [
-    { "id": "hospitality", "label": { "tr": "Hospitality",       "en": "Hospitality" } },
-    { "id": "residential", "label": { "tr": "Residential",       "en": "Residential" } },
-    { "id": "villa",       "label": { "tr": "Villa",             "en": "Villa" } },
-    { "id": "renovation",  "label": { "tr": "Renovation",        "en": "Renovation" } },
-    { "id": "commercial",  "label": { "tr": "Commercial Spaces", "en": "Commercial Spaces" } }
+    { "id": "villa",             "label": { "tr": "Villa",             "en": "Villa" } },
+    { "id": "residential",       "label": { "tr": "Residential",       "en": "Residential" } },
+    { "id": "hospitality",       "label": { "tr": "Hospitality",       "en": "Hospitality" } },
+    { "id": "yacht-marine",      "label": { "tr": "Yacht & Marine",    "en": "Yacht & Marine" } },
+    { "id": "commercial",        "label": { "tr": "Commercial Spaces", "en": "Commercial Spaces" } },
+    { "id": "kids-rooms",        "label": { "tr": "Kids' Rooms",       "en": "Kids' Rooms" } },
+    { "id": "bespoke-furniture", "label": { "tr": "Bespoke Furniture", "en": "Bespoke Furniture" } },
+    { "id": "textiles",          "label": { "tr": "Textiles",          "en": "Textiles" } },
+    { "id": "art",               "label": { "tr": "Art",               "en": "Art" } },
+    { "id": "renovation",        "label": { "tr": "Renovation",        "en": "Renovation" } }
   ],
 
   "projects": [
-    { "image": "image-10.webp", "category": "hospitality", "title": { "tr": "[Otel Projesi 01]", "en": "[Hotel Project 01]" } },
-    { "image": "image-11.webp", "category": "hospitality", "title": { "tr": "[Otel Projesi 02]", "en": "[Hotel Project 02]" } },
-    { "image": "image-8.webp",  "category": "hospitality", "title": { "tr": "[Otel Projesi 03]", "en": "[Hotel Project 03]" } },
+    { "image": "villa-01.webp", "category": "villa", "title": { "tr": "[Villa Projesi 01]", "en": "[Villa Project 01]" } },
+    { "image": "villa-02.webp", "category": "villa", "title": { "tr": "[Villa Projesi 02]", "en": "[Villa Project 02]" } },
+    { "image": "villa-03.webp", "category": "villa", "title": { "tr": "[Villa Projesi 03]", "en": "[Villa Project 03]" } },
 
-    { "image": "image-9.webp",  "category": "residential", "title": { "tr": "[Konut Projesi 01]", "en": "[Residential Project 01]" } },
-    { "image": "image-7.webp",  "category": "residential", "title": { "tr": "[Konut Projesi 02]", "en": "[Residential Project 02]" } },
-    { "image": "image-1.webp",  "category": "residential", "title": { "tr": "[Konut Projesi 03]", "en": "[Residential Project 03]" } },
+    { "image": "residential-01.webp", "category": "residential", "title": { "tr": "[Konut Projesi 01]", "en": "[Residential Project 01]" } },
+    { "image": "residential-02.webp", "category": "residential", "title": { "tr": "[Konut Projesi 02]", "en": "[Residential Project 02]" } },
+    { "image": "residential-03.webp", "category": "residential", "title": { "tr": "[Konut Projesi 03]", "en": "[Residential Project 03]" } },
 
-    { "image": "14.webp",       "category": "villa",       "title": { "tr": "[Villa Projesi 01]", "en": "[Villa Project 01]" } },
-    { "image": "image-5.webp",  "category": "villa",       "title": { "tr": "[Villa Projesi 02]", "en": "[Villa Project 02]" } },
+    { "image": "hospitality-01.webp", "category": "hospitality", "title": { "tr": "[Otel Projesi 01]", "en": "[Hotel Project 01]" } },
+    { "image": "hospitality-02.webp", "category": "hospitality", "title": { "tr": "[Otel Projesi 02]", "en": "[Hotel Project 02]" } },
+    { "image": "hospitality-03.webp", "category": "hospitality", "title": { "tr": "[Otel Projesi 03]", "en": "[Hotel Project 03]" } },
 
-    { "image": "13.webp",       "category": "renovation",  "title": { "tr": "[Yenileme Projesi 01]", "en": "[Renovation Project 01]" } },
-    { "image": "image-6.webp",  "category": "renovation",  "title": { "tr": "[Yenileme Projesi 02]", "en": "[Renovation Project 02]" } },
+    { "image": "yacht-marine-01.webp", "category": "yacht-marine", "title": { "tr": "[Yat Projesi 01]", "en": "[Yacht Project 01]" } },
+    { "image": "yacht-marine-02.webp", "category": "yacht-marine", "title": { "tr": "[Yat Projesi 02]", "en": "[Yacht Project 02]" } },
+    { "image": "yacht-marine-03.webp", "category": "yacht-marine", "title": { "tr": "[Yat Projesi 03]", "en": "[Yacht Project 03]" } },
 
-    { "image": "image-2.webp",  "category": "commercial",  "title": { "tr": "[Ticari Mekan 01]", "en": "[Commercial Space 01]" } },
-    { "image": "image-12.webp", "category": "commercial",  "title": { "tr": "[Ticari Mekan 02]", "en": "[Commercial Space 02]" } },
-    { "image": "image-15.webp", "category": "commercial",  "title": { "tr": "[Ticari Mekan 03]", "en": "[Commercial Space 03]" } },
-    { "image": "image-4.webp",  "category": "commercial",  "title": { "tr": "[Ticari Mekan 04]", "en": "[Commercial Space 04]" } },
-    { "image": "image-3.webp",  "category": "commercial",  "title": { "tr": "[Ticari Mekan 05]", "en": "[Commercial Space 05]" } }
+    { "image": "commercial-01.webp", "category": "commercial", "title": { "tr": "[Ticari Mekan 01]", "en": "[Commercial Space 01]" } },
+    { "image": "commercial-02.webp", "category": "commercial", "title": { "tr": "[Ticari Mekan 02]", "en": "[Commercial Space 02]" } },
+    { "image": "commercial-03.webp", "category": "commercial", "title": { "tr": "[Ticari Mekan 03]", "en": "[Commercial Space 03]" } },
+
+    { "image": "kids-rooms-01.webp", "category": "kids-rooms", "title": { "tr": "[Çocuk Odası 01]", "en": "[Kids' Room 01]" } },
+    { "image": "kids-rooms-02.webp", "category": "kids-rooms", "title": { "tr": "[Çocuk Odası 02]", "en": "[Kids' Room 02]" } },
+    { "image": "kids-rooms-03.webp", "category": "kids-rooms", "title": { "tr": "[Çocuk Odası 03]", "en": "[Kids' Room 03]" } },
+
+    { "image": "bespoke-furniture-01.webp", "category": "bespoke-furniture", "title": { "tr": "[Özel Üretim 01]", "en": "[Bespoke Piece 01]" } },
+    { "image": "bespoke-furniture-02.webp", "category": "bespoke-furniture", "title": { "tr": "[Özel Üretim 02]", "en": "[Bespoke Piece 02]" } },
+    { "image": "bespoke-furniture-03.webp", "category": "bespoke-furniture", "title": { "tr": "[Özel Üretim 03]", "en": "[Bespoke Piece 03]" } },
+
+    { "image": "textiles-01.webp", "category": "textiles", "title": { "tr": "[Tekstil 01]", "en": "[Textile 01]" } },
+    { "image": "textiles-02.webp", "category": "textiles", "title": { "tr": "[Tekstil 02]", "en": "[Textile 02]" } },
+    { "image": "textiles-03.webp", "category": "textiles", "title": { "tr": "[Tekstil 03]", "en": "[Textile 03]" } },
+
+    { "image": "art-01.webp", "category": "art", "title": { "tr": "[Sanat Eseri 01]", "en": "[Artwork 01]" } },
+    { "image": "art-02.webp", "category": "art", "title": { "tr": "[Sanat Eseri 02]", "en": "[Artwork 02]" } },
+    { "image": "art-03.webp", "category": "art", "title": { "tr": "[Sanat Eseri 03]", "en": "[Artwork 03]" } },
+
+    { "image": "renovation-01.webp", "category": "renovation", "title": { "tr": "[Yenileme Projesi 01]", "en": "[Renovation Project 01]" } },
+    { "image": "renovation-02.webp", "category": "renovation", "title": { "tr": "[Yenileme Projesi 02]", "en": "[Renovation Project 02]" } },
+    { "image": "renovation-03.webp", "category": "renovation", "title": { "tr": "[Yenileme Projesi 03]", "en": "[Renovation Project 03]" } }
   ]
 }
