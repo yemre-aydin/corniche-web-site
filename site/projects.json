@@ -11,6 +11,13 @@
       }
     },
     {
+      "id": "renovation",
+      "label": {
+        "tr": "Renovation",
+        "en": "Renovation"
+      }
+    },
+    {
       "id": "residential",
       "label": {
         "tr": "Residential",
@@ -64,13 +71,6 @@
       "label": {
         "tr": "Art",
         "en": "Art"
-      }
-    },
-    {
-      "id": "renovation",
-      "label": {
-        "tr": "Renovation",
-        "en": "Renovation"
       }
     }
   ],
@@ -273,6 +273,206 @@
         "villa-07.webp",
         "villa-08.webp",
         "villa-09.webp"
+      ]
+    },
+    {
+      "slug": "renovation-01",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 01]",
+        "en": "[Renovation Project 01]"
+      },
+      "images": [
+        "renovation-01.webp",
+        "renovation-02.webp",
+        "renovation-03.webp",
+        "renovation-04.webp",
+        "renovation-05.webp",
+        "renovation-06.webp",
+        "renovation-07.webp",
+        "renovation-08.webp",
+        "renovation-09.webp",
+        "renovation-10.webp"
+      ]
+    },
+    {
+      "slug": "renovation-02",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 02]",
+        "en": "[Renovation Project 02]"
+      },
+      "images": [
+        "renovation-02.webp",
+        "renovation-01.webp",
+        "renovation-03.webp",
+        "renovation-04.webp",
+        "renovation-05.webp",
+        "renovation-06.webp",
+        "renovation-07.webp",
+        "renovation-08.webp",
+        "renovation-09.webp",
+        "renovation-10.webp"
+      ]
+    },
+    {
+      "slug": "renovation-03",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 03]",
+        "en": "[Renovation Project 03]"
+      },
+      "images": [
+        "renovation-03.webp",
+        "renovation-01.webp",
+        "renovation-02.webp",
+        "renovation-04.webp",
+        "renovation-05.webp",
+        "renovation-06.webp",
+        "renovation-07.webp",
+        "renovation-08.webp",
+        "renovation-09.webp",
+        "renovation-10.webp"
+      ]
+    },
+    {
+      "slug": "renovation-04",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 04]",
+        "en": "[Renovation Project 04]"
+      },
+      "images": [
+        "renovation-04.webp",
+        "renovation-01.webp",
+        "renovation-02.webp",
+        "renovation-03.webp",
+        "renovation-05.webp",
+        "renovation-06.webp",
+        "renovation-07.webp",
+        "renovation-08.webp",
+        "renovation-09.webp",
+        "renovation-10.webp"
+      ]
+    },
+    {
+      "slug": "renovation-05",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 05]",
+        "en": "[Renovation Project 05]"
+      },
+      "images": [
+        "renovation-05.webp",
+        "renovation-01.webp",
+        "renovation-02.webp",
+        "renovation-03.webp",
+        "renovation-04.webp",
+        "renovation-06.webp",
+        "renovation-07.webp",
+        "renovation-08.webp",
+        "renovation-09.webp",
+        "renovation-10.webp"
+      ]
+    },
+    {
+      "slug": "renovation-06",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 06]",
+        "en": "[Renovation Project 06]"
+      },
+      "images": [
+        "renovation-06.webp",
+        "renovation-01.webp",
+        "renovation-02.webp",
+        "renovation-03.webp",
+        "renovation-04.webp",
+        "renovation-05.webp",
+        "renovation-07.webp",
+        "renovation-08.webp",
+        "renovation-09.webp",
+        "renovation-10.webp"
+      ]
+    },
+    {
+      "slug": "renovation-07",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 07]",
+        "en": "[Renovation Project 07]"
+      },
+      "images": [
+        "renovation-07.webp",
+        "renovation-01.webp",
+        "renovation-02.webp",
+        "renovation-03.webp",
+        "renovation-04.webp",
+        "renovation-05.webp",
+        "renovation-06.webp",
+        "renovation-08.webp",
+        "renovation-09.webp",
+        "renovation-10.webp"
+      ]
+    },
+    {
+      "slug": "renovation-08",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 08]",
+        "en": "[Renovation Project 08]"
+      },
+      "images": [
+        "renovation-08.webp",
+        "renovation-01.webp",
+        "renovation-02.webp",
+        "renovation-03.webp",
+        "renovation-04.webp",
+        "renovation-05.webp",
+        "renovation-06.webp",
+        "renovation-07.webp",
+        "renovation-09.webp",
+        "renovation-10.webp"
+      ]
+    },
+    {
+      "slug": "renovation-09",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 09]",
+        "en": "[Renovation Project 09]"
+      },
+      "images": [
+        "renovation-09.webp",
+        "renovation-01.webp",
+        "renovation-02.webp",
+        "renovation-03.webp",
+        "renovation-04.webp",
+        "renovation-05.webp",
+        "renovation-06.webp",
+        "renovation-07.webp",
+        "renovation-08.webp",
+        "renovation-10.webp"
+      ]
+    },
+    {
+      "slug": "renovation-10",
+      "category": "renovation",
+      "title": {
+        "tr": "[Yenileme Projesi 10]",
+        "en": "[Renovation Project 10]"
+      },
+      "images": [
+        "renovation-10.webp",
+        "renovation-01.webp",
+        "renovation-02.webp",
+        "renovation-03.webp",
+        "renovation-04.webp",
+        "renovation-05.webp",
+        "renovation-06.webp",
+        "renovation-07.webp",
+        "renovation-08.webp",
+        "renovation-09.webp"
       ]
     },
     {
@@ -1873,206 +2073,6 @@
         "art-07.webp",
         "art-08.webp",
         "art-09.webp"
-      ]
-    },
-    {
-      "slug": "renovation-01",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 01]",
-        "en": "[Renovation Project 01]"
-      },
-      "images": [
-        "renovation-01.webp",
-        "renovation-02.webp",
-        "renovation-03.webp",
-        "renovation-04.webp",
-        "renovation-05.webp",
-        "renovation-06.webp",
-        "renovation-07.webp",
-        "renovation-08.webp",
-        "renovation-09.webp",
-        "renovation-10.webp"
-      ]
-    },
-    {
-      "slug": "renovation-02",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 02]",
-        "en": "[Renovation Project 02]"
-      },
-      "images": [
-        "renovation-02.webp",
-        "renovation-01.webp",
-        "renovation-03.webp",
-        "renovation-04.webp",
-        "renovation-05.webp",
-        "renovation-06.webp",
-        "renovation-07.webp",
-        "renovation-08.webp",
-        "renovation-09.webp",
-        "renovation-10.webp"
-      ]
-    },
-    {
-      "slug": "renovation-03",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 03]",
-        "en": "[Renovation Project 03]"
-      },
-      "images": [
-        "renovation-03.webp",
-        "renovation-01.webp",
-        "renovation-02.webp",
-        "renovation-04.webp",
-        "renovation-05.webp",
-        "renovation-06.webp",
-        "renovation-07.webp",
-        "renovation-08.webp",
-        "renovation-09.webp",
-        "renovation-10.webp"
-      ]
-    },
-    {
-      "slug": "renovation-04",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 04]",
-        "en": "[Renovation Project 04]"
-      },
-      "images": [
-        "renovation-04.webp",
-        "renovation-01.webp",
-        "renovation-02.webp",
-        "renovation-03.webp",
-        "renovation-05.webp",
-        "renovation-06.webp",
-        "renovation-07.webp",
-        "renovation-08.webp",
-        "renovation-09.webp",
-        "renovation-10.webp"
-      ]
-    },
-    {
-      "slug": "renovation-05",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 05]",
-        "en": "[Renovation Project 05]"
-      },
-      "images": [
-        "renovation-05.webp",
-        "renovation-01.webp",
-        "renovation-02.webp",
-        "renovation-03.webp",
-        "renovation-04.webp",
-        "renovation-06.webp",
-        "renovation-07.webp",
-        "renovation-08.webp",
-        "renovation-09.webp",
-        "renovation-10.webp"
-      ]
-    },
-    {
-      "slug": "renovation-06",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 06]",
-        "en": "[Renovation Project 06]"
-      },
-      "images": [
-        "renovation-06.webp",
-        "renovation-01.webp",
-        "renovation-02.webp",
-        "renovation-03.webp",
-        "renovation-04.webp",
-        "renovation-05.webp",
-        "renovation-07.webp",
-        "renovation-08.webp",
-        "renovation-09.webp",
-        "renovation-10.webp"
-      ]
-    },
-    {
-      "slug": "renovation-07",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 07]",
-        "en": "[Renovation Project 07]"
-      },
-      "images": [
-        "renovation-07.webp",
-        "renovation-01.webp",
-        "renovation-02.webp",
-        "renovation-03.webp",
-        "renovation-04.webp",
-        "renovation-05.webp",
-        "renovation-06.webp",
-        "renovation-08.webp",
-        "renovation-09.webp",
-        "renovation-10.webp"
-      ]
-    },
-    {
-      "slug": "renovation-08",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 08]",
-        "en": "[Renovation Project 08]"
-      },
-      "images": [
-        "renovation-08.webp",
-        "renovation-01.webp",
-        "renovation-02.webp",
-        "renovation-03.webp",
-        "renovation-04.webp",
-        "renovation-05.webp",
-        "renovation-06.webp",
-        "renovation-07.webp",
-        "renovation-09.webp",
-        "renovation-10.webp"
-      ]
-    },
-    {
-      "slug": "renovation-09",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 09]",
-        "en": "[Renovation Project 09]"
-      },
-      "images": [
-        "renovation-09.webp",
-        "renovation-01.webp",
-        "renovation-02.webp",
-        "renovation-03.webp",
-        "renovation-04.webp",
-        "renovation-05.webp",
-        "renovation-06.webp",
-        "renovation-07.webp",
-        "renovation-08.webp",
-        "renovation-10.webp"
-      ]
-    },
-    {
-      "slug": "renovation-10",
-      "category": "renovation",
-      "title": {
-        "tr": "[Yenileme Projesi 10]",
-        "en": "[Renovation Project 10]"
-      },
-      "images": [
-        "renovation-10.webp",
-        "renovation-01.webp",
-        "renovation-02.webp",
-        "renovation-03.webp",
-        "renovation-04.webp",
-        "renovation-05.webp",
-        "renovation-06.webp",
-        "renovation-07.webp",
-        "renovation-08.webp",
-        "renovation-09.webp"
       ]
     }
   ]
