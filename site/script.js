@@ -89,8 +89,12 @@ let CATEGORIES = DEFAULT_CONTENT.categories;
 let PROJECTS = DEFAULT_CONTENT.projects;
 let activeCategory = null;
 
-const thumbOf = (p) => THUMB_DIR + p.image;
-const fullOf = (p) => IMAGE_DIR + p.image;
+// The first image is the cover the ring and the grid show; the whole list is
+// the detail page's gallery.
+const coverOf = (p) => (p.images && p.images.length ? p.images[0] : p.image);
+const thumbOf = (p) => THUMB_DIR + coverOf(p);
+const fullOf = (p) => IMAGE_DIR + coverOf(p);
+const pageOf = (p) => (p.slug ? `proje/${p.slug}.html` : "");
 const t = (key) => (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.tr[key] || key;
 const titleOf = (p) => (p.title && (p.title[LANG] || p.title.tr || p.title.en)) || "";
 const projectsIn = (id) => (id ? PROJECTS.filter((p) => p.category === id) : PROJECTS.slice());
@@ -111,7 +115,7 @@ async function loadContent() {
     console.warn(`Could not read ${CONTENT_URL}, falling back to built-in content:`, err.message);
   }
   const cats = (data.categories || []).filter((c) => c && c.id && c.label);
-  const projs = (data.projects || []).filter((p) => p && p.image && p.title);
+  const projs = (data.projects || []).filter((p) => p && p.title && ((p.images && p.images.length) || p.image));
   CATEGORIES = cats.length ? cats : DEFAULT_CONTENT.categories;
   PROJECTS = projs.length ? projs : DEFAULT_CONTENT.projects;
   // The ring opens on the first category listed, which is Villa.
@@ -135,6 +139,7 @@ const labelsWrap = document.getElementById("labels");
 const mpImg = document.querySelector("#mpImg img");
 const mpCat = document.getElementById("mpCat");
 const mpTitle = document.getElementById("mpTitle");
+const mpView = document.getElementById("mpView");
 const mobilePreview = document.getElementById("mobilePreview");
 const ringHitbox = document.getElementById("ringHitbox");
 const catRow = document.getElementById("catRow");
@@ -356,6 +361,9 @@ function updateMobileSelection() {
 }
 function updateMobilePreview(card) {
   mpCat.textContent = categoryLabel(card.project.category); mpTitle.textContent = titleOf(card.project); mpImg.src = card.full;
+  // The existing "view project" link is the way into a project on a phone: the
+  // ring itself sits under the drag layer, so a tap there would fight the drag.
+  if (mpView) mpView.href = pageOf(card.project) || "#";
   gsap.fromTo(mpImg, { opacity: 0.3 }, { opacity: 1, duration: MOBILE_TRANSITION, overwrite: true });
 }
 
@@ -450,6 +458,9 @@ function buildGrid() {
     for (const project of mine) {
       const figure = document.createElement("figure");
       figure.className = "grid-item";
+      const link = document.createElement("a");
+      link.className = "grid-link";
+      link.href = pageOf(project);
       const well = document.createElement("div");
       well.className = "well";
       const img = document.createElement("img");
@@ -470,7 +481,8 @@ function buildGrid() {
       label.textContent = categoryLabel(cat.id);
       caption.appendChild(label);
 
-      figure.append(well, caption);
+      link.append(well, caption);
+      figure.appendChild(link);
       items.appendChild(figure);
     }
 
@@ -711,6 +723,12 @@ async function init() {
     buildLabels(); initParallax(); initScroll(); initCursor();
     scene.addEventListener("pointermove", onPointerMove);
     scene.addEventListener("pointerleave", () => setActive(null));
+    scene.addEventListener("click", (e) => {
+      const under = document.elementFromPoint(e.clientX, e.clientY);
+      const hit = under && under.closest(".item");
+      const url = hit && hit._card ? pageOf(hit._card.project) : "";
+      if (url) window.location.href = url;
+    });
   }
   requestAnimationFrame(onResize);
   setTimeout(onResize, 300);

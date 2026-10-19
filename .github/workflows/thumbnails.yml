@@ -1,8 +1,9 @@
-name: Ring thumbnails
+name: Thumbnails and project pages
 
-# Whenever a photo is added to, or replaced in, site/public/, this
-# generates the small copy the ring uses and commits it back. Nobody has to run
-# anything by hand: upload the photo, the small copy appears a moment later.
+# Whenever a photo or the content list changes, this regenerates the small
+# copies the ring uses and the per-project detail pages, then commits them back.
+# Nobody has to run anything by hand: edit projects.json or upload a photo, and
+# the rest follows a moment later.
 
 on:
   push:
@@ -14,17 +15,18 @@ on:
       - 'site/public/*.png'
       - 'site/projects.json'
       - 'tools/make-thumbs.mjs'
+      - 'tools/make-pages.mjs'
   workflow_dispatch:
 
 permissions:
   contents: write
 
 concurrency:
-  group: thumbnails
+  group: generated-content
   cancel-in-progress: false
 
 jobs:
-  thumbnails:
+  generate:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -41,30 +43,48 @@ jobs:
       - name: Generate the small ring copies
         run: node tools/make-thumbs.mjs
 
+      - name: Generate the project detail pages
+        run: node tools/make-pages.mjs
+
       - name: Check the content list
         run: |
           cd site
           node -e '
             const fs = require("fs");
-            const listed = JSON.parse(fs.readFileSync("projects.json", "utf8")).projects || [];
+            const data = JSON.parse(fs.readFileSync("projects.json", "utf8"));
+            const listed = data.projects || [];
             const onDisk = fs.readdirSync("public").filter((f) => /\.(webp|jpe?g|png)$/i.test(f));
-            const names = new Set(listed.map((p) => p.image));
-            const missing = listed.filter((p) => !onDisk.includes(p.image));
-            const unused = onDisk.filter((f) => !names.has(f));
-            if (missing.length) console.log("::warning::Listed in projects.json but not in public/: " + missing.map((p) => `${p.image} (${p.title})`).join(", "));
-            if (unused.length) console.log("::warning::In public/ but not listed in projects.json, so not shown: " + unused.join(", "));
-            console.log(`${listed.length} projects listed, ${onDisk.length} photos on disk.`);
+            const used = new Set();
+            const missing = [];
+            const noSlug = [];
+            const slugs = new Set();
+            const duplicate = [];
+            for (const p of listed) {
+              if (!p.slug) noSlug.push(p.title && p.title.tr);
+              else if (slugs.has(p.slug)) duplicate.push(p.slug);
+              else slugs.add(p.slug);
+              for (const img of p.images || []) {
+                used.add(img);
+                if (!onDisk.includes(img)) missing.push(`${img} (${p.slug})`);
+              }
+            }
+            const unused = onDisk.filter((f) => !used.has(f));
+            if (missing.length) console.log("::warning::Listed in projects.json but not in public/: " + missing.join(", "));
+            if (unused.length) console.log("::warning::In public/ but listed by no project, so never shown: " + unused.join(", "));
+            if (noSlug.length) console.log("::warning::Projects with no slug, so no detail page: " + noSlug.join(", "));
+            if (duplicate.length) console.log("::warning::Duplicate slugs, so pages overwrite each other: " + duplicate.join(", "));
+            console.log(`${listed.length} projects listed, ${used.size} photos used, ${onDisk.length} on disk.`);
           '
 
-      - name: Commit the small copies
+      - name: Commit what was generated
         run: |
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add site/public/thumb
+          git add site/public/thumb site/proje
           if git diff --cached --quiet; then
             echo "Nothing to commit."
           else
-            git commit -m "Regenerate ring thumbnails"
+            git commit -m "Regenerate thumbnails and project pages"
             git push
           fi

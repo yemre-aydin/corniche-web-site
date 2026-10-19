@@ -1,0 +1,82 @@
+/* Project detail pages. The palette inverts here, as agreed: dark ground, cream
+   text, white headings. Nothing outside the brand colours. */
+:root{
+  --bg:#48382F;          /* ground */
+  --ink:#E9DFD0;         /* body text */
+  --head:#FFFFFF;        /* headings */
+  --accent:#A47C52;      /* bronze: rules and marks */
+  --muted:rgba(233,223,208,0.62);
+  --line:rgba(233,223,208,0.22);
+  --frame:#5A4639;       /* image wells before a photo loads */
+  --font:"Helvetica Neue","Inter",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
+  color-scheme:dark;
+}
+*{ margin:0; padding:0; box-sizing:border-box; }
+html{ height:100%; }
+body{
+  min-height:100%; background:var(--bg); color:var(--ink); font-family:var(--font);
+  font-size:16px; line-height:1.6; -webkit-font-smoothing:antialiased;
+}
+a{ color:inherit; text-decoration:none; }
+img{ max-width:100%; }
+
+.gutter{
+  padding-left:max(1.6em, env(safe-area-inset-left, 0px));
+  padding-right:max(1.6em, env(safe-area-inset-right, 0px));
+}
+
+/* Top bar: the way back, and the language. The way back is deliberately a
+   labelled link rather than an icon, so it reads without being learned. */
+.dp-bar{ position:sticky; top:env(safe-area-inset-top, 0px); z-index:20;
+  display:flex; align-items:center; justify-content:space-between; gap:1.5em;
+  padding-block:1.15em; background:var(--bg); border-bottom:1px solid var(--line); }
+.dp-back{ display:inline-flex; align-items:center; gap:0.55em;
+  font-size:14px; font-weight:500; letter-spacing:0.02em;
+  border-bottom:1px solid var(--accent); padding-bottom:3px; transition:opacity .3s ease; }
+.dp-back:hover{ opacity:0.7; }
+.dp-back .arrow{ font-style:normal; }
+
+.lang{ display:flex; align-items:center; gap:0.5em; font-weight:500; }
+.lang .sep{ opacity:0.4; }
+.lang-btn{ background:none; border:none; padding:0; cursor:pointer; color:var(--ink);
+  font-family:var(--font); font-size:13px; font-weight:500; letter-spacing:0.02em;
+  opacity:0.45; transition:opacity .3s ease; }
+.lang-btn.is-active{ opacity:1; color:var(--head); }
+
+.dp{ max-width:1200px; margin:0 auto; padding-block:3.2em 5em; }
+.dp-cat{ font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); }
+.dp-title{ margin-top:0.5em; font-size:clamp(28px,4.2vw,46px); font-weight:500;
+  line-height:1.08; letter-spacing:-0.015em; color:var(--head); text-wrap:balance; }
+.dp-note{ margin-top:1.4em; max-width:38rem; color:var(--muted); font-size:15px; }
+
+.dp-gallery{ margin-top:3em; display:grid; gap:1.4em;
+  grid-template-columns:repeat(auto-fill, minmax(320px, 1fr)); }
+/* The opening frame runs the full width; the rest sit two or three up. */
+.dp-gallery figure:first-child{ grid-column:1 / -1; }
+.dp-gallery figure{ margin:0; min-width:0; }
+.dp-gallery .well{ aspect-ratio:3/2; max-width:100%; overflow:hidden; background:var(--frame); }
+.dp-gallery figure:first-child .well{ aspect-ratio:16/9; }
+.dp-gallery img{ width:100%; height:100%; object-fit:cover; display:block; }
+
+.dp-nav{ margin-top:4em; padding-top:1.6em; border-top:1px solid var(--line);
+  display:flex; align-items:center; justify-content:space-between; gap:1.5em; flex-wrap:wrap; }
+.dp-nav a{ font-size:14px; font-weight:500; border-bottom:1px solid var(--accent);
+  padding-bottom:3px; transition:opacity .3s ease; }
+.dp-nav a:hover{ opacity:0.7; }
+.dp-nav a[hidden]{ display:none; }
+
+.dp-draft{ margin-top:3em; border:1px solid var(--accent); padding:1em 1.1em;
+  font-size:14px; line-height:1.5; color:var(--muted); }
+.dp-draft strong{ display:block; margin-bottom:0.35em; font-size:12px;
+  letter-spacing:0.05em; text-transform:uppercase; color:var(--head); }
+
+@media (max-width:768px){
+  .gutter{ padding-left:max(1em, env(safe-area-inset-left, 0px));
+           padding-right:max(1em, env(safe-area-inset-right, 0px)); }
+  .dp{ padding-block:2.2em 3.5em; }
+  .dp-gallery{ gap:0.9em; grid-template-columns:1fr; }
+}
+
+@media (prefers-reduced-motion: reduce){
+  *{ transition-duration:.01ms !important; }
+}

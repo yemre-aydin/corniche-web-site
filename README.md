@@ -24,6 +24,8 @@ Plain static site — no build step, no framework.
 | `site/script.js` | The ring engine: geometry, hover/selection, filtering, language, loader, intro |
 | `site/public/` | Full-size photos, used by the two previews |
 | `site/public/thumb/` | 240×180 copies, used by the 136 ring cards. Generated automatically — see below. |
+| `site/proje/` | One generated detail page per project. Do not edit by hand — `tools/make-pages.mjs` rewrites them. |
+| `site/detail.css`, `site/detail.js` | Styling and language switching for the detail pages |
 | `site/kvkk.html`, `site/cerez-politikasi.html` | Legal pages. **Placeholders, not in force** — see below. |
 | `site/legal.css` | Styling for those two pages only |
 
@@ -53,14 +55,20 @@ and adding one line; no other file changes.
 
 ```json
 {
-  "image": "corniche-residence.webp",
+  "slug": "corniche-residence",
   "category": "residential",
-  "title": { "tr": "Corniche Residence", "en": "Corniche Residence" }
+  "title": { "tr": "Corniche Residence", "en": "Corniche Residence" },
+  "images": ["corniche-residence-01.webp", "corniche-residence-02.webp"]
 }
 ```
 
-To **replace** a photo, upload the new file under the same name, or change the `image` value to the new
-filename. To **remove** a project, delete its entry; the photo itself can stay or go.
+`slug` is the project's own address: its detail page is generated at `proje/<slug>.html`. The first
+image is the cover the ring and the grid show; the whole list is that page's gallery. Ten projects a
+category and ten images a gallery are the agreed working limits.
+
+To **replace** a photo, upload the new file under the same name, or change the filename in `images`. To
+**remove** a project, delete its entry; its detail page is deleted on the next run, and the photos
+themselves can stay or go.
 
 The `categories` list drives both the mobile category strip and the labels around the desktop ring, in
 the order given. The first one is what the page opens on. Counts are not stored — each label counts its
