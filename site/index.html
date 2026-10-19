@@ -22,24 +22,45 @@
     </div>
 
     <header class="site-header">
-      <div class="header-left">
-        <!-- Placeholder wordmark. The dashed rule marks where the real logo goes. -->
-        <div class="brand" id="brand">CORNICHE İSTANBUL</div>
-        <nav class="nav">
-          <a href="#" class="is-active" data-i18n="nav.projects">Projeler</a>
-          <a href="#" data-i18n="nav.about">Hakkımızda</a>
-          <a href="#" data-i18n="nav.services">Hizmetlerimiz</a>
-          <a href="#" data-i18n="nav.showroom">Showroom</a>
-          <a href="#" data-i18n="nav.contact">İletişim</a>
-        </nav>
-      </div>
-      <div class="lang" id="lang">
+      <!-- Placeholder wordmark, shown on phones only: on wider screens the
+           wordmark lives in the middle of the ring. The dashed rule marks where
+           the real logo goes. -->
+      <div class="brand" id="brand">CORNICHE İSTANBUL</div>
+    </header>
+
+    <!-- The only furniture in the top right: the menu button and the language
+         choice, inside one hairline frame. -->
+    <div class="topright">
+      <button class="menu-toggle" type="button" id="menuToggle"
+              aria-label="Menü" aria-expanded="false" aria-controls="menuPanel">
+        <span></span><span></span><span></span>
+      </button>
+      <div class="lang">
         <button type="button" class="lang-btn is-active" data-lang="tr">TR</button>
         <span class="sep">/</span>
         <button type="button" class="lang-btn" data-lang="en">EN</button>
       </div>
-      <button class="menu-toggle" type="button" aria-label="Menü"><span></span><span></span></button>
-    </header>
+    </div>
+
+    <div class="menu-scrim" id="menuScrim"></div>
+
+    <nav class="menu-panel" id="menuPanel" aria-label="Ana menü">
+      <button class="menu-close" type="button" id="menuClose" aria-label="Menüyü kapat">
+        <span></span><span></span>
+      </button>
+      <ul class="menu-list">
+        <li><a href="#" data-i18n-pair="nav.projects"><span class="mi-a"></span><span class="mi-b"></span></a></li>
+        <li><a href="#" data-i18n-pair="nav.about"><span class="mi-a"></span><span class="mi-b"></span></a></li>
+        <li><a href="#" data-i18n-pair="nav.services"><span class="mi-a"></span><span class="mi-b"></span></a></li>
+        <li><a href="#" data-i18n-pair="nav.showroom"><span class="mi-a"></span><span class="mi-b"></span></a></li>
+        <li><a href="#" data-i18n-pair="nav.contact"><span class="mi-a"></span><span class="mi-b"></span></a></li>
+      </ul>
+      <div class="menu-lang">
+        <button type="button" class="lang-btn is-active" data-lang="tr">TR</button>
+        <span class="sep">/</span>
+        <button type="button" class="lang-btn" data-lang="en">EN</button>
+      </div>
+    </nav>
 
     <button class="corner corner--left" type="button">
       <span data-i18n="ui.filter">Projeleri filtrele</span> <i>+</i>

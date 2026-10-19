@@ -397,7 +397,7 @@ function initCursor() {
   const setScale = (s) => gsap.to(cursor, { scale: s, duration: 0.3, ease: "power3.out", overwrite: "auto" });
   scene.addEventListener("pointerenter", () => setScale(1.25));
   scene.addEventListener("pointerleave", () => setScale(1));
-  document.querySelectorAll(".nav a, .corner").forEach((el) => {
+  document.querySelectorAll(".menu-list a, .corner, .menu-toggle, .lang-btn").forEach((el) => {
     el.addEventListener("pointerenter", () => setScale(0.6));
     el.addEventListener("pointerleave", () => setScale(1));
   });
@@ -480,7 +480,11 @@ function runIntro() {
 }
 
 function revealUI() {
-  const slideUi = [document.querySelector(".site-header"), ...document.querySelectorAll(".corner")];
+  const slideUi = [
+    document.querySelector(".site-header"),
+    document.querySelector(".topright"),
+    ...document.querySelectorAll(".corner"),
+  ];
   if (isMobile && mobilePreview) slideUi.push(mobilePreview);
   if (isMobile && catRow) slideUi.push(catRow);
   gsap.fromTo(slideUi.filter(Boolean), { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.06 });
@@ -500,6 +504,15 @@ function applyLang(next) {
   document.querySelectorAll("[data-i18n]").forEach((el) => {
     el.textContent = t(el.getAttribute("data-i18n"));
   });
+  // Menu entries carry both languages at once, the chosen one leading.
+  const other = next === "tr" ? "en" : "tr";
+  document.querySelectorAll("[data-i18n-pair]").forEach((el) => {
+    const key = el.getAttribute("data-i18n-pair");
+    const lead = el.querySelector(".mi-a");
+    const under = el.querySelector(".mi-b");
+    if (lead) lead.textContent = t(key);
+    if (under) under.textContent = (STRINGS[other] && STRINGS[other][key]) || "";
+  });
   document.querySelectorAll(".lang-btn").forEach((btn) => {
     const on = btn.dataset.lang === next;
     btn.classList.toggle("is-active", on);
@@ -511,6 +524,50 @@ function applyLang(next) {
   if (!isMobile) buildLabels();
   if (isMobile && mobileSelectedCard) updateMobilePreview(mobileSelectedCard);
   if (!isMobile && activeCard) setPreview(activeCard);
+}
+
+/* ── Menu ───────────────────────────────────────────────────────────────────
+   The entries are not on the page until the button is pressed. While the panel
+   is open the scrim swallows wheel and touch, because scrolling is what turns
+   the ring and the ring should hold still behind the menu. */
+function initMenu() {
+  const toggle = document.getElementById("menuToggle");
+  const panel = document.getElementById("menuPanel");
+  const scrim = document.getElementById("menuScrim");
+  const close = document.getElementById("menuClose");
+  if (!toggle || !panel || !scrim) return;
+
+  const isOpen = () => panel.classList.contains("is-open");
+  const setOpen = (open) => {
+    panel.classList.toggle("is-open", open);
+    scrim.classList.toggle("is-open", open);
+    toggle.setAttribute("aria-expanded", String(open));
+    if (open) (close || panel).focus();
+    else toggle.focus();
+  };
+
+  toggle.addEventListener("click", () => setOpen(!isOpen()));
+  if (close) close.addEventListener("click", () => setOpen(false));
+  scrim.addEventListener("click", () => setOpen(false));
+  scrim.addEventListener("wheel", (e) => e.preventDefault(), { passive: false });
+  scrim.addEventListener("touchmove", (e) => e.preventDefault(), { passive: false });
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && isOpen()) setOpen(false);
+  });
+
+  // Hold the tab ring inside the panel while it is open.
+  panel.addEventListener("keydown", (e) => {
+    if (e.key !== "Tab") return;
+    const stops = panel.querySelectorAll("a[href], button");
+    if (!stops.length) return;
+    const first = stops[0], last = stops[stops.length - 1];
+    if (e.shiftKey && document.activeElement === first) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  });
+
+  panel.querySelectorAll(".menu-list a").forEach((link) => {
+    link.addEventListener("click", () => setOpen(false));
+  });
 }
 
 function initLang() {
@@ -531,6 +588,7 @@ function onResize() {
 
 async function init() {
   await loadContent();
+  initMenu();
   initLang();
   initLoader();
   computeGeometry();

@@ -8,6 +8,10 @@
   --muted:#8C7A6B;       /* eyebrows, secondary text */
   --line:rgba(164,124,82,0.45);
   --frame:#DCCFBC;       /* image wells before a photo loads */
+  --panel:#48382F;       /* slide-in menu and project detail pages */
+  --panel-ink:#E9DFD0;
+  --panel-head:#FFFFFF;
+  --panel-line:rgba(233,223,208,0.22);
   --font:"Helvetica Neue","Inter",-apple-system,BlinkMacSystemFont,Arial,sans-serif;
   color-scheme:light;
 }
@@ -22,24 +26,67 @@ body{ height:350vh; }                                   /* desktop scroll height
 a{ color:inherit; text-decoration:none; }
 
 .site-header{ position:fixed; inset:0 0 auto 0; z-index:50; display:flex; align-items:center;
-  justify-content:space-between; padding:1.9em 2.4em; font-size:13px; letter-spacing:0.02em; }
-.header-left{ display:flex; align-items:center; gap:3em; }
-/* Placeholder wordmark. The dashed rule marks where the real logo will sit. */
-.brand{ font-weight:500; font-size:15px; letter-spacing:0.14em; color:var(--head);
+  padding:1.9em 2.4em; font-size:13px; letter-spacing:0.02em; }
+/* Placeholder wordmark, phones only — on wider screens the wordmark sits in the
+   middle of the ring. The dashed rule marks where the real logo will go. */
+.brand{ display:none; font-weight:500; font-size:15px; letter-spacing:0.14em; color:var(--head);
   border:1px dashed var(--line); padding:0.62em 0.95em; white-space:nowrap; }
-.nav{ display:flex; gap:1.6em; font-weight:500; white-space:nowrap; }
-.nav a{ position:relative; opacity:0.62; transition:opacity .3s ease; }
-.nav a.is-active, .nav a:hover{ opacity:1; }
-.nav a.is-active::after{ content:""; position:absolute; left:0; bottom:-6px; width:100%; height:1px; background:var(--accent); }
+
+/* The only furniture in the top right: menu button and language, one frame. */
+.topright{ position:fixed; top:1.5em; right:1.8em; z-index:60;
+  display:flex; align-items:center; gap:1.15em;
+  padding:0.7em 1.1em; border:1px solid var(--line); border-radius:7px; }
 .lang{ display:flex; align-items:center; gap:0.5em; font-weight:500; }
 .lang-btn{ background:none; border:none; padding:0; cursor:pointer; color:var(--ink);
   font-family:var(--font); font-size:13px; font-weight:500; letter-spacing:0.02em;
   opacity:0.45; transition:opacity .3s ease; }
 .lang-btn.is-active{ opacity:1; color:var(--head); }
-.menu-toggle{ display:none; flex-direction:column; justify-content:center; gap:5px; width:26px; height:18px;
+.menu-toggle{ display:flex; flex-direction:column; justify-content:center; gap:4px; width:26px; height:18px;
   padding:0; background:none; border:none; cursor:pointer; }
-.menu-toggle span{ display:block; width:100%; height:1.5px; background:var(--head); }
+.menu-toggle span{ display:block; width:100%; height:2px; background:var(--head); border-radius:1px; }
 .lang .sep{ opacity:0.4; }
+
+/* ── Slide-in menu ──────────────────────────────────────────────────────────
+   Dark panel, cream text: the same inversion agreed for project detail pages,
+   so no colour outside the palette. Both languages show at once, the chosen one
+   leading. */
+.menu-scrim{ position:fixed; inset:0; z-index:150; background:rgba(23,23,23,0.38);
+  opacity:0; pointer-events:none; transition:opacity .45s ease; }
+.menu-scrim.is-open{ opacity:1; pointer-events:auto; }
+
+.menu-panel{ position:fixed; top:0; right:0; bottom:0; width:min(390px, 86vw); z-index:200;
+  background:var(--panel); color:var(--panel-ink);
+  display:flex; flex-direction:column; justify-content:center;
+  padding:3.4em max(2.4em, env(safe-area-inset-right, 0px)) 2.4em 2.4em;
+  transform:translateX(100%); visibility:hidden;
+  transition:transform .55s cubic-bezier(.4,0,.1,1), visibility .55s; }
+.menu-panel.is-open{ transform:none; visibility:visible; }
+
+.menu-close{ position:absolute; top:1.9em; right:1.9em; width:22px; height:22px;
+  padding:0; background:none; border:none; cursor:pointer; }
+.menu-close span{ position:absolute; top:50%; left:0; width:100%; height:1.5px;
+  background:var(--panel-ink); border-radius:1px; }
+.menu-close span:first-child{ transform:rotate(45deg); }
+.menu-close span:last-child{ transform:rotate(-45deg); }
+
+.menu-list{ list-style:none; margin:0; padding:0; }
+.menu-list li + li{ border-top:1px solid var(--panel-line); }
+.menu-list a{ display:block; padding:1.15em 0; border-bottom:none; }
+.menu-list .mi-a{ display:block; font-size:19px; font-weight:500; letter-spacing:0.07em;
+  text-transform:uppercase; color:var(--panel-head); transition:opacity .3s ease; }
+.menu-list .mi-b{ display:block; margin-top:0.25em; font-size:12px; letter-spacing:0.14em;
+  text-transform:uppercase; opacity:0.55; }
+.menu-list a:hover .mi-a{ opacity:0.68; }
+
+.menu-lang{ display:flex; align-items:center; justify-content:center; gap:0.5em;
+  margin-top:2.6em; padding-top:1.6em; border-top:1px solid var(--panel-line); }
+.menu-lang .lang-btn{ color:var(--panel-ink); }
+.menu-lang .lang-btn.is-active{ color:var(--panel-head); }
+.menu-lang .sep{ opacity:0.4; }
+
+@media (prefers-reduced-motion: reduce){
+  .menu-panel, .menu-scrim{ transition-duration:.01ms; }
+}
 
 .corner{ position:fixed; bottom:2.2em; z-index:50; background:none; border:none; cursor:pointer;
   font-family:var(--font); font-size:13px; font-weight:500; letter-spacing:0.02em; color:var(--ink);
@@ -94,8 +141,10 @@ a{ color:inherit; text-decoration:none; }
   .center, .labels{ display:none; }
   .custom-cursor{ display:none !important; }
   .site-header{ padding:1.15em 1em; align-items:center; }
-  .nav, .lang{ display:none; }
-  .menu-toggle{ display:flex; }
+  /* The ring's centre block is hidden on phones, so the wordmark comes back
+     into the header here. */
+  .brand{ display:block; }
+  .topright{ top:1em; right:1em; gap:0.9em; padding:0.58em 0.85em; border-radius:6px; }
   .corner{ bottom:auto; top:5.6em; font-size:13px; }
   .corner--left{ left:1em; }
   .corner--right{ right:1em; }
