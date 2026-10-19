@@ -149,8 +149,16 @@ a{ color:inherit; text-decoration:none; }
 .center{ position:absolute; top:43%; left:50%; transform:translate(-50%,-50%); width:min(520px,42vw);
   text-align:center; pointer-events:none; z-index:5; }
 .center-eyebrow{ font-size:12px; letter-spacing:0.16em; text-transform:uppercase; color:var(--muted); margin-bottom:1.4em; }
-.center-title{ font-size:clamp(34px,4.4vw,60px); font-weight:500; line-height:1.02; letter-spacing:-0.02em; color:var(--head); }
-.center-title em{ font-style:italic; font-weight:400; }
+/* Placeholder wordmark in the hollow of the ring: CORNICHE over ISTANBUL, the
+   way the lockup reads. It stands in until the real logo arrives as artwork. */
+.center-title{ line-height:1; }
+.cm-name{ display:block; font-size:clamp(36px,4.6vw,64px); font-weight:400;
+  letter-spacing:0.09em; line-height:1; color:var(--head); }
+/* The trailing letter-space would push the word off centre, so the same amount
+   is given back as an indent. */
+.cm-city{ display:block; margin-top:0.62em; font-size:clamp(11px,1.15vw,15px);
+  font-weight:400; letter-spacing:0.54em; text-indent:0.54em;
+  line-height:1; color:var(--head); }
 .center-sub{ margin-top:1.3em; font-size:14px; color:var(--muted); }
 .center-default,.center-project{ transition:opacity .55s ease; }
 .center-project{ position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center; opacity:0; }
