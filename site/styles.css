@@ -188,6 +188,12 @@ a{ color:inherit; text-decoration:none; }
   padding-right:max(2.4em, env(safe-area-inset-right, 0px)); }
 .grid-inner{ max-width:1400px; margin:0 auto; }
 
+/* The same wordmark that sits in the hollow of the ring, smaller, heading the
+   flat view so the grid is not an unbranded list. */
+.grid-brand{ max-width:1400px; margin:0 auto 3.4em; text-align:center; }
+.grid-brand .cm-name{ font-size:clamp(26px,3.2vw,40px); }
+.grid-brand .cm-city{ font-size:clamp(10px,0.95vw,12px); margin-top:0.55em; }
+
 .grid-cat + .grid-cat{ margin-top:3.6em; }
 .grid-cat-head{ display:flex; align-items:baseline; gap:0.7em;
   padding-bottom:0.75em; margin-bottom:1.7em; border-bottom:1px solid var(--line); }
