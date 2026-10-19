@@ -1,39 +1,37 @@
 {
   "_comment": "The single content list for the archive. Edit this file to add, change or remove projects — nothing else needs touching. 'image' is a filename inside public/; its small copy in public/thumb/ is generated automatically. A category with no 'count' gets its count from the projects below.",
 
+  "_placeholder": "The titles below are placeholders from the demo build and are NOT Corniche projects. They stay only so the ring has something to show; they are replaced when the real photographs arrive. The categories are the real ones.",
+
   "projects": [
-    { "image": "image-1.webp",  "title": "Duhui Peninsula",      "category": "Store Design" },
-    { "image": "image-2.webp",  "title": "Linhe Riverside Mall", "category": "Shopping Mall" },
-    { "image": "image-3.webp",  "title": "Nanshan Showroom",     "category": "Showroom" },
-    { "image": "image-4.webp",  "title": "Arena Tangshan",       "category": "Sports" },
-    { "image": "image-5.webp",  "title": "Maison Qiantan",       "category": "Store Design" },
-    { "image": "image-6.webp",  "title": "Greenfield Academy",   "category": "Education" },
-    { "image": "image-7.webp",  "title": "Harbour Mixed Block",  "category": "Mixed Use" },
-    { "image": "image-8.webp",  "title": "Cloud Pavilion",       "category": "Cultural" },
-    { "image": "image-9.webp",  "title": "Meridian Tower",       "category": "High Rise" },
     { "image": "image-10.webp", "title": "The Quiet Hotel",      "category": "Hospitality" },
-    { "image": "image-11.webp", "title": "Lakeside Commons",     "category": "Leisure" },
-    { "image": "image-12.webp", "title": "North Loop Office",    "category": "Office" },
-    { "image": "image-15.webp", "title": "Market Court",         "category": "Outdoor Retail" },
+    { "image": "image-11.webp", "title": "Lakeside Commons",     "category": "Hospitality" },
+    { "image": "image-8.webp",  "title": "Cloud Pavilion",       "category": "Hospitality" },
+
+    { "image": "14.webp",       "title": "Pine Terrace Homes",   "category": "Villa" },
+    { "image": "image-5.webp",  "title": "Maison Qiantan",       "category": "Villa" },
+
+    { "image": "image-9.webp",  "title": "Meridian Tower",       "category": "Residential" },
+    { "image": "image-7.webp",  "title": "Harbour Mixed Block",  "category": "Residential" },
+    { "image": "image-1.webp",  "title": "Duhui Peninsula",      "category": "Residential" },
+
     { "image": "13.webp",       "title": "Old Mill Revival",     "category": "Renovation" },
-    { "image": "14.webp",       "title": "Pine Terrace Homes",   "category": "Residential" }
+    { "image": "image-6.webp",  "title": "Greenfield Academy",   "category": "Renovation" },
+
+    { "image": "image-2.webp",  "title": "Linhe Riverside Mall", "category": "Commercial Spaces" },
+    { "image": "image-12.webp", "title": "North Loop Office",    "category": "Commercial Spaces" },
+    { "image": "image-15.webp", "title": "Market Court",         "category": "Commercial Spaces" },
+    { "image": "image-4.webp",  "title": "Arena Tangshan",       "category": "Commercial Spaces" },
+
+    { "image": "image-3.webp",  "title": "Nanshan Showroom",     "category": "Showroom" }
   ],
 
   "categories": [
-    { "name": "Shopping Mall",  "count": 42 },
-    { "name": "Showroom",       "count": 12 },
-    { "name": "Sports",         "count": 15 },
-    { "name": "Store Design",   "count": 12 },
-    { "name": "Transport",      "count": 6 },
-    { "name": "Education",      "count": 9 },
-    { "name": "Mixed Use",      "count": 31 },
-    { "name": "Cultural",       "count": 13 },
-    { "name": "High Rise",      "count": 18 },
-    { "name": "Hospitality",    "count": 17 },
-    { "name": "Leisure",        "count": 26 },
-    { "name": "Office",         "count": 34 },
-    { "name": "Outdoor Retail", "count": 38 },
-    { "name": "Renovation",     "count": 19 },
-    { "name": "Residential",    "count": 24 }
+    { "name": "Hospitality" },
+    { "name": "Villa" },
+    { "name": "Residential" },
+    { "name": "Renovation" },
+    { "name": "Commercial Spaces" },
+    { "name": "Showroom" }
   ]
 }
