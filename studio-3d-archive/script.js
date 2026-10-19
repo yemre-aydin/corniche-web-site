@@ -13,37 +13,73 @@ const MOBILE_MQ = "(max-width: 768px)";
 const MOBILE_SELECTED_OUT = 8, MOBILE_SELECTED_Z = 2, MOBILE_SELECTED_SCALE = 1.005;
 const MOBILE_TRANSITION = 0.25, MOBILE_FOCUS_ANGLE = -35, MOBILE_DRAG_SPEED = 0.35;
 
-const IMAGES = [
-  "image-1","image-2","image-3","image-4","image-5","image-6",
-  "image-7","image-8","image-9","image-10","image-11","image-12",
-  "image-15","13","14",
-].map((n) => `public/${n}.webp`);
+/* ── Content ────────────────────────────────────────────────────────────────
+   Every project lives in projects.json, so content can be edited without
+   touching the engine below. Each ring card uses the small copy from
+   public/thumb/; the previews use the full-size photo from public/. The
+   defaults here are only a safety net for when projects.json cannot be read. */
+const CONTENT_URL = "projects.json";
+const IMAGE_DIR = "public/";
+const THUMB_DIR = "public/thumb/";
 
-const PROJECTS = [
-  { title:"Duhui Peninsula", category:"Store Design" },
-  { title:"Linhe Riverside Mall", category:"Shopping Mall" },
-  { title:"Nanshan Showroom", category:"Showroom" },
-  { title:"Arena Tangshan", category:"Sports" },
-  { title:"Maison Qiantan", category:"Store Design" },
-  { title:"Greenfield Academy", category:"Education" },
-  { title:"Harbour Mixed Block", category:"Mixed Use" },
-  { title:"Cloud Pavilion", category:"Cultural" },
-  { title:"Meridian Tower", category:"High Rise" },
-  { title:"The Quiet Hotel", category:"Hospitality" },
-  { title:"Lakeside Commons", category:"Leisure" },
-  { title:"North Loop Office", category:"Office" },
-  { title:"Market Court", category:"Outdoor Retail" },
-  { title:"Old Mill Revival", category:"Renovation" },
-  { title:"Pine Terrace Homes", category:"Residential" },
+const DEFAULT_PROJECTS = [
+  { image:"image-1.webp",  title:"Duhui Peninsula",      category:"Store Design" },
+  { image:"image-2.webp",  title:"Linhe Riverside Mall", category:"Shopping Mall" },
+  { image:"image-3.webp",  title:"Nanshan Showroom",     category:"Showroom" },
+  { image:"image-4.webp",  title:"Arena Tangshan",       category:"Sports" },
+  { image:"image-5.webp",  title:"Maison Qiantan",       category:"Store Design" },
+  { image:"image-6.webp",  title:"Greenfield Academy",   category:"Education" },
+  { image:"image-7.webp",  title:"Harbour Mixed Block",  category:"Mixed Use" },
+  { image:"image-8.webp",  title:"Cloud Pavilion",       category:"Cultural" },
+  { image:"image-9.webp",  title:"Meridian Tower",       category:"High Rise" },
+  { image:"image-10.webp", title:"The Quiet Hotel",      category:"Hospitality" },
+  { image:"image-11.webp", title:"Lakeside Commons",     category:"Leisure" },
+  { image:"image-12.webp", title:"North Loop Office",    category:"Office" },
+  { image:"image-15.webp", title:"Market Court",         category:"Outdoor Retail" },
+  { image:"13.webp",       title:"Old Mill Revival",     category:"Renovation" },
+  { image:"14.webp",       title:"Pine Terrace Homes",   category:"Residential" },
 ];
 
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { name:"Shopping Mall", count:42 }, { name:"Showroom", count:12 }, { name:"Sports", count:15 },
   { name:"Store Design", count:12 }, { name:"Transport", count:6 }, { name:"Education", count:9 },
   { name:"Mixed Use", count:31 }, { name:"Cultural", count:13 }, { name:"High Rise", count:18 },
   { name:"Hospitality", count:17 }, { name:"Leisure", count:26 }, { name:"Office", count:34 },
   { name:"Outdoor Retail", count:38 }, { name:"Renovation", count:19 }, { name:"Residential", count:24 },
 ];
+
+let PROJECTS = DEFAULT_PROJECTS;
+let CATEGORIES = DEFAULT_CATEGORIES;
+
+const thumbOf = (p) => THUMB_DIR + p.image;
+const fullOf = (p) => IMAGE_DIR + p.image;
+
+// A category keeps an explicit count if it has one, otherwise the count is
+// taken from the projects, so it can never drift out of date.
+function resolveCategories(cats, projects) {
+  return cats
+    .filter((c) => c && c.name)
+    .map((c) => ({
+      name: c.name,
+      count: Number.isFinite(c.count) ? c.count : projects.filter((p) => p.category === c.name).length,
+    }));
+}
+
+async function loadContent() {
+  try {
+    const res = await fetch(CONTENT_URL, { cache: "no-cache" });
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    const listed = (data.projects || []).filter((p) => p && p.image && p.title);
+    if (!listed.length) throw new Error("no usable projects listed");
+    PROJECTS = listed.map((p) => ({ image: p.image, title: p.title, category: p.category || "Project" }));
+    CATEGORIES = resolveCategories(data.categories || [], PROJECTS);
+  } catch (err) {
+    console.warn(`Could not read ${CONTENT_URL}, falling back to built-in content:`, err.message);
+    PROJECTS = DEFAULT_PROJECTS;
+    CATEGORIES = resolveCategories(DEFAULT_CATEGORIES, DEFAULT_PROJECTS);
+  }
+}
 
 const INC = 360 / ITEM_COUNT;
 let radius = 470, yOffset = 0, ringRot = 0, introOffset = 0, introPlaying = false;
@@ -98,16 +134,23 @@ function updateRing() {
 }
 
 function buildGallery() {
+  // The pool holds whole projects rather than bare filenames, so a card's photo
+  // and the title it shows on hover always belong to the same project.
   const pool = [];
-  while (pool.length < ITEM_COUNT) pool.push(...IMAGES);
+  while (pool.length < ITEM_COUNT) pool.push(...PROJECTS);
   for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
   const frag = document.createDocumentFragment();
   for (let i = 0; i < ITEM_COUNT; i++) {
+    const project = pool[i];
+    const thumb = thumbOf(project), full = fullOf(project);
     const el = document.createElement("div"); el.className = "item";
     const cardEl = document.createElement("div"); cardEl.className = "item-card";
-    const img = document.createElement("img"); img.src = pool[i]; img.alt = "";
+    const img = document.createElement("img"); img.src = thumb; img.alt = "";
+    // A photo uploaded before the thumbnail job has run has no small copy yet;
+    // fall back to the full size so the card still shows the right image.
+    img.addEventListener("error", () => { if (!img.src.endsWith(full)) img.src = full; }, { once: true });
     cardEl.appendChild(img); el.appendChild(cardEl); frag.appendChild(el);
-    const card = { el, cardEl, index: i, project: PROJECTS[i % PROJECTS.length], img: img.src, hovered: false, depth: 1 };
+    const card = { el, cardEl, index: i, project, thumb, full, hovered: false, depth: 1 };
     el._card = card; items.push(card);
   }
   gallery.appendChild(frag);
@@ -153,7 +196,7 @@ function restoreCard(card, duration) {
   gsap.to(card.cardEl, { x: 0, y: 0, z: 0, scale: 1, duration: duration || HOVER_DURATION, ease: "power2.out", overwrite: true });
 }
 function setPreview(card) {
-  previewImg.src = card.img; previewCat.textContent = card.project.category; previewTitle.textContent = card.project.title;
+  previewImg.src = card.full; previewCat.textContent = card.project.category; previewTitle.textContent = card.project.title;
   center.classList.add("show-project");
   gsap.fromTo(previewImg, { opacity: 0.35 }, { opacity: 1, duration: 0.5 });
 }
@@ -171,7 +214,7 @@ function updateMobileSelection() {
   mobileSelectedCard = card; pullOut(card, MOBILE_OPTS); updateMobilePreview(card);
 }
 function updateMobilePreview(card) {
-  mpCat.textContent = card.project.category; mpTitle.textContent = card.project.title; mpImg.src = card.img;
+  mpCat.textContent = card.project.category; mpTitle.textContent = card.project.title; mpImg.src = card.full;
   gsap.fromTo(mpImg, { opacity: 0.3 }, { opacity: 1, duration: MOBILE_TRANSITION, overwrite: true });
 }
 
@@ -252,7 +295,10 @@ function initLoader() {
   const overlay = document.getElementById("loadingScreen");
   if (!overlay) return;
   const minLoad = new Promise((res) => setTimeout(res, 1400));
-  const imageLoad = Promise.allSettled(IMAGES.map((src) => new Promise((res) => {
+  // Only the small ring copies hold up the loader. The full-size photos are
+  // warmed in the background once the ring is up, so the archive can grow
+  // without the first paint growing with it.
+  const imageLoad = Promise.allSettled(PROJECTS.map(thumbOf).map((src) => new Promise((res) => {
     const im = new Image(); im.onload = res; im.onerror = res; im.src = src;
   })));
   Promise.all([minLoad, imageLoad]).then(async () => {
@@ -263,10 +309,30 @@ function initLoader() {
     overlay.classList.add("is-hidden");
     revealUI();
     runIntro();
+    prefetchFullImages();
     gsap.timeline({ onComplete: () => overlay.remove() })
       .to(".loading-inner", { opacity: 0, y: -6, duration: 0.4, ease: "power2.in" })
       .to(overlay, { opacity: 0, duration: 0.6, ease: "power3.out" }, "-=0.1");
   });
+}
+
+// Fetch the full-size photos a few at a time after the reveal, so the first
+// hover or drag already has its preview. Skipped on metered or slow connections,
+// where the previews can load one at a time on demand instead.
+function prefetchFullImages() {
+  const conn = navigator.connection;
+  if (conn && (conn.saveData || /(^|-)2g$/.test(conn.effectiveType || ""))) return;
+  const queue = PROJECTS.map(fullOf);
+  let inFlight = 0;
+  const pump = () => {
+    while (inFlight < 3 && queue.length) {
+      const im = new Image();
+      const done = () => { inFlight--; pump(); };
+      inFlight++;
+      im.onload = done; im.onerror = done; im.src = queue.shift();
+    }
+  };
+  pump();
 }
 
 function runIntro() {
@@ -291,7 +357,8 @@ function onResize() {
   if (!isMobile) { buildLabels(); ScrollTrigger.refresh(); }
 }
 
-function init() {
+async function init() {
+  await loadContent();
   initLoader();
   computeGeometry();
   buildGallery();      // <-- runs for BOTH desktop AND mobile (BUG 2 fix)

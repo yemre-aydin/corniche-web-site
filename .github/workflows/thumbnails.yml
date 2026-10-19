@@ -1,0 +1,95 @@
+name: Ring thumbnails
+
+# Whenever a photo is added to, or replaced in, studio-3d-archive/public/, this
+# generates the small copy the ring uses and commits it back. Nobody has to run
+# anything by hand: upload the photo, the small copy appears a moment later.
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - 'studio-3d-archive/public/*.webp'
+      - 'studio-3d-archive/public/*.jpg'
+      - 'studio-3d-archive/public/*.jpeg'
+      - 'studio-3d-archive/public/*.png'
+      - 'studio-3d-archive/projects.json'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: thumbnails
+  cancel-in-progress: false
+
+jobs:
+  thumbnails:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Generate the small ring copies
+        run: |
+          set -euo pipefail
+          cd studio-3d-archive/public
+          mkdir -p thumb
+          shopt -s nullglob
+
+          IM="$(command -v magick || command -v convert)"
+          echo "Using $IM"
+
+          # A photo's small copy is regenerated when it is missing or when the
+          # photo itself has changed. The manifest records what each copy was
+          # made from, so replacing a photo under the same filename is picked up.
+          MANIFEST=thumb/.sources
+          touch "$MANIFEST"
+
+          made=0
+          for f in *.webp *.jpg *.jpeg *.png; do
+            sum="$(sha256sum "$f" | cut -d' ' -f1)"
+            prev="$(awk -v f="$f" '$2 == f { print $1; exit }' "$MANIFEST")"
+            if [ ! -f "thumb/$f" ] || [ "$sum" != "$prev" ]; then
+              echo "  $f -> thumb/$f"
+              "$IM" "$f" -auto-orient -strip \
+                -resize 240x180^ -gravity center -extent 240x180 \
+                -quality 72 "thumb/$f"
+              made=$((made + 1))
+            fi
+          done
+          echo "Generated $made small copies."
+
+          # Rebuild the manifest, and drop small copies whose photo is gone.
+          : > "$MANIFEST"
+          for f in *.webp *.jpg *.jpeg *.png; do sha256sum "$f" >> "$MANIFEST"; done
+          for t in thumb/*.webp thumb/*.jpg thumb/*.jpeg thumb/*.png; do
+            b="$(basename "$t")"
+            if [ ! -f "$b" ]; then echo "  removing orphan $t"; rm "$t"; fi
+          done
+
+      - name: Check the content list
+        run: |
+          cd studio-3d-archive
+          node -e '
+            const fs = require("fs");
+            const listed = JSON.parse(fs.readFileSync("projects.json", "utf8")).projects || [];
+            const onDisk = fs.readdirSync("public").filter((f) => /\.(webp|jpe?g|png)$/i.test(f));
+            const names = new Set(listed.map((p) => p.image));
+            const missing = listed.filter((p) => !onDisk.includes(p.image));
+            const unused = onDisk.filter((f) => !names.has(f));
+            if (missing.length) console.log("::warning::Listed in projects.json but not in public/: " + missing.map((p) => `${p.image} (${p.title})`).join(", "));
+            if (unused.length) console.log("::warning::In public/ but not listed in projects.json, so not shown: " + unused.join(", "));
+            console.log(`${listed.length} projects listed, ${onDisk.length} photos on disk.`);
+          '
+
+      - name: Commit the small copies
+        run: |
+          set -euo pipefail
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add studio-3d-archive/public/thumb
+          if git diff --cached --quiet; then
+            echo "Nothing to commit."
+          else
+            git commit -m "Regenerate ring thumbnails"
+            git push
+          fi
