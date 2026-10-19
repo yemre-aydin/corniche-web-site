@@ -56,7 +56,15 @@ number; leave `count` out and it is counted from the projects instead, so it can
 You never create the small ring copies by hand. The `Ring thumbnails` workflow regenerates them whenever a
 photo is added or replaced and commits the result, and it warns if a photo is missing from the content list
 or listed without a file. Until it has run, a new photo's card falls back to the full-size file, so the site
-is never broken in the meantime. Run it manually from the Actions tab if needed.
+is never broken in the meantime. Run it manually from the Actions tab if needed, or locally with:
+
+```bash
+npm install --no-save sharp@0.33.5
+node tools/make-thumbs.mjs
+```
+
+That script is the same one the workflow runs. It rebuilds a copy only when the photo is missing one or has
+changed, so running it twice does nothing the second time.
 
 ## How it works
 
@@ -71,7 +79,7 @@ is never broken in the meantime. Run it manually from the Actions tab if needed.
   under a top preview block. A full-width drag hitbox rotates it with inertia; the card nearest a fixed
   focus angle becomes the selected project.
 - **Load.** A typography-only loader waits for a 1400ms floor and the small ring copies only — roughly
-  8KB a photo rather than 220KB — then paints the complete ring while still hidden before revealing it and
+  6KB a photo rather than 220KB — then paints the complete ring while still hidden before revealing it and
   spinning it one full turn into place. The full-size photos are fetched three at a time afterwards, so the
   first hover has its preview ready and the archive can grow without the first paint growing with it.
   Metered and 2G connections skip that prefetch and load each preview on demand.
