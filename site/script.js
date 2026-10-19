@@ -24,7 +24,7 @@ const CATEGORY_DIM = 0.28;   // how far an unselected category recedes
 
    These numbers are a considered first pass, not measured against the drawing;
    expect one tuning round once they can be seen. */
-const SHOW_CARD_W = 268, SHOW_CARD_H = 186;
+const SHOW_CARD_W = 230, SHOW_CARD_H = 160;
 const SHOW_SEGMENTS = 8;
 const SHOW_CURVE_R = 620;     // cylinder the card is wrapped on
 const SHOW_DEPTH = 330;       // how far back the far side of the ring sits
@@ -124,6 +124,11 @@ const pageOf = (p) => (p.slug ? `proje/${p.slug}.html` : "");
 const t = (key) => (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.tr[key] || key;
 const titleOf = (p) => (p.title && (p.title[LANG] || p.title.tr || p.title.en)) || "";
 const projectsIn = (id) => (id ? PROJECTS.filter((p) => p.category === id) : PROJECTS.slice());
+
+// Category names are English terms, and the page's language is Turkish, where
+// uppercasing "i" gives "İ" — so VILLA would come out VİLLA. Uppercase them by
+// English rules explicitly rather than leaving it to the page's locale.
+const upper = (s) => String(s || "").toLocaleUpperCase("en-US");
 
 function categoryLabel(id) {
   const cat = CATEGORIES.find((c) => c.id === id);
@@ -461,12 +466,52 @@ function showEntries() {
 
 function showGeometry() {
   const vw = window.innerWidth, vh = window.innerHeight;
-  showRx = Math.min(vw * 0.38, 720);
-  showRy = Math.min(vh * 0.19, 205);
+  showRx = Math.min(vw * 0.39, 700);
+  showRy = Math.min(vh * 0.205, 210);
   if (ringLine) {
     ringLine.style.width = `${showRx * 2}px`;
     ringLine.style.height = `${showRy * 2}px`;
   }
+  buildArcTable();
+}
+
+/* Stepping round the ellipse by equal angles does not give equal gaps: on a
+   flat ellipse the points crowd together at the two ends, which is what piled
+   the cards up at the sides. So step by distance travelled instead. This walks
+   the ellipse once to measure it, and angleAtArc then answers "which angle is
+   this far round?". */
+const ARC_STEPS = 1440;
+let arcTable = null;
+let arcTotal = 0;
+let arcTop = 0;        // how far round the top of the ellipse sits
+
+function buildArcTable() {
+  arcTable = new Float64Array(ARC_STEPS + 1);
+  let prevX = showRx, prevY = 0, total = 0;
+  for (let s = 1; s <= ARC_STEPS; s++) {
+    const a = (s / ARC_STEPS) * Math.PI * 2;
+    const x = Math.cos(a) * showRx, y = Math.sin(a) * showRy;
+    total += Math.hypot(x - prevX, y - prevY);
+    arcTable[s] = total;
+    prevX = x; prevY = y;
+  }
+  arcTotal = total;
+  // Where the first card starts. Shifting the angle by a quarter turn instead
+  // would move every card to a different part of the curve and undo the even
+  // spacing, because an ellipse is not a circle.
+  arcTop = arcTable[Math.round((270 / 360) * ARC_STEPS)] / arcTotal;
+}
+
+function angleAtArc(t) {
+  if (!arcTable || !arcTotal) return t * 360;
+  const want = ((((t % 1) + 1) % 1)) * arcTotal;
+  let lo = 0, hi = ARC_STEPS;
+  while (lo < hi) {
+    const mid = (lo + hi) >> 1;
+    if (arcTable[mid] < want) lo = mid + 1;
+    else hi = mid;
+  }
+  return (lo / ARC_STEPS) * 360;
 }
 
 function buildShowcase() {
@@ -511,7 +556,7 @@ function buildShowcase() {
 
     const label = document.createElement("div");
     label.className = "show-label";
-    label.textContent = LANG === "en" ? entry.en : entry.tr;
+    label.textContent = upper(LANG === "en" ? entry.en : entry.tr);
 
     el.append(cardEl, label);
     frag.appendChild(el);
@@ -528,7 +573,7 @@ function buildShowcase() {
 function placeShowcase() {
   const n = showItems.length || 1;
   showItems.forEach((card, i) => {
-    const angle = (i / n) * 360 + ringRot + introOffset - 90;
+    const angle = angleAtArc(arcTop + i / n + (ringRot + introOffset) / 360);
     const rad = angle * DEG;
     const sin = Math.sin(rad), cos = Math.cos(rad);
     const z = sin * SHOW_DEPTH;              // top of the ellipse sits furthest back
@@ -556,7 +601,7 @@ function placeShowcase() {
 
 function refreshShowLabels() {
   for (const card of showItems) {
-    card.label.textContent = LANG === "en" ? card.entry.en : card.entry.tr;
+    card.label.textContent = upper(LANG === "en" ? card.entry.en : card.entry.tr);
   }
 }
 
@@ -629,7 +674,7 @@ function initShowcase() {
 // The centre block doubles as the preview while a card is hovered.
 function setShowPreview(card) {
   previewImg.src = card.entry.image;
-  previewCat.textContent = level === "projects" ? categoryLabel(openCategory) : "";
+  previewCat.textContent = level === "projects" ? upper(categoryLabel(openCategory)) : "";
   previewTitle.textContent = LANG === "en" ? card.entry.en : card.entry.tr;
   center.classList.add("show-project");
   gsap.fromTo(previewImg, { opacity: 0.35 }, { opacity: 1, duration: 0.45 });
@@ -718,7 +763,7 @@ function buildGrid() {
       caption.textContent = titleOf(project);
       const label = document.createElement("div");
       label.className = "cat";
-      label.textContent = categoryLabel(cat.id);
+      label.textContent = upper(categoryLabel(cat.id));
       caption.appendChild(label);
 
       link.append(well, caption);
@@ -796,16 +841,16 @@ function initLoader() {
     document.body.classList.add("page-ready");
     overlay.classList.add("is-hidden");
     revealUI();
+    // Asked for less movement: no opening spin. The ring is still what opens —
+    // the grid stays a choice, on the button.
     if (reducedMotion) {
-      // Asked for less movement: no opening spin, and the flat view on arrival.
       introOffset = 0;
       introPlaying = false;
       redrawRing();
-      setView("grid");
     } else {
       runIntro();
-      prefetchFullImages();
     }
+    prefetchFullImages();
     gsap.timeline({ onComplete: () => overlay.remove() })
       .to(".loading-inner", { opacity: 0, y: -6, duration: 0.4, ease: "power2.in" })
       .to(overlay, { opacity: 0, duration: 0.6, ease: "power3.out" }, "-=0.1");
