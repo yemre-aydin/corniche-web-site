@@ -26,12 +26,26 @@ köşeli parantezli başlıklar kalkar.
 
 ## 2. Marka
 
-- [ ] Logo dosyası (tercihen SVG; yoksa yüksek çözünürlüklü PNG)
+Logo tek parçadır: C amblemi, CORNICHE, ISTANBUL ve INTERIOR & LIFE STYLE birlikte kullanılır,
+ayrı ayrı yeniden dizilmez. Ekran görüntüsünden kırpılmış logo kullanılmayacak.
+
+Dar alanlarda alt satırlar okunmadığı için kompakt bir kilit gerekiyor. **Bu kısa hâli biz
+üretmeyeceğiz** — tam logoyu kırpmak, kaçınmak istediğimiz sorunun vektördeki karşılığı olur.
+Logoyu hazırlayan kişiden kendi dosyası olarak gelmeli.
+
+- [ ] **Tam kilit** (C + CORNICHE + ISTANBUL + INTERIOR & LIFE STYLE) — ana sayfada çemberin ortası
+- [ ] **Kompakt kilit** (C + CORNICHE) — mobil başlık, ~40 piksel yükseklik
+- [ ] **Yalnız C amblemi** — tarayıcı sekmesi simgesi, sosyal medya paylaşım görseli
+- [ ] Hepsi SVG, **yazılar şekle çevrilmiş** (yazı tipi olarak kalırsa o font kurulu olmayan
+      cihazda logo yanlış görünür)
+- [ ] Açık zemin (#E9DFD0) ve koyu zemin (#48382F menü paneli) için ayrı versiyonlar
 - [ ] Yazı tipi tercihi — şu an sistem yazı tipi kullanılıyor, geçici
 - [ ] Firma tanıtım cümlesi (masaüstünde halkanın ortasında çıkıyor) — Türkçe ve İngilizce
 
-Şu an başlıkta kesikli çerçeve içinde "CORNICHE İSTANBUL" yazıyor; çerçeve gerçek logonun yerini
-işaretliyor.
+"Interior & Life Style" ifadesi sitenin başka yerlerinde (sayfa başlığı, açıklama) kullanılırsa
+yazımı logodaki gibi olacak; vektör gelince büyük/küçük harf kullanımı teyit edilecek.
+
+Şu an başlıkta kesikli çerçeve içinde düz metin duruyor; çerçeve gerçek logonun yerini işaretliyor.
 
 ## 3. İletişim bilgileri
 
@@ -70,39 +84,39 @@ Bu yapı kurulduğunda ayrıca şunlar gerekir:
 
 Başlıktaki menü linkleri şu an çalışmıyor, mobilde hamburger bir panel açmıyor.
 
-Menü sırası: Projeler · Hakkımızda · Hizmetlerimiz · Furniture · Accessories · Showroom · İletişim
+Menü sırası: Projeler · Hakkımızda · Hizmetlerimiz · Showroom · İletişim
 
+- [x] Sağdan açılan menü paneli **yapıldı** — başlıklar artık sayfada sürekli durmuyor, sağ üstteki
+      üç çizgiye basınca açılıyor. TR/EN hem üst kutuda hem panelin altında; mobilde de dil
+      değiştirilebiliyor artık.
 - [ ] **Hakkımızda** sayfası metni (TR + EN)
 - [ ] **Hizmetlerimiz / Nasıl Çalışıyoruz** sayfası metni (TR + EN)
-- [ ] **Furniture** sayfası — ürün adları, fotoğraflar, malzeme/ölçü bilgileri
-- [ ] **Accessories** sayfası — aynı yapı
 - [ ] **Showroom** sayfası — Corniche'in kendi showroom'u; metin, fotoğraf, adres
 - [ ] **İletişim** sayfası — form istenip istenmediği kararı
-- [ ] Mobil menü paneli tasarımı (dil değiştirme de buraya girecek; şu an sadece masaüstünde var)
-      — menü yedi satıra çıktığı için bu panel artık daha gerekli
+
+Menü başlıkları şu an hiçbir yere gitmiyor; sayfalar yapılınca bağlanacak.
 
 ## 6. Karar bekleyenler
 
-- [x] **Collection** — karar verildi. "Collection" tek bir menü başlığı olmaktan çıktı:
-      **Furniture** ve **Accessories** doğrudan menüye girdi, **Art** menüye girmiyor.
-      Menü sırası artık: Projeler · Hakkımızda · Hizmetlerimiz · Furniture · Accessories ·
-      Showroom · İletişim.
-- [ ] **Art bölümü nereye?** "Aşağıda olmalı" dendi, iki türlü anlaşılabiliyor:
-      ana sayfada halkanın altında bir bölüm mü, yoksa menünün en altında ayrı bir satır mı?
-      Ana sayfada bölüm olacaksa dikkat: sayfada aşağı kaydırmak şu an halkayı döndürüyor,
-      içerik akışı değil. Halkanın altına bölüm eklemek bu davranışı değiştirmeyi gerektirir.
-- [ ] Furniture ve Accessories sayfalarının içeriği — ürün adı, fotoğraf, malzeme/ölçü gibi
-      alanlar projelerden farklı; ayrı bir içerik yapısı kurulacak
-- [ ] **Kategori etiketleri Türkçe olsun mu?** Şu an onaylanan tasarıma uygun olarak iki dilde de
-      İngilizce duruyor (Hospitality, Residential…). Site haritasındaki Türkçe karşılıklar
-      (Otel Projeleri, Konut / Daire, Yenileme, Ticari Mekânlar) istenirse her biri tek satırlık
-      düzenlemeyle geçer.
-- [ ] **Masaüstü yönü** — gelen tasarım mobil içindi. Masaüstünde yeni renkler uygulandı ama
-      kategori satırı yok, halkanın çevresindeki etiketler duruyor.
-- [ ] **"Izgara görünümü"** düğmesi şu an çalışmıyor. Yapılacaksa ayrı bir görünüm gerekiyor.
-- [ ] **Öne çıkan proje davranışı** — kategori satırı halkayı filtreliyor ve sayfa Hospitality
-      seçili açılıyor diye kuruldu. Üstteki bloğun halkadan bağımsız sabit bir vitrin olması
-      isteniyorsa değişmesi gerekir.
+- [x] **Collection** — çözüldü. Bespoke Furniture, Textiles ve Art menüye değil **çembere** girdi;
+      on kategoriden üçü oldular. Menü beş başlıkta kaldı.
+- [x] **Çember kurgusu** — B şıkkı seçildi. Açılışta kategori başına bir büyük kart, kartlar dışa
+      bakıyor. Bir kategoriye tıklanınca **aynı çember** o kategorinin fotoğraflarıyla yeniden
+      doluyor; yeni bir çember kurulmuyor.
+- [x] **Geri dönüş** — görünür bir kontrol olacak, tarayıcının geri tuşuna güvenilmeyecek.
+      Kategori açıkken sol üstte (menü kutusunun simetriğinde) `← Tüm kategoriler` beliriyor,
+      yanında hangi kategoride olunduğu yazıyor. Yedekler: Esc, ortadaki logoya tıklama, ve
+      kategoriye kendi adresi verildiği için tarayıcı geri tuşu. Mobilde konumu başparmakla
+      ulaşılabilir olacak şekilde ayrıca belirlenecek.
+- [ ] **Kategori etiketleri Türkçe olsun mu?** Şu an iki dilde de İngilizce duruyor
+      (Hospitality, Residential…). Türkçe karşılıklar (Otel Projeleri, Konut / Daire, Yenileme,
+      Ticari Mekânlar, Çocuk Odaları, Özel Üretim Mobilya, Tekstil, Sanat) istenirse her biri
+      tek satırlık düzenlemeyle geçer.
+- [ ] **"Izgara görünümü"** düğmesi şu an çalışmıyor. Animasyonu kapatan kullanıcı için bu
+      görünüm yapılacak.
+- [ ] **Az fotoğraflı kategoride ne olacak?** Villa'da 15, Art'ta 3 fotoğraf varsa, Art açılınca
+      üç kartlık çember seyrek görünür. Kategori başına fotoğraf sayısı belli olunca kart
+      büyüklüğü / yarıçap kuralı buna göre konacak.
 
 ## 7. Yayına almadan önce
 
