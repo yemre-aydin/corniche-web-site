@@ -1,6 +1,6 @@
 name: Ring thumbnails
 
-# Whenever a photo is added to, or replaced in, studio-3d-archive/public/, this
+# Whenever a photo is added to, or replaced in, site/public/, this
 # generates the small copy the ring uses and commits it back. Nobody has to run
 # anything by hand: upload the photo, the small copy appears a moment later.
 
@@ -8,11 +8,11 @@ on:
   push:
     branches: [main]
     paths:
-      - 'studio-3d-archive/public/*.webp'
-      - 'studio-3d-archive/public/*.jpg'
-      - 'studio-3d-archive/public/*.jpeg'
-      - 'studio-3d-archive/public/*.png'
-      - 'studio-3d-archive/projects.json'
+      - 'site/public/*.webp'
+      - 'site/public/*.jpg'
+      - 'site/public/*.jpeg'
+      - 'site/public/*.png'
+      - 'site/projects.json'
       - 'tools/make-thumbs.mjs'
   workflow_dispatch:
 
@@ -43,7 +43,7 @@ jobs:
 
       - name: Check the content list
         run: |
-          cd studio-3d-archive
+          cd site
           node -e '
             const fs = require("fs");
             const listed = JSON.parse(fs.readFileSync("projects.json", "utf8")).projects || [];
@@ -61,7 +61,7 @@ jobs:
           set -euo pipefail
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add studio-3d-archive/public/thumb
+          git add site/public/thumb
           if git diff --cached --quiet; then
             echo "Nothing to commit."
           else

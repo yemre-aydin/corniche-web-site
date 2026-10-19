@@ -1,0 +1,37 @@
+{
+  "_comment": "The single content list for the archive. Edit this file to add, change or remove projects — nothing else needs touching. 'image' is a filename inside public/; its small copy in public/thumb/ is generated automatically. 'category' is an id from the categories list below. Titles and category labels carry both languages.",
+
+  "_placeholder": "Every title below is a bracketed placeholder, not a Corniche project. They exist only so the ring has something to show, and they are replaced when the real photographs and project names arrive. The categories are real.",
+
+  "_categoryLabels": "Both languages are set to the English term, matching the approved mobile design. The site map's Turkish readings (Otel Projeleri, Konut / Daire, Yenileme, Ticari Mekanlar) can replace the 'tr' values whenever wanted — one edit each, nothing else changes.",
+
+  "categories": [
+    { "id": "hospitality", "label": { "tr": "Hospitality",       "en": "Hospitality" } },
+    { "id": "residential", "label": { "tr": "Residential",       "en": "Residential" } },
+    { "id": "villa",       "label": { "tr": "Villa",             "en": "Villa" } },
+    { "id": "renovation",  "label": { "tr": "Renovation",        "en": "Renovation" } },
+    { "id": "commercial",  "label": { "tr": "Commercial Spaces", "en": "Commercial Spaces" } }
+  ],
+
+  "projects": [
+    { "image": "image-10.webp", "category": "hospitality", "title": { "tr": "[Otel Projesi 01]", "en": "[Hotel Project 01]" } },
+    { "image": "image-11.webp", "category": "hospitality", "title": { "tr": "[Otel Projesi 02]", "en": "[Hotel Project 02]" } },
+    { "image": "image-8.webp",  "category": "hospitality", "title": { "tr": "[Otel Projesi 03]", "en": "[Hotel Project 03]" } },
+
+    { "image": "image-9.webp",  "category": "residential", "title": { "tr": "[Konut Projesi 01]", "en": "[Residential Project 01]" } },
+    { "image": "image-7.webp",  "category": "residential", "title": { "tr": "[Konut Projesi 02]", "en": "[Residential Project 02]" } },
+    { "image": "image-1.webp",  "category": "residential", "title": { "tr": "[Konut Projesi 03]", "en": "[Residential Project 03]" } },
+
+    { "image": "14.webp",       "category": "villa",       "title": { "tr": "[Villa Projesi 01]", "en": "[Villa Project 01]" } },
+    { "image": "image-5.webp",  "category": "villa",       "title": { "tr": "[Villa Projesi 02]", "en": "[Villa Project 02]" } },
+
+    { "image": "13.webp",       "category": "renovation",  "title": { "tr": "[Yenileme Projesi 01]", "en": "[Renovation Project 01]" } },
+    { "image": "image-6.webp",  "category": "renovation",  "title": { "tr": "[Yenileme Projesi 02]", "en": "[Renovation Project 02]" } },
+
+    { "image": "image-2.webp",  "category": "commercial",  "title": { "tr": "[Ticari Mekan 01]", "en": "[Commercial Space 01]" } },
+    { "image": "image-12.webp", "category": "commercial",  "title": { "tr": "[Ticari Mekan 02]", "en": "[Commercial Space 02]" } },
+    { "image": "image-15.webp", "category": "commercial",  "title": { "tr": "[Ticari Mekan 03]", "en": "[Commercial Space 03]" } },
+    { "image": "image-4.webp",  "category": "commercial",  "title": { "tr": "[Ticari Mekan 04]", "en": "[Commercial Space 04]" } },
+    { "image": "image-3.webp",  "category": "commercial",  "title": { "tr": "[Ticari Mekan 05]", "en": "[Commercial Space 05]" } }
+  ]
+}

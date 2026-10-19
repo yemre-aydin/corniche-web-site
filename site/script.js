@@ -13,72 +13,111 @@ const MOBILE_MQ = "(max-width: 768px)";
 const MOBILE_SELECTED_OUT = 8, MOBILE_SELECTED_Z = 2, MOBILE_SELECTED_SCALE = 1.005;
 const MOBILE_TRANSITION = 0.25, MOBILE_FOCUS_ANGLE = -35, MOBILE_DRAG_SPEED = 0.35;
 
-/* ── Content ────────────────────────────────────────────────────────────────
+/* ── Content and language ───────────────────────────────────────────────────
    Every project lives in projects.json, so content can be edited without
    touching the engine below. Each ring card uses the small copy from
-   public/thumb/; the previews use the full-size photo from public/. The
-   defaults here are only a safety net for when projects.json cannot be read. */
+   public/thumb/; the previews use the full-size photo from public/. Titles and
+   category labels carry both languages. The defaults here are only a safety net
+   for when projects.json cannot be read. */
 const CONTENT_URL = "projects.json";
 const IMAGE_DIR = "public/";
 const THUMB_DIR = "public/thumb/";
+const LANG_KEY = "corniche-lang";
 
-const DEFAULT_PROJECTS = [
-  { image:"image-1.webp",  title:"Duhui Peninsula",      category:"Store Design" },
-  { image:"image-2.webp",  title:"Linhe Riverside Mall", category:"Shopping Mall" },
-  { image:"image-3.webp",  title:"Nanshan Showroom",     category:"Showroom" },
-  { image:"image-4.webp",  title:"Arena Tangshan",       category:"Sports" },
-  { image:"image-5.webp",  title:"Maison Qiantan",       category:"Store Design" },
-  { image:"image-6.webp",  title:"Greenfield Academy",   category:"Education" },
-  { image:"image-7.webp",  title:"Harbour Mixed Block",  category:"Mixed Use" },
-  { image:"image-8.webp",  title:"Cloud Pavilion",       category:"Cultural" },
-  { image:"image-9.webp",  title:"Meridian Tower",       category:"High Rise" },
-  { image:"image-10.webp", title:"The Quiet Hotel",      category:"Hospitality" },
-  { image:"image-11.webp", title:"Lakeside Commons",     category:"Leisure" },
-  { image:"image-12.webp", title:"North Loop Office",    category:"Office" },
-  { image:"image-15.webp", title:"Market Court",         category:"Outdoor Retail" },
-  { image:"13.webp",       title:"Old Mill Revival",     category:"Renovation" },
-  { image:"14.webp",       title:"Pine Terrace Homes",   category:"Residential" },
-];
+// Interface wording. Content wording lives in projects.json.
+const STRINGS = {
+  tr: {
+    "ui.loading": "Arşiv yükleniyor",
+    "ui.filter": "Projeleri filtrele",
+    "ui.grid": "Izgara görünümü",
+    "ui.viewProject": "Projeyi incele",
+    "ui.selectedWorks": "Seçili İşler",
+    "ui.tagline": "[Firma tanıtım cümlesi]",
+    "nav.projects": "Projeler",
+    "nav.about": "Corniche",
+    "nav.services": "Hizmetlerimiz",
+    "nav.collection": "Collection",
+    "nav.showroom": "Showroom",
+    "nav.contact": "İletişim",
+  },
+  en: {
+    "ui.loading": "Loading archive",
+    "ui.filter": "Filter projects",
+    "ui.grid": "Grid view",
+    "ui.viewProject": "View project",
+    "ui.selectedWorks": "Selected Works",
+    "ui.tagline": "[Studio description]",
+    "nav.projects": "Projects",
+    "nav.about": "Corniche",
+    "nav.services": "Services",
+    "nav.collection": "Collection",
+    "nav.showroom": "Showroom",
+    "nav.contact": "Contact",
+  },
+};
 
-const DEFAULT_CATEGORIES = [
-  { name:"Shopping Mall", count:42 }, { name:"Showroom", count:12 }, { name:"Sports", count:15 },
-  { name:"Store Design", count:12 }, { name:"Transport", count:6 }, { name:"Education", count:9 },
-  { name:"Mixed Use", count:31 }, { name:"Cultural", count:13 }, { name:"High Rise", count:18 },
-  { name:"Hospitality", count:17 }, { name:"Leisure", count:26 }, { name:"Office", count:34 },
-  { name:"Outdoor Retail", count:38 }, { name:"Renovation", count:19 }, { name:"Residential", count:24 },
-];
+const DEFAULT_CONTENT = {
+  categories: [
+    { id:"hospitality", label:{ tr:"Hospitality",       en:"Hospitality" } },
+    { id:"residential", label:{ tr:"Residential",       en:"Residential" } },
+    { id:"villa",       label:{ tr:"Villa",             en:"Villa" } },
+    { id:"renovation",  label:{ tr:"Renovation",        en:"Renovation" } },
+    { id:"commercial",  label:{ tr:"Commercial Spaces", en:"Commercial Spaces" } },
+  ],
+  projects: [
+    { image:"image-10.webp", category:"hospitality", title:{ tr:"[Otel Projesi 01]", en:"[Hotel Project 01]" } },
+    { image:"image-11.webp", category:"hospitality", title:{ tr:"[Otel Projesi 02]", en:"[Hotel Project 02]" } },
+    { image:"image-8.webp",  category:"hospitality", title:{ tr:"[Otel Projesi 03]", en:"[Hotel Project 03]" } },
+    { image:"image-9.webp",  category:"residential", title:{ tr:"[Konut Projesi 01]", en:"[Residential Project 01]" } },
+    { image:"image-7.webp",  category:"residential", title:{ tr:"[Konut Projesi 02]", en:"[Residential Project 02]" } },
+    { image:"image-1.webp",  category:"residential", title:{ tr:"[Konut Projesi 03]", en:"[Residential Project 03]" } },
+    { image:"14.webp",       category:"villa",       title:{ tr:"[Villa Projesi 01]", en:"[Villa Project 01]" } },
+    { image:"image-5.webp",  category:"villa",       title:{ tr:"[Villa Projesi 02]", en:"[Villa Project 02]" } },
+    { image:"13.webp",       category:"renovation",  title:{ tr:"[Yenileme Projesi 01]", en:"[Renovation Project 01]" } },
+    { image:"image-6.webp",  category:"renovation",  title:{ tr:"[Yenileme Projesi 02]", en:"[Renovation Project 02]" } },
+    { image:"image-2.webp",  category:"commercial",  title:{ tr:"[Ticari Mekan 01]", en:"[Commercial Space 01]" } },
+    { image:"image-12.webp", category:"commercial",  title:{ tr:"[Ticari Mekan 02]", en:"[Commercial Space 02]" } },
+    { image:"image-15.webp", category:"commercial",  title:{ tr:"[Ticari Mekan 03]", en:"[Commercial Space 03]" } },
+    { image:"image-4.webp",  category:"commercial",  title:{ tr:"[Ticari Mekan 04]", en:"[Commercial Space 04]" } },
+    { image:"image-3.webp",  category:"commercial",  title:{ tr:"[Ticari Mekan 05]", en:"[Commercial Space 05]" } },
+  ],
+};
 
-let PROJECTS = DEFAULT_PROJECTS;
-let CATEGORIES = DEFAULT_CATEGORIES;
+let LANG = "tr";
+let CATEGORIES = DEFAULT_CONTENT.categories;
+let PROJECTS = DEFAULT_CONTENT.projects;
+let activeCategory = null;
+let visibleProjects = [];
 
 const thumbOf = (p) => THUMB_DIR + p.image;
 const fullOf = (p) => IMAGE_DIR + p.image;
+const t = (key) => (STRINGS[LANG] && STRINGS[LANG][key]) || STRINGS.tr[key] || key;
+const titleOf = (p) => (p.title && (p.title[LANG] || p.title.tr || p.title.en)) || "";
+const projectsIn = (id) => (id ? PROJECTS.filter((p) => p.category === id) : PROJECTS.slice());
 
-// A category keeps an explicit count if it has one, otherwise the count is
-// taken from the projects, so it can never drift out of date.
-function resolveCategories(cats, projects) {
-  return cats
-    .filter((c) => c && c.name)
-    .map((c) => ({
-      name: c.name,
-      count: Number.isFinite(c.count) ? c.count : projects.filter((p) => p.category === c.name).length,
-    }));
+function categoryLabel(id) {
+  const cat = CATEGORIES.find((c) => c.id === id);
+  if (!cat) return id || "";
+  return cat.label[LANG] || cat.label.tr || cat.label.en || id;
 }
 
 async function loadContent() {
+  let data = DEFAULT_CONTENT;
   try {
     const res = await fetch(CONTENT_URL, { cache: "no-cache" });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
-    const data = await res.json();
-    const listed = (data.projects || []).filter((p) => p && p.image && p.title);
-    if (!listed.length) throw new Error("no usable projects listed");
-    PROJECTS = listed.map((p) => ({ image: p.image, title: p.title, category: p.category || "Project" }));
-    CATEGORIES = resolveCategories(data.categories || [], PROJECTS);
+    data = await res.json();
   } catch (err) {
     console.warn(`Could not read ${CONTENT_URL}, falling back to built-in content:`, err.message);
-    PROJECTS = DEFAULT_PROJECTS;
-    CATEGORIES = resolveCategories(DEFAULT_CATEGORIES, DEFAULT_PROJECTS);
   }
+  const cats = (data.categories || []).filter((c) => c && c.id && c.label);
+  const projs = (data.projects || []).filter((p) => p && p.image && p.title);
+  CATEGORIES = cats.length ? cats : DEFAULT_CONTENT.categories;
+  PROJECTS = projs.length ? projs : DEFAULT_CONTENT.projects;
+  // The approved design opens on the first category, which is Hospitality.
+  activeCategory = CATEGORIES.length ? CATEGORIES[0].id : null;
+  visibleProjects = projectsIn(activeCategory);
+  if (!visibleProjects.length) visibleProjects = PROJECTS.slice();
 }
 
 const INC = 360 / ITEM_COUNT;
@@ -100,6 +139,7 @@ const mpCat = document.getElementById("mpCat");
 const mpTitle = document.getElementById("mpTitle");
 const mobilePreview = document.getElementById("mobilePreview");
 const ringHitbox = document.getElementById("ringHitbox");
+const catRow = document.getElementById("catRow");
 
 function computeGeometry() {
   const vw = window.innerWidth, vh = window.innerHeight;
@@ -133,27 +173,82 @@ function updateRing() {
   }
 }
 
-function buildGallery() {
-  // The pool holds whole projects rather than bare filenames, so a card's photo
-  // and the title it shows on hover always belong to the same project.
+// The pool holds whole projects rather than bare filenames, so a card's photo
+// and the title it shows always belong to the same project. It draws from the
+// selected category only.
+function makePool() {
+  const source = visibleProjects.length ? visibleProjects : PROJECTS;
   const pool = [];
-  while (pool.length < ITEM_COUNT) pool.push(...PROJECTS);
+  while (pool.length < ITEM_COUNT) pool.push(...source);
   for (let k = pool.length - 1; k > 0; k--) { const j = Math.floor(Math.random() * (k + 1)); [pool[k], pool[j]] = [pool[j], pool[k]]; }
+  return pool;
+}
+
+function dressCard(card, project) {
+  card.project = project;
+  card.thumb = thumbOf(project);
+  card.full = fullOf(project);
+  const img = card.cardEl.firstElementChild;
+  if (img && img.getAttribute("src") !== card.thumb) img.setAttribute("src", card.thumb);
+}
+
+function buildGallery() {
+  const pool = makePool();
   const frag = document.createDocumentFragment();
   for (let i = 0; i < ITEM_COUNT; i++) {
-    const project = pool[i];
-    const thumb = thumbOf(project), full = fullOf(project);
     const el = document.createElement("div"); el.className = "item";
     const cardEl = document.createElement("div"); cardEl.className = "item-card";
-    const img = document.createElement("img"); img.src = thumb; img.alt = "";
+    const img = document.createElement("img"); img.alt = "";
     // A photo uploaded before the thumbnail job has run has no small copy yet;
-    // fall back to the full size so the card still shows the right image.
-    img.addEventListener("error", () => { if (!img.src.endsWith(full)) img.src = full; }, { once: true });
+    // fall back to the full size so the card still shows the right image. If the
+    // full size fails too the handler stops, since src then already matches.
+    img.addEventListener("error", () => {
+      const card = el._card;
+      if (card && card.full && !img.src.endsWith(card.full)) img.src = card.full;
+    });
     cardEl.appendChild(img); el.appendChild(cardEl); frag.appendChild(el);
-    const card = { el, cardEl, index: i, project, thumb, full, hovered: false, depth: 1 };
+    const card = { el, cardEl, index: i, project: pool[i], thumb: "", full: "", hovered: false, depth: 1 };
     el._card = card; items.push(card);
+    dressCard(card, pool[i]);
   }
   gallery.appendChild(frag);
+}
+
+// Switching category re-dresses the existing 136 cards instead of rebuilding
+// them, so the ring keeps its rotation and nothing is laid out again.
+function refillCards() {
+  const pool = makePool();
+  items.forEach((card, i) => dressCard(card, pool[i]));
+}
+
+function applyCategory(id) {
+  activeCategory = id;
+  visibleProjects = projectsIn(id);
+  if (!visibleProjects.length) visibleProjects = PROJECTS.slice();
+  refillCards();
+  renderCatRow();
+  if (isMobile) { mobileSelectedCard = null; updateMobileSelection(); }
+  else { buildLabels(); setActive(null); }
+}
+
+function renderCatRow() {
+  if (!catRow) return;
+  catRow.textContent = "";
+  for (const cat of CATEGORIES) {
+    const on = cat.id === activeCategory;
+    const btn = document.createElement("button");
+    btn.type = "button";
+    btn.className = on ? "cat-btn is-active" : "cat-btn";
+    btn.textContent = categoryLabel(cat.id);
+    btn.setAttribute("role", "tab");
+    btn.setAttribute("aria-selected", String(on));
+    btn.addEventListener("click", () => {
+      if (cat.id === activeCategory) return;
+      applyCategory(cat.id);
+      btn.scrollIntoView({ inline: "center", block: "nearest", behavior: "smooth" });
+    });
+    catRow.appendChild(btn);
+  }
 }
 
 function setupItems() {
@@ -196,7 +291,7 @@ function restoreCard(card, duration) {
   gsap.to(card.cardEl, { x: 0, y: 0, z: 0, scale: 1, duration: duration || HOVER_DURATION, ease: "power2.out", overwrite: true });
 }
 function setPreview(card) {
-  previewImg.src = card.full; previewCat.textContent = card.project.category; previewTitle.textContent = card.project.title;
+  previewImg.src = card.full; previewCat.textContent = categoryLabel(card.project.category); previewTitle.textContent = titleOf(card.project);
   center.classList.add("show-project");
   gsap.fromTo(previewImg, { opacity: 0.35 }, { opacity: 1, duration: 0.5 });
 }
@@ -214,7 +309,7 @@ function updateMobileSelection() {
   mobileSelectedCard = card; pullOut(card, MOBILE_OPTS); updateMobilePreview(card);
 }
 function updateMobilePreview(card) {
-  mpCat.textContent = card.project.category; mpTitle.textContent = card.project.title; mpImg.src = card.full;
+  mpCat.textContent = categoryLabel(card.project.category); mpTitle.textContent = titleOf(card.project); mpImg.src = card.full;
   gsap.fromTo(mpImg, { opacity: 0.3 }, { opacity: 1, duration: MOBILE_TRANSITION, overwrite: true });
 }
 
@@ -284,9 +379,15 @@ function buildLabels() {
   CATEGORIES.forEach((cat, i) => {
     const angle = -90 + (360 / n) * i, rad = angle * DEG;
     const x = cx + Math.cos(rad) * lrx, y = cy + Math.sin(rad) * lry;
-    const el = document.createElement("div"); el.className = "label";
+    const el = document.createElement("div");
+    el.className = cat.id === activeCategory ? "label is-active" : "label";
     el.style.left = `${x}px`; el.style.top = `${y}px`;
-    el.innerHTML = `<span class="ul">${cat.name}</span><sup>(${cat.count})</sup>`;
+    const name = document.createElement("span");
+    name.className = "ul";
+    name.textContent = categoryLabel(cat.id);
+    const count = document.createElement("sup");
+    count.textContent = `(${projectsIn(cat.id).length})`;
+    el.append(name, count);
     labelsWrap.appendChild(el);
   });
 }
@@ -345,11 +446,46 @@ function runIntro() {
 function revealUI() {
   const slideUi = [document.querySelector(".site-header"), ...document.querySelectorAll(".corner")];
   if (isMobile && mobilePreview) slideUi.push(mobilePreview);
+  if (isMobile && catRow) slideUi.push(catRow);
   gsap.fromTo(slideUi.filter(Boolean), { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.06 });
   if (!isMobile) {
     gsap.fromTo(center, { opacity: 0 }, { opacity: 1, duration: 0.9, ease: "power3.out" });
     gsap.fromTo(".label", { opacity: 0 }, { opacity: 0.85, duration: 0.8, ease: "power2.out", stagger: 0.012, delay: 0.15 });
   }
+}
+
+/* ── Language ───────────────────────────────────────────────────────────────
+   Every piece of interface text carries a data-i18n key; content text comes
+   from projects.json, which holds both languages. The choice is remembered per
+   visitor, and the page still reads correctly if that store is unavailable. */
+function applyLang(next) {
+  LANG = next;
+  document.documentElement.lang = next;
+  document.querySelectorAll("[data-i18n]").forEach((el) => {
+    el.textContent = t(el.getAttribute("data-i18n"));
+  });
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    const on = btn.dataset.lang === next;
+    btn.classList.toggle("is-active", on);
+    btn.setAttribute("aria-pressed", String(on));
+  });
+  try { localStorage.setItem(LANG_KEY, next); } catch (_) {}
+  if (!items.length) return;   // still booting; init() draws the rest
+  renderCatRow();
+  if (!isMobile) buildLabels();
+  if (isMobile && mobileSelectedCard) updateMobilePreview(mobileSelectedCard);
+  if (!isMobile && activeCard) setPreview(activeCard);
+}
+
+function initLang() {
+  let saved = null;
+  try { saved = localStorage.getItem(LANG_KEY); } catch (_) {}
+  document.querySelectorAll(".lang-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      if (btn.dataset.lang !== LANG) applyLang(btn.dataset.lang);
+    });
+  });
+  applyLang(saved === "en" ? "en" : "tr");
 }
 
 function onResize() {
@@ -359,11 +495,13 @@ function onResize() {
 
 async function init() {
   await loadContent();
+  initLang();
   initLoader();
   computeGeometry();
   buildGallery();      // <-- runs for BOTH desktop AND mobile (BUG 2 fix)
   setupItems();
   updateRing();
+  renderCatRow();
   gsap.set(gallery, { rotationX: TILT });
   if (isMobile) {
     initMobile();

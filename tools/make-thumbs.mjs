@@ -21,7 +21,7 @@ const HEIGHT = 180;
 const QUALITY = 72;
 const EXT = /\.(webp|jpe?g|png)$/i;
 
-const publicDir = path.resolve(process.argv[2] || "studio-3d-archive/public");
+const publicDir = path.resolve(process.argv[2] || "site/public");
 const thumbDir = path.join(publicDir, "thumb");
 const manifestPath = path.join(thumbDir, ".sources.json");
 
