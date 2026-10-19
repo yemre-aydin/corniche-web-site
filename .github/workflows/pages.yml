@@ -1,0 +1,41 @@
+name: Deploy site
+
+# Publishes the repository to GitHub Pages directly, without Jekyll.
+#
+# The built-in Jekyll builder failed twice and then hung on a third attempt,
+# while the files themselves were fine — this is a hand-written static site and
+# has nothing for Jekyll to do. This path just uploads the files and serves
+# them, so that whole class of failure is gone.
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Let a running deploy finish rather than cancelling it part-way.
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/configure-pages@v5
+
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: .
+
+      - id: deployment
+        uses: actions/deploy-pages@v4
