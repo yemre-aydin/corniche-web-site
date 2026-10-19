@@ -65,8 +65,8 @@
     <button class="corner corner--left" type="button">
       <span data-i18n="ui.filter">Projeleri filtrele</span> <i>+</i>
     </button>
-    <button class="corner corner--right" type="button">
-      <span data-i18n="ui.grid">Izgara görünümü</span> <i>+</i>
+    <button class="corner corner--right" type="button" id="viewToggle" aria-pressed="false">
+      <span id="viewToggleLabel">Izgara görünümü</span> <i>+</i>
     </button>
 
     <!-- Mobile category strip, filled from projects.json. Scrolls sideways. -->
@@ -95,6 +95,13 @@
       <div class="mp-img" id="mpImg"><img alt="" /></div>
       <a class="mp-view" href="#"><span data-i18n="ui.viewProject">Projeyi incele</span> <i>+</i></a>
     </div>
+
+    <!-- Flat alternative to the ring: every project, grouped by category, in
+         ordinary document flow. Also what a visitor who has asked for reduced
+         motion gets on arrival. -->
+    <main class="grid-view" id="gridView" hidden>
+      <div class="grid-inner" id="gridInner"></div>
+    </main>
 
     <div class="mobile-ring-hitbox" id="ringHitbox"></div>
     <div class="custom-cursor" id="cursor"></div>

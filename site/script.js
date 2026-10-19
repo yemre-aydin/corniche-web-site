@@ -31,6 +31,7 @@ const STRINGS = {
     "ui.loading": "Arşiv yükleniyor",
     "ui.filter": "Projeleri filtrele",
     "ui.grid": "Izgara görünümü",
+    "ui.ring": "Halka görünümü",
     "ui.viewProject": "Projeyi incele",
     "ui.selectedWorks": "Seçili İşler",
     "ui.tagline": "[Firma tanıtım cümlesi]",
@@ -44,6 +45,7 @@ const STRINGS = {
     "ui.loading": "Loading archive",
     "ui.filter": "Filter projects",
     "ui.grid": "Grid view",
+    "ui.ring": "Ring view",
     "ui.viewProject": "View project",
     "ui.selectedWorks": "Selected Works",
     "ui.tagline": "[Studio description]",
@@ -136,6 +138,14 @@ const mpTitle = document.getElementById("mpTitle");
 const mobilePreview = document.getElementById("mobilePreview");
 const ringHitbox = document.getElementById("ringHitbox");
 const catRow = document.getElementById("catRow");
+const gridView = document.getElementById("gridView");
+const gridInner = document.getElementById("gridInner");
+const viewToggle = document.getElementById("viewToggle");
+const viewToggleLabel = document.getElementById("viewToggleLabel");
+
+let view = "ring";
+let scrollRotation = null;   // the ScrollTrigger that turns the ring
+const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
 function computeGeometry() {
   const vw = window.innerWidth, vh = window.innerHeight;
@@ -351,9 +361,13 @@ function updateMobilePreview(card) {
 
 let mobileDragging = false, mobileVelocity = 0;
 function mobileTick() {
-  if (!mobileDragging) { mobileTargetRotation += mobileVelocity; mobileVelocity *= 0.92; if (Math.abs(mobileVelocity) < 0.01) mobileVelocity = 0; }
-  mobileCurrentRotation += (mobileTargetRotation - mobileCurrentRotation) * 0.16;
-  ringRot = mobileCurrentRotation; updateRing(); updateMobileSelection();
+  // Nothing to turn while the grid is on screen, but keep the loop alive so
+  // switching back needs no restart.
+  if (view !== "grid") {
+    if (!mobileDragging) { mobileTargetRotation += mobileVelocity; mobileVelocity *= 0.92; if (Math.abs(mobileVelocity) < 0.01) mobileVelocity = 0; }
+    mobileCurrentRotation += (mobileTargetRotation - mobileCurrentRotation) * 0.16;
+    ringRot = mobileCurrentRotation; updateRing(); updateMobileSelection();
+  }
   requestAnimationFrame(mobileTick);
 }
 function initMobile() {
@@ -404,8 +418,89 @@ function initCursor() {
 }
 
 function initScroll() {
-  ScrollTrigger.create({ trigger: "body", start: "top top", end: "bottom bottom", scrub: 1.4,
+  scrollRotation = ScrollTrigger.create({ trigger: "body", start: "top top", end: "bottom bottom", scrub: 1.4,
     onUpdate: (self) => { ringRot = self.progress * 360 * TURNS; updateRing(); } });
+}
+
+/* ── Grid view ──────────────────────────────────────────────────────────────
+   Every project, grouped under its category, in ordinary scrolling flow. It is
+   the way in for anyone who has asked for reduced motion, and the way out for
+   anyone who would rather read a list than turn a ring. Images load as they
+   come into view, so the length of the archive costs nothing up front. */
+function buildGrid() {
+  if (!gridInner) return;
+  gridInner.textContent = "";
+  for (const cat of CATEGORIES) {
+    const mine = projectsIn(cat.id);
+    if (!mine.length) continue;
+
+    const section = document.createElement("section");
+    section.className = "grid-cat";
+
+    const head = document.createElement("div");
+    head.className = "grid-cat-head";
+    const heading = document.createElement("h2");
+    heading.textContent = categoryLabel(cat.id);
+    const count = document.createElement("span");
+    count.textContent = `(${mine.length})`;
+    head.append(heading, count);
+
+    const items = document.createElement("div");
+    items.className = "grid-items";
+    for (const project of mine) {
+      const figure = document.createElement("figure");
+      figure.className = "grid-item";
+      const well = document.createElement("div");
+      well.className = "well";
+      const img = document.createElement("img");
+      img.loading = "lazy";
+      img.decoding = "async";
+      img.alt = "";
+      img.src = fullOf(project);
+      img.addEventListener("error", () => {
+        const small = thumbOf(project);
+        if (!img.src.endsWith(small)) img.src = small;
+      }, { once: true });
+      well.appendChild(img);
+
+      const caption = document.createElement("figcaption");
+      caption.textContent = titleOf(project);
+      const label = document.createElement("div");
+      label.className = "cat";
+      label.textContent = categoryLabel(cat.id);
+      caption.appendChild(label);
+
+      figure.append(well, caption);
+      items.appendChild(figure);
+    }
+
+    section.append(head, items);
+    gridInner.appendChild(section);
+  }
+}
+
+function updateViewToggleLabel() {
+  if (viewToggleLabel) viewToggleLabel.textContent = t(view === "grid" ? "ui.ring" : "ui.grid");
+}
+
+function setView(next) {
+  view = next;
+  const grid = next === "grid";
+  document.body.classList.toggle("is-grid", grid);
+  if (gridView) gridView.hidden = !grid;
+  if (viewToggle) viewToggle.setAttribute("aria-pressed", String(grid));
+
+  if (grid) {
+    buildGrid();
+    // The ring reads the page's scroll position, so stop it listening while the
+    // grid owns the scrolling.
+    if (scrollRotation) scrollRotation.disable();
+  } else if (scrollRotation) {
+    scrollRotation.enable();
+  }
+  window.scrollTo(0, 0);
+  updateViewToggleLabel();
+  if (!grid) requestAnimationFrame(onResize);
 }
 
 function buildLabels() {
@@ -445,8 +540,16 @@ function initLoader() {
     document.body.classList.add("page-ready");
     overlay.classList.add("is-hidden");
     revealUI();
-    runIntro();
-    prefetchFullImages();
+    if (reducedMotion) {
+      // Asked for less movement: no opening spin, and the flat view on arrival.
+      introOffset = 0;
+      introPlaying = false;
+      updateRing();
+      setView("grid");
+    } else {
+      runIntro();
+      prefetchFullImages();
+    }
     gsap.timeline({ onComplete: () => overlay.remove() })
       .to(".loading-inner", { opacity: 0, y: -6, duration: 0.4, ease: "power2.in" })
       .to(overlay, { opacity: 0, duration: 0.6, ease: "power3.out" }, "-=0.1");
@@ -519,7 +622,9 @@ function applyLang(next) {
     btn.setAttribute("aria-pressed", String(on));
   });
   try { localStorage.setItem(LANG_KEY, next); } catch (_) {}
+  updateViewToggleLabel();
   if (!items.length) return;   // still booting; init() draws the rest
+  if (view === "grid") buildGrid();
   renderCatRow();
   if (!isMobile) buildLabels();
   if (isMobile && mobileSelectedCard) updateMobilePreview(mobileSelectedCard);
@@ -590,6 +695,9 @@ async function init() {
   await loadContent();
   initMenu();
   initLang();
+  if (viewToggle) {
+    viewToggle.addEventListener("click", () => setView(view === "grid" ? "ring" : "grid"));
+  }
   initLoader();
   computeGeometry();
   buildGallery();      // <-- runs for BOTH desktop AND mobile (BUG 2 fix)

@@ -129,6 +129,41 @@ a{ color:inherit; text-decoration:none; }
 .label.is-active .ul{ border-bottom-width:2px; }
 .label sup{ font-size:10px; color:var(--muted); margin-left:3px; }
 
+/* ── Grid view ──────────────────────────────────────────────────────────────
+   The ring lives in a fixed, full-screen scene and the page's scroll height is
+   what turns it. The grid is the opposite: ordinary flow, ordinary scrolling.
+   Switching sets .is-grid on the body, which releases the scroll height and
+   takes the ring and its mobile furniture off the page. */
+.grid-view{ position:relative; z-index:10; background:var(--bg);
+  padding-block:7.5em 6em;
+  padding-left:max(2.4em, env(safe-area-inset-left, 0px));
+  padding-right:max(2.4em, env(safe-area-inset-right, 0px)); }
+.grid-inner{ max-width:1400px; margin:0 auto; }
+
+.grid-cat + .grid-cat{ margin-top:3.6em; }
+.grid-cat-head{ display:flex; align-items:baseline; gap:0.7em;
+  padding-bottom:0.75em; margin-bottom:1.7em; border-bottom:1px solid var(--line); }
+.grid-cat-head h2{ font-size:clamp(17px,1.9vw,21px); font-weight:500;
+  letter-spacing:0.02em; color:var(--head); }
+.grid-cat-head span{ font-size:12px; color:var(--muted); font-variant-numeric:tabular-nums; }
+
+.grid-items{ display:grid; gap:1.5em 1.4em;
+  grid-template-columns:repeat(auto-fill, minmax(230px, 1fr)); }
+.grid-item{ margin:0; min-width:0; }
+.grid-item .well{ aspect-ratio:4/3; max-width:100%; overflow:hidden; background:var(--frame); }
+.grid-item img{ width:100%; height:100%; object-fit:cover; display:block;
+  filter:saturate(0.92) brightness(0.99); }
+.grid-item figcaption{ margin-top:0.75em; font-size:14px; line-height:1.35; color:var(--head); }
+.grid-item .cat{ margin-top:0.25em; font-size:11px; letter-spacing:0.12em;
+  text-transform:uppercase; color:var(--muted); }
+
+body.is-grid{ height:auto; }
+body.is-grid .scene,
+body.is-grid .mobile-preview,
+body.is-grid .cat-row,
+body.is-grid .mobile-ring-hitbox,
+body.is-grid .corner--left{ display:none !important; }
+
 .mobile-preview{ display:none; }
 .mobile-ring-hitbox{ display:none; }
 .cat-row{ display:none; }
@@ -161,6 +196,15 @@ a{ color:inherit; text-decoration:none; }
     border-bottom:2px solid transparent;
     transition:opacity .25s ease, border-color .25s ease, color .25s ease; }
   .cat-btn.is-active{ opacity:1; color:var(--head); border-bottom-color:var(--accent); }
+
+  .grid-view{ padding-block:6em 4em;
+    padding-left:max(1em, env(safe-area-inset-left, 0px));
+    padding-right:max(1em, env(safe-area-inset-right, 0px)); }
+  .grid-items{ gap:1.1em 0.9em; grid-template-columns:repeat(auto-fill, minmax(140px, 1fr)); }
+  .grid-cat + .grid-cat{ margin-top:2.6em; }
+  /* In grid view the corners are the only control left, so put the toggle back
+     where a thumb can reach it. */
+  body.is-grid .corner--right{ top:auto; bottom:1.2em; right:1em; }
 
   .mobile-preview{ display:block; position:fixed; top:11.4em; left:0; right:0; z-index:6; padding:0 1em; pointer-events:none; }
   .mp-cat{ font-size:10px; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); margin-bottom:5px; }

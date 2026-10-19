@@ -17,7 +17,7 @@ import sharp from "sharp";
 
 const WIDTH = 1448;
 const HEIGHT = 1086;
-const PER_CATEGORY = 3;
+const PER_CATEGORY = 10;
 const OUT = path.resolve("site/public");
 
 // The brand palette, darkest to lightest. Nothing outside this list is used.
