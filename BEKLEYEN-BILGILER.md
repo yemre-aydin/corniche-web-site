@@ -45,7 +45,17 @@ Logoyu hazırlayan kişiden kendi dosyası olarak gelmeli.
 "Interior & Life Style" ifadesi sitenin başka yerlerinde (sayfa başlığı, açıklama) kullanılırsa
 yazımı logodaki gibi olacak; vektör gelince büyük/küçük harf kullanımı teyit edilecek.
 
-Şu an başlıkta kesikli çerçeve içinde düz metin duruyor; çerçeve gerçek logonun yerini işaretliyor.
+Yer tutucular şu an kilitlerin yapısını taklit ediyor, böylece vektörler gelince yerleri hazır olacak:
+
+| Yer | Şu an duran |
+| --- | --- |
+| Ana sayfa ortası | CORNICHE / ISTANBUL / INTERIOR & LIFE STYLE — tam kilidin üç satırı |
+| Izgara görünümü başı | CORNICHE / ISTANBUL, daha küçük |
+| Mobil başlık | CORNICHE — kompakt kilidin karşılığı, kesikli çerçeve içinde |
+| Yükleme ekranı | CORNICHE İSTANBUL, tek satır (henüz hizalanmadı) |
+
+Hepsi sistem yazı tipiyle dizilmiş düz metin, gerçek logo değil. Mobil başlıktaki kesikli çerçeve
+gerçek logonun yerini işaretliyor.
 
 ## 3. İletişim bilgileri
 
