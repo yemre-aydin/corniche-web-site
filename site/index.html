@@ -72,8 +72,19 @@
     <!-- Mobile category strip, filled from projects.json. Scrolls sideways. -->
     <div class="cat-row" id="catRow" role="tablist" aria-label="Proje kategorileri"></div>
 
+    <!-- Appears only once a category is open. Labelled rather than an icon, so
+         the way back reads without being learned. -->
+    <button class="ring-back" type="button" id="ringBack" hidden>
+      <i class="arrow">←</i><span id="ringBackLabel">Tüm kategoriler</span>
+      <em id="ringBackWhere"></em>
+    </button>
+
     <div class="scene">
-      <div class="gallery" id="gallery"></div>
+      <!-- The hairline sits inside the gallery so it shares the cards' 3D
+           space and weaves in front of some and behind others. -->
+      <div class="gallery" id="gallery">
+        <div class="ring-line" id="ringLine" aria-hidden="true"></div>
+      </div>
       <div class="center" id="center">
         <div class="center-default" id="centerDefault">
           <p class="center-eyebrow" data-i18n="ui.selectedWorks">Seçili İşler</p>

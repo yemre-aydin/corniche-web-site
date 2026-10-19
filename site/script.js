@@ -14,6 +14,30 @@ const MOBILE_SELECTED_OUT = 8, MOBILE_SELECTED_Z = 2, MOBILE_SELECTED_SCALE = 1.
 const MOBILE_TRANSITION = 0.25, MOBILE_FOCUS_ANGLE = -35, MOBILE_DRAG_SPEED = 0.35;
 const CATEGORY_DIM = 0.28;   // how far an unselected category recedes
 
+/* ── Showcase ring (desktop) ────────────────────────────────────────────────
+   Cards sit around a shallow ellipse and all face the viewer, which is what the
+   drawing shows: the far cards and the near ones both show their faces, which
+   no outward- or inward-facing ring can do. Depth comes from z, scale and
+   opacity rather than from turning the cards away. Each card is gently curved
+   for real — a row of narrow segments wrapped on a cylinder, each carrying its
+   own slice of the photograph.
+
+   These numbers are a considered first pass, not measured against the drawing;
+   expect one tuning round once they can be seen. */
+const SHOW_CARD_W = 268, SHOW_CARD_H = 186;
+const SHOW_SEGMENTS = 8;
+const SHOW_CURVE_R = 620;     // cylinder the card is wrapped on
+const SHOW_DEPTH = 330;       // how far back the far side of the ring sits
+const SHOW_TURN = 22;         // degrees a card turns at the ring's sides
+const SHOW_LABEL_GAP = 30;
+const SHOW_HOVER_LIFT = 14, SHOW_HOVER_SCALE = 1.05, SHOW_HOVER_DUR = 0.38;
+
+let level = "categories";     // or "projects"
+let openCategory = null;
+let showRx = 640, showRy = 190;
+const showItems = [];
+let showHovered = null;
+
 /* ── Content and language ───────────────────────────────────────────────────
    Every project lives in projects.json, so content can be edited without
    touching the engine below. Each ring card uses the small copy from
@@ -32,6 +56,7 @@ const STRINGS = {
     "ui.filter": "Projeleri filtrele",
     "ui.grid": "Izgara görünümü",
     "ui.ring": "Halka görünümü",
+    "ui.allCategories": "Tüm kategoriler",
     "ui.viewProject": "Projeyi incele",
     "ui.selectedWorks": "Seçili İşler",
     "ui.tagline": "[Firma tanıtım cümlesi]",
@@ -46,6 +71,7 @@ const STRINGS = {
     "ui.filter": "Filter projects",
     "ui.grid": "Grid view",
     "ui.ring": "Ring view",
+    "ui.allCategories": "All categories",
     "ui.viewProject": "View project",
     "ui.selectedWorks": "Selected Works",
     "ui.tagline": "[Studio description]",
@@ -147,15 +173,26 @@ const gridView = document.getElementById("gridView");
 const gridInner = document.getElementById("gridInner");
 const viewToggle = document.getElementById("viewToggle");
 const viewToggleLabel = document.getElementById("viewToggleLabel");
+const ringLine = document.getElementById("ringLine");
+const ringBack = document.getElementById("ringBack");
+const ringBackLabel = document.getElementById("ringBackLabel");
+const ringBackWhere = document.getElementById("ringBackWhere");
+let booted = false;
 
 let view = "ring";
 let scrollRotation = null;   // the ScrollTrigger that turns the ring
 const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+// The showcase ring is laid out directly rather than orbited, so on a desktop
+// the gallery is simply the middle of the screen and carries no tilt.
 function computeGeometry() {
+  if (!isMobile) {
+    showGeometry();
+    gsap.set(gallery, { x: 0, y: 0 });
+    return;
+  }
   const vw = window.innerWidth, vh = window.innerHeight;
-  if (isMobile) { radius = vw * 0.74; }
-  else { radius = RING_SCALE * Math.max(300, Math.min(vw * 0.32, vh * 0.55)); }
+  radius = vw * 0.74;
   const localY = radius * Math.cos(TILT * DEG);
   const depthZ = radius * Math.sin(TILT * DEG);
   yOffset = localY * (PERSPECTIVE / (PERSPECTIVE - depthZ));
@@ -399,11 +436,211 @@ function initMobile() {
   requestAnimationFrame(mobileTick);
 }
 
+// What the ring is showing: the ten categories, or the projects inside one.
+function showEntries() {
+  if (level === "projects" && openCategory) {
+    return projectsIn(openCategory).map((p) => ({
+      id: p.slug,
+      image: fullOf(p),
+      tr: (p.title && (p.title.tr || p.title.en)) || p.slug,
+      en: (p.title && (p.title.en || p.title.tr)) || p.slug,
+      href: pageOf(p),
+    }));
+  }
+  return CATEGORIES.map((cat) => {
+    const first = projectsIn(cat.id)[0];
+    return {
+      id: cat.id,
+      image: first ? fullOf(first) : "",
+      tr: cat.label.tr || cat.label.en || cat.id,
+      en: cat.label.en || cat.label.tr || cat.id,
+      category: cat.id,
+    };
+  });
+}
+
+function showGeometry() {
+  const vw = window.innerWidth, vh = window.innerHeight;
+  showRx = Math.min(vw * 0.38, 720);
+  showRy = Math.min(vh * 0.19, 205);
+  if (ringLine) {
+    ringLine.style.width = `${showRx * 2}px`;
+    ringLine.style.height = `${showRy * 2}px`;
+  }
+}
+
+function buildShowcase() {
+  for (const card of showItems) card.el.remove();
+  showItems.length = 0;
+
+  const segW = SHOW_CARD_W / SHOW_SEGMENTS;
+  const step = (segW / SHOW_CURVE_R) * (180 / Math.PI);
+  const frag = document.createDocumentFragment();
+
+  for (const entry of showEntries()) {
+    const el = document.createElement("div");
+    el.className = "show-item";
+    el.style.width = `${SHOW_CARD_W}px`;
+    el.style.height = `${SHOW_CARD_H}px`;
+
+    const cardEl = document.createElement("div");
+    cardEl.className = "show-card";
+
+    const face = document.createElement("div");
+    face.className = "show-face";
+    face.style.transform = `translateZ(${-SHOW_CURVE_R}px)`;
+    for (let s = 0; s < SHOW_SEGMENTS; s++) {
+      const seg = document.createElement("div");
+      seg.className = "show-seg";
+      seg.style.width = `${segW + 1}px`;
+      seg.style.marginLeft = `${-(segW + 1) / 2}px`;
+      seg.style.left = "50%";
+      seg.style.backgroundImage = `url("${entry.image}")`;
+      seg.style.backgroundSize = `${SHOW_CARD_W}px 100%`;
+      seg.style.backgroundPosition = `${-s * segW}px 0`;
+      const angle = (s - (SHOW_SEGMENTS - 1) / 2) * step;
+      seg.style.transform = `rotateY(${angle}deg) translateZ(${SHOW_CURVE_R}px)`;
+      face.appendChild(seg);
+    }
+
+    const reflect = document.createElement("div");
+    reflect.className = "show-reflect";
+    reflect.style.backgroundImage = `url("${entry.image}")`;
+
+    cardEl.append(face, reflect);
+
+    const label = document.createElement("div");
+    label.className = "show-label";
+    label.textContent = LANG === "en" ? entry.en : entry.tr;
+
+    el.append(cardEl, label);
+    frag.appendChild(el);
+
+    const card = { el, cardEl, label, entry };
+    el._show = card;
+    showItems.push(card);
+  }
+
+  gallery.appendChild(frag);
+  placeShowcase();
+}
+
+function placeShowcase() {
+  const n = showItems.length || 1;
+  showItems.forEach((card, i) => {
+    const angle = (i / n) * 360 + ringRot + introOffset - 90;
+    const rad = angle * DEG;
+    const sin = Math.sin(rad), cos = Math.cos(rad);
+    const z = sin * SHOW_DEPTH;              // top of the ellipse sits furthest back
+    const near = (sin + 1) / 2;              // 0 far, 1 near
+    const lifted = card === showHovered;
+
+    gsap.set(card.el, {
+      xPercent: -50, yPercent: -50,
+      x: cos * showRx,
+      y: sin * showRy - (lifted ? SHOW_HOVER_LIFT : 0),
+      z,
+      opacity: 0.42 + near * 0.58,
+    });
+    gsap.set(card.cardEl, {
+      rotationY: cos * SHOW_TURN,
+      scale: (0.74 + near * 0.34) * (lifted ? SHOW_HOVER_SCALE : 1),
+    });
+    // The name sits on the outer side of the ring: above the cards along the
+    // top, below the ones along the bottom, the way the drawing has it.
+    card.label.style.top = sin < 0
+      ? `${-SHOW_LABEL_GAP}px`
+      : `${SHOW_CARD_H + SHOW_LABEL_GAP - 14}px`;
+  });
+}
+
+function refreshShowLabels() {
+  for (const card of showItems) {
+    card.label.textContent = LANG === "en" ? card.entry.en : card.entry.tr;
+  }
+}
+
+function updateBackControl() {
+  if (!ringBack) return;
+  const open = level === "projects";
+  ringBack.hidden = !open;
+  if (ringBackLabel) ringBackLabel.textContent = t("ui.allCategories");
+  if (ringBackWhere) ringBackWhere.textContent = open ? categoryLabel(openCategory) : "";
+}
+
+function setShowLevel(next, categoryId) {
+  level = next;
+  openCategory = next === "projects" ? categoryId : null;
+  ringRot = 0;
+  buildShowcase();
+  updateBackControl();
+  const hash = next === "projects" ? `#${categoryId}` : "";
+  if (window.location.hash !== hash) {
+    history.pushState({ level: next, category: categoryId || null }, "", hash || window.location.pathname);
+  }
+}
+
+function initShowcase() {
+  showGeometry();
+  buildShowcase();
+  updateBackControl();
+
+  scene.addEventListener("pointermove", (e) => {
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const hit = under && under.closest(".show-item");
+    const card = hit ? hit._show : null;
+    if (card === showHovered) return;
+    showHovered = card;
+    placeShowcase();
+    if (card) setShowPreview(card);
+    else center.classList.remove("show-project");
+  });
+  scene.addEventListener("pointerleave", () => {
+    if (!showHovered) return;
+    showHovered = null;
+    placeShowcase();
+    center.classList.remove("show-project");
+  });
+
+  scene.addEventListener("click", (e) => {
+    const under = document.elementFromPoint(e.clientX, e.clientY);
+    const hit = under && under.closest(".show-item");
+    if (!hit || !hit._show) return;
+    const { entry } = hit._show;
+    if (entry.href) window.location.href = entry.href;
+    else if (entry.category) setShowLevel("projects", entry.category);
+  });
+
+  if (ringBack) ringBack.addEventListener("click", () => setShowLevel("categories"));
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape" && level === "projects") setShowLevel("categories");
+  });
+  window.addEventListener("popstate", () => {
+    const id = window.location.hash.replace("#", "");
+    const known = CATEGORIES.some((c) => c.id === id);
+    level = known ? "projects" : "categories";
+    openCategory = known ? id : null;
+    ringRot = 0;
+    buildShowcase();
+    updateBackControl();
+  });
+}
+
+// The centre block doubles as the preview while a card is hovered.
+function setShowPreview(card) {
+  previewImg.src = card.entry.image;
+  previewCat.textContent = level === "projects" ? categoryLabel(openCategory) : "";
+  previewTitle.textContent = LANG === "en" ? card.entry.en : card.entry.tr;
+  center.classList.add("show-project");
+  gsap.fromTo(previewImg, { opacity: 0.35 }, { opacity: 1, duration: 0.45 });
+}
+
 function initParallax() {
   window.addEventListener("mousemove", (e) => {
     const px = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
     const py = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
-    gsap.to(gallery, { rotationX: TILT + py * PARALLAX, rotationY: -px * PARALLAX, duration: 1, ease: "power2.out", overwrite: "auto" });
+    // The showcase gallery carries no tilt of its own, so parallax leans from flat.
+    gsap.to(gallery, { rotationX: py * PARALLAX, rotationY: -px * PARALLAX, duration: 1, ease: "power2.out", overwrite: "auto" });
   });
 }
 
@@ -425,9 +662,12 @@ function initCursor() {
   });
 }
 
+// Whichever ring this device is running, redraw it.
+const redrawRing = () => (isMobile ? updateRing() : placeShowcase());
+
 function initScroll() {
   scrollRotation = ScrollTrigger.create({ trigger: "body", start: "top top", end: "bottom bottom", scrub: 1.4,
-    onUpdate: (self) => { ringRot = self.progress * 360 * TURNS; updateRing(); } });
+    onUpdate: (self) => { ringRot = self.progress * 360 * TURNS; redrawRing(); } });
 }
 
 /* ── Grid view ──────────────────────────────────────────────────────────────
@@ -516,6 +756,7 @@ function setView(next) {
 }
 
 function buildLabels() {
+  if (!labelsWrap) return;   // the showcase ring carries its names on the cards
   const cx = window.innerWidth / 2, cy = window.innerHeight / 2;
   const lrx = radius + 245, lry = radius * Math.cos(TILT * DEG) + 160, n = CATEGORIES.length;
   labelsWrap.innerHTML = "";
@@ -542,11 +783,14 @@ function initLoader() {
   // Only the small ring copies hold up the loader. The full-size photos are
   // warmed in the background once the ring is up, so the archive can grow
   // without the first paint growing with it.
-  const imageLoad = Promise.allSettled(PROJECTS.map(thumbOf).map((src) => new Promise((res) => {
+  const needed = isMobile
+    ? PROJECTS.map(thumbOf)
+    : showEntries().map((e) => e.image).filter(Boolean);
+  const imageLoad = Promise.allSettled(needed.map((src) => new Promise((res) => {
     const im = new Image(); im.onload = res; im.onerror = res; im.src = src;
   })));
   Promise.all([minLoad, imageLoad]).then(async () => {
-    introOffset = 0; computeGeometry(); updateRing();
+    introOffset = 0; computeGeometry(); redrawRing();
     await new Promise(requestAnimationFrame);
     await new Promise(requestAnimationFrame);
     document.body.classList.add("page-ready");
@@ -556,7 +800,7 @@ function initLoader() {
       // Asked for less movement: no opening spin, and the flat view on arrival.
       introOffset = 0;
       introPlaying = false;
-      updateRing();
+      redrawRing();
       setView("grid");
     } else {
       runIntro();
@@ -588,10 +832,10 @@ function prefetchFullImages() {
 }
 
 function runIntro() {
-  introPlaying = true; introOffset = -360; updateRing();
+  introPlaying = true; introOffset = -360; redrawRing();
   gsap.to({ v: -360 }, { v: 0, duration: 1.6, ease: "power3.out",
-    onUpdate() { introOffset = this.targets()[0].v; updateRing(); },
-    onComplete() { introOffset = 0; introPlaying = false; updateRing(); } });
+    onUpdate() { introOffset = this.targets()[0].v; redrawRing(); },
+    onComplete() { introOffset = 0; introPlaying = false; redrawRing(); } });
 }
 
 function revealUI() {
@@ -605,7 +849,7 @@ function revealUI() {
   gsap.fromTo(slideUi.filter(Boolean), { opacity: 0, y: 8 }, { opacity: 1, y: 0, duration: 0.8, ease: "power3.out", stagger: 0.06 });
   if (!isMobile) {
     gsap.fromTo(center, { opacity: 0 }, { opacity: 1, duration: 0.9, ease: "power3.out" });
-    gsap.fromTo(".label", { opacity: 0 }, { opacity: 0.85, duration: 0.8, ease: "power2.out", stagger: 0.012, delay: 0.15 });
+    gsap.fromTo(".show-label", { opacity: 0 }, { opacity: 1, duration: 0.8, ease: "power2.out", stagger: 0.05, delay: 0.15 });
   }
 }
 
@@ -635,12 +879,15 @@ function applyLang(next) {
   });
   try { localStorage.setItem(LANG_KEY, next); } catch (_) {}
   updateViewToggleLabel();
-  if (!items.length) return;   // still booting; init() draws the rest
+  if (!booted) return;   // still starting up; init() draws the rest
   if (view === "grid") buildGrid();
-  renderCatRow();
-  if (!isMobile) buildLabels();
-  if (isMobile && mobileSelectedCard) updateMobilePreview(mobileSelectedCard);
-  if (!isMobile && activeCard) setPreview(activeCard);
+  if (isMobile) {
+    renderCatRow();
+    if (mobileSelectedCard) updateMobilePreview(mobileSelectedCard);
+  } else {
+    refreshShowLabels();
+    updateBackControl();
+  }
 }
 
 /* ── Menu ───────────────────────────────────────────────────────────────────
@@ -699,8 +946,10 @@ function initLang() {
 }
 
 function onResize() {
-  computeGeometry(); setupItems(); updateRing();
-  if (!isMobile) { buildLabels(); ScrollTrigger.refresh(); }
+  computeGeometry();
+  if (isMobile) { setupItems(); updateRing(); return; }
+  placeShowcase();
+  ScrollTrigger.refresh();
 }
 
 async function init() {
@@ -710,26 +959,35 @@ async function init() {
   if (viewToggle) {
     viewToggle.addEventListener("click", () => setView(view === "grid" ? "ring" : "grid"));
   }
+  // An address that names a category opens straight into it.
+  const fromHash = window.location.hash.replace("#", "");
+  if (!isMobile && CATEGORIES.some((c) => c.id === fromHash)) {
+    level = "projects";
+    openCategory = fromHash;
+  }
+
   initLoader();
   computeGeometry();
-  buildGallery();      // <-- runs for BOTH desktop AND mobile (BUG 2 fix)
-  setupItems();
-  updateRing();
-  renderCatRow();
-  gsap.set(gallery, { rotationX: TILT });
+
   if (isMobile) {
+    buildGallery();
+    setupItems();
+    updateRing();
+    renderCatRow();
+    gsap.set(gallery, { rotationX: TILT });
     initMobile();
   } else {
-    buildLabels(); initParallax(); initScroll(); initCursor();
-    scene.addEventListener("pointermove", onPointerMove);
-    scene.addEventListener("pointerleave", () => setActive(null));
-    scene.addEventListener("click", (e) => {
-      const under = document.elementFromPoint(e.clientX, e.clientY);
-      const hit = under && under.closest(".item");
-      const url = hit && hit._card ? pageOf(hit._card.project) : "";
-      if (url) window.location.href = url;
-    });
+    // Names ride with the showcase cards, so the old label ellipse goes.
+    if (labelsWrap) labelsWrap.remove();
+    initShowcase();
+    initParallax();
+    initScroll();
+    initCursor();
   }
+
+  booted = true;
+  applyLang(LANG);   // the ring exists now, so its names can catch up
+
   requestAnimationFrame(onResize);
   setTimeout(onResize, 300);
   window.addEventListener("load", onResize);
