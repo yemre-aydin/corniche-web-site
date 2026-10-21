@@ -36,39 +36,57 @@ async function main() {
     process.exit(1);
   }
 
-  // Read sizes first so landscape can lead.
-  const read = [];
+  // Prepare everything first, so orientation is read from the finished image
+  // rather than the original — trimming can change which way round it is.
+  const prepared = [];
   for (const name of files) {
     const src = path.join(dir, name);
-    const meta = await sharp(src).metadata();
-    // EXIF orientation 5-8 means the stored image is rotated a quarter turn.
-    const turned = meta.orientation >= 5 && meta.orientation <= 8;
-    const width = turned ? meta.height : meta.width;
-    const height = turned ? meta.width : meta.height;
-    read.push({ src, name, width, height, landscape: width >= height });
+    const before = await sharp(src).metadata();
+    let pipeline = sharp(src).rotate();           // apply EXIF orientation
+    // Photographs lifted from a video arrive letterboxed. A uniform border is
+    // never part of the picture, so it goes; otherwise it shows as a black edge
+    // on the card.
+    try {
+      pipeline = pipeline.trim({ threshold: 12 });
+    } catch {
+      /* older sharp without trim options: keep the border rather than fail */
+    }
+    const buf = await pipeline
+      .resize({ width: MAX_W, withoutEnlargement: true })
+      .webp({ quality: QUALITY })
+      .toBuffer();
+    const after = await sharp(buf).metadata();
+    prepared.push({
+      name,
+      buf,
+      before,
+      width: after.width,
+      height: after.height,
+      landscape: after.width >= after.height,
+    });
   }
-  read.sort((a, b) => Number(b.landscape) - Number(a.landscape));
+  prepared.sort((a, b) => Number(b.landscape) - Number(a.landscape));
 
   await fs.mkdir(OUT, { recursive: true });
   const written = [];
-  for (let i = 0; i < read.length; i++) {
-    const item = read[i];
+  for (let i = 0; i < prepared.length; i++) {
+    const item = prepared[i];
     const out = `${SLUG}-${String(i + 1).padStart(2, "0")}.webp`;
-    await sharp(item.src)
-      .rotate()                                   // apply EXIF orientation
-      .resize({ width: MAX_W, withoutEnlargement: true })
-      .webp({ quality: QUALITY })
-      .toFile(path.join(OUT, out));
-    const { size } = await fs.stat(path.join(OUT, out));
+    await fs.writeFile(path.join(OUT, out), item.buf);
     written.push(out);
+    const turned = item.before.orientation >= 5 && item.before.orientation <= 8;
+    const ow = turned ? item.before.height : item.before.width;
+    const oh = turned ? item.before.width : item.before.height;
+    const trimmed = ow !== item.width || oh !== item.height;
     console.log(
-      `  ${item.name}\n    -> ${out}  ${item.width}x${item.height}` +
-        `  ${item.landscape ? "landscape" : "PORTRAIT"}  ${(size / 1024).toFixed(0)}KB`,
+      `  ${item.name}\n    -> ${out}  ${ow}x${oh}` +
+        (trimmed ? ` trimmed to ${item.width}x${item.height}` : "") +
+        `  ${item.landscape ? "landscape" : "PORTRAIT"}  ${(item.buf.length / 1024).toFixed(0)}KB`,
     );
   }
 
   console.log(`\n"images": ${JSON.stringify(written)}`);
-  if (!read[0].landscape) {
+  if (!prepared[0].landscape) {
     console.log("\nNote: no landscape photograph here, so the cover will be cropped to its middle.");
   }
   console.log("Now run: node tools/make-thumbs.mjs && node tools/make-pages.mjs");
