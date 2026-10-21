@@ -76,23 +76,16 @@
   ],
   "projects": [
     {
-      "slug": "villa-01",
+      "slug": "kemer-prive",
       "category": "villa",
       "title": {
-        "tr": "[Villa Projesi 01]",
-        "en": "[Villa Project 01]"
+        "tr": "Kemer Privé",
+        "en": "Kemer Privé"
       },
       "images": [
-        "villa-01.webp",
-        "villa-02.webp",
-        "villa-03.webp",
-        "villa-04.webp",
-        "villa-05.webp",
-        "villa-06.webp",
-        "villa-07.webp",
-        "villa-08.webp",
-        "villa-09.webp",
-        "villa-10.webp"
+        "kemer-prive-01.webp",
+        "kemer-prive-02.webp",
+        "kemer-prive-03.webp"
       ]
     },
     {

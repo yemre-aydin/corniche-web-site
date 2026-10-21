@@ -30,7 +30,30 @@ function labelIn(categories, id, lang) {
   return cat.label[lang] || cat.label.tr || cat.label.en || id;
 }
 
-function page({ project, categories, prev, next, draft }) {
+// Real photographs arrive in both orientations. A portrait one forced into a
+// landscape frame loses its top and bottom, so each gets a frame that suits it.
+// If sharp is not installed the pages still build, with every frame landscape.
+let sharp = null;
+try {
+  ({ default: sharp } = await import("sharp"));
+} catch {
+  console.log("sharp not installed — every gallery frame will be landscape.");
+}
+
+async function orientationOf(file) {
+  if (!sharp) return "landscape";
+  try {
+    const meta = await sharp(path.join(SITE, "public", file)).metadata();
+    const turned = meta.orientation >= 5 && meta.orientation <= 8;
+    const w = turned ? meta.height : meta.width;
+    const h = turned ? meta.width : meta.height;
+    return h > w ? "portrait" : "landscape";
+  } catch {
+    return "landscape";
+  }
+}
+
+function page({ project, categories, prev, next, draft, shapes }) {
   const trTitle = titleIn(project, "tr");
   const enTitle = titleIn(project, "en");
   const trCat = labelIn(categories, project.category, "tr");
@@ -39,8 +62,9 @@ function page({ project, categories, prev, next, draft }) {
   const gallery = (project.images || [])
     .map((file, i) => {
       const loading = i === 0 ? "" : ' loading="lazy" decoding="async"';
+      const shape = (shapes && shapes.get(file)) === "portrait" ? " portrait" : "";
       return `        <figure>
-          <div class="well"><img src="../public/${esc(file)}" alt=""${loading} /></div>
+          <div class="well${shape}"><img src="../public/${esc(file)}" alt=""${loading} /></div>
         </figure>`;
     })
     .join("\n");
@@ -124,12 +148,15 @@ async function main() {
       const project = mine[i];
       const file = `${project.slug}.html`;
       wanted.add(file);
+      const shapes = new Map();
+      for (const img of project.images || []) shapes.set(img, await orientationOf(img));
       const html = page({
         project,
         categories,
         prev: mine[i - 1] || null,
         next: mine[i + 1] || null,
         draft,
+        shapes,
       });
       const dest = path.join(OUT, file);
       const before = await fs.readFile(dest, "utf8").catch(() => null);
