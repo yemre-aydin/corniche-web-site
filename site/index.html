@@ -1,137 +1,190 @@
 <!DOCTYPE html>
 <html lang="tr">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <!-- Work in progress, shared privately for review. These keep the draft out
-         of search results while it carries a real company's name; remove them
-         when the site goes live. A robots.txt would not help here: crawlers only
-         read it at the domain root, which this project site does not own. -->
-    <meta name="robots" content="noindex, nofollow" />
-    <meta name="googlebot" content="noindex, nofollow" />
-    <title>Corniche İstanbul — Projeler</title>
-    <link rel="stylesheet" href="styles.css" />
-  </head>
-  <body>
-    <div class="loading-screen" id="loadingScreen" role="status">
-      <div class="loading-inner">
-        <div class="loading-brand">CORNICHE İSTANBUL</div>
-        <div class="loading-text" data-i18n="ui.loading">Arşiv yükleniyor</div>
-        <div class="loading-bar"><span></span></div>
-      </div>
-    </div>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Corniche İstanbul — İç Mimarlık ve Yaşam Tarzı</title>
+<meta name="description" content="Corniche İstanbul; otel, villa, konut, yat ve ticari mekânlar için iç mimarlık, mobilya, perde, aydınlatma ve dekorasyon projeleri.">
+<link rel="canonical" href="https://www.corniche.com.tr/">
+<meta name="theme-color" content="#E9DFD0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body data-page="home">
 
-    <header class="site-header">
-      <!-- Placeholder wordmark, shown on phones only: on wider screens the
-           wordmark lives in the middle of the ring. The dashed rule marks where
-           the real logo goes. -->
-      <!-- The compact lockup belongs here: at this size the lower lines of the
-           full one would not be legible. Placeholder until that artwork comes. -->
-      <div class="brand" id="brand">CORNICHE</div>
-    </header>
-
-    <!-- The only furniture in the top right: the menu button and the language
-         choice, inside one hairline frame. -->
-    <div class="topright">
-      <button class="menu-toggle" type="button" id="menuToggle"
-              aria-label="Menü" aria-expanded="false" aria-controls="menuPanel">
-        <span></span><span></span><span></span>
-      </button>
-      <div class="lang">
-        <button type="button" class="lang-btn is-active" data-lang="tr">TR</button>
-        <span class="sep">/</span>
-        <button type="button" class="lang-btn" data-lang="en">EN</button>
-      </div>
-    </div>
-
-    <div class="menu-scrim" id="menuScrim"></div>
-
-    <nav class="menu-panel" id="menuPanel" aria-label="Ana menü">
-      <button class="menu-close" type="button" id="menuClose" aria-label="Menüyü kapat">
-        <span></span><span></span>
-      </button>
+<header class="site-header">
+  <div class="header-inner">
+    <a class="header-logo" href="index.html" aria-label="Corniche İstanbul anasayfa">
+      <img src="assets/logo/corniche-logo-siyah-header.png" alt="Corniche İstanbul">
+    </a>
+    <nav class="nav-desktop" aria-label="Ana menü">
       <ul class="menu-list">
-        <li><a href="#" data-i18n-pair="nav.projects"><span class="mi-a"></span><span class="mi-b"></span></a></li>
-        <li><a href="#" data-i18n-pair="nav.about"><span class="mi-a"></span><span class="mi-b"></span></a></li>
-        <li><a href="#" data-i18n-pair="nav.services"><span class="mi-a"></span><span class="mi-b"></span></a></li>
-        <li><a href="#" data-i18n-pair="nav.showroom"><span class="mi-a"></span><span class="mi-b"></span></a></li>
-        <li><a href="#" data-i18n-pair="nav.contact"><span class="mi-a"></span><span class="mi-b"></span></a></li>
+        <li><a class="menu-item" data-nav-page="projeler" href="projeler/index.html">Projeler</a></li>
+        <li><a class="menu-item" data-nav-page="hakkimizda" href="hakkimizda/index.html">Hakkımızda</a></li>
+        <li><a class="menu-item" data-nav-page="hizmetlerimiz" href="hizmetlerimiz/index.html">Hizmetlerimiz</a></li>
+        <li class="has-dropdown">
+          <a class="menu-item" data-nav-page="koleksiyon" href="koleksiyon/index.html">Koleksiyon</a>
+          <div class="dropdown-panel">
+            <ul>
+              <li><a href="koleksiyon/mobilya.html">Özel Tasarım Mobilya</a></li>
+              <li><a href="koleksiyon/aydinlatma.html">Aydınlatma</a></li>
+              <li><a href="koleksiyon/tekstil.html">Tekstil</a></li>
+              <li><a href="koleksiyon/aksesuar.html">Aksesuar</a></li>
+              <li><a href="koleksiyon/sanat.html">Sanat</a></li>
+            </ul>
+          </div>
+        </li>
+        <li><a class="menu-item" data-nav-page="showroom" href="showroom/index.html">Showroom</a></li>
+        <li><a class="menu-item" data-nav-page="iletisim" href="iletisim/index.html">İletişim</a></li>
       </ul>
-      <div class="menu-lang">
-        <button type="button" class="lang-btn is-active" data-lang="tr">TR</button>
-        <span class="sep">/</span>
-        <button type="button" class="lang-btn" data-lang="en">EN</button>
+      <div class="lang-switch">
+        <button type="button" class="is-active" data-lang="tr">TR</button>
+        <span class="lang-sep">/</span>
+        <button type="button" data-lang="en">EN</button>
       </div>
     </nav>
-
-    <button class="corner corner--left" type="button">
-      <span data-i18n="ui.filter">Projeleri filtrele</span> <i>+</i>
+    <button class="menu-burger" aria-label="Menüyü aç" aria-expanded="false">
+      <span class="bar"></span><span class="bar"></span>
     </button>
-    <button class="corner corner--right" type="button" id="viewToggle" aria-pressed="false">
-      <span id="viewToggleLabel">Izgara görünümü</span> <i>+</i>
-    </button>
+  </div>
+</header>
 
-    <!-- Mobile category strip, filled from projects.json. Scrolls sideways. -->
-    <div class="cat-row" id="catRow" role="tablist" aria-label="Proje kategorileri"></div>
-
-    <!-- Appears only once a category is open. Labelled rather than an icon, so
-         the way back reads without being learned. -->
-    <button class="ring-back" type="button" id="ringBack" hidden>
-      <i class="arrow">←</i><span id="ringBackLabel">Tüm kategoriler</span>
-      <em id="ringBackWhere"></em>
-    </button>
-
-    <div class="scene">
-      <!-- The hairline sits inside the gallery so it shares the cards' 3D
-           space and weaves in front of some and behind others. -->
-      <div class="gallery" id="gallery">
-        <div class="ring-line" id="ringLine" aria-hidden="true"></div>
+<div class="menu-panel" aria-hidden="true">
+  <div class="menu-panel-top">
+    <img src="assets/logo/corniche-logo-beyaz-header.png" alt="Corniche İstanbul">
+    <button class="menu-panel-close" aria-label="Menüyü kapat"><span></span><span></span></button>
+  </div>
+  <ul class="menu-panel-list">
+    <li class="menu-panel-item"><a class="menu-panel-link" data-nav-page="projeler" href="projeler/index.html">Projeler</a></li>
+    <li class="menu-panel-item"><a class="menu-panel-link" data-nav-page="hakkimizda" href="hakkimizda/index.html">Hakkımızda</a></li>
+    <li class="menu-panel-item"><a class="menu-panel-link" data-nav-page="hizmetlerimiz" href="hizmetlerimiz/index.html">Hizmetlerimiz</a></li>
+    <li class="menu-panel-item">
+      <a class="menu-panel-link" data-nav-page="koleksiyon" href="koleksiyon/index.html" data-toggle-sub="sub-koleksiyon" onclick="return false;">
+        Koleksiyon <span class="toggle-sign">+</span>
+      </a>
+      <div class="menu-panel-sub" id="sub-koleksiyon">
+        <ul>
+          <li><a href="koleksiyon/mobilya.html">Özel Tasarım Mobilya</a></li>
+          <li><a href="koleksiyon/aydinlatma.html">Aydınlatma</a></li>
+          <li><a href="koleksiyon/tekstil.html">Tekstil</a></li>
+          <li><a href="koleksiyon/aksesuar.html">Aksesuar</a></li>
+          <li><a href="koleksiyon/sanat.html">Sanat</a></li>
+        </ul>
       </div>
-      <div class="center" id="center">
-        <div class="center-default" id="centerDefault">
-          <p class="center-eyebrow" data-i18n="ui.selectedWorks">Seçili İşler</p>
-          <!-- Stands in for the full lockup, which is one piece of artwork:
-               emblem, CORNICHE, ISTANBUL and the line beneath. Set here only so
-               the space and proportions are right when the vector arrives. -->
-          <h1 class="center-title">
-            <span class="cm-name">CORNICHE</span>
-            <span class="cm-city">ISTANBUL</span>
-            <span class="cm-tag">INTERIOR &amp; LIFE STYLE</span>
-          </h1>
-          <p class="center-sub" data-i18n="ui.tagline">[Firma tanıtım cümlesi]</p>
-        </div>
-        <div class="center-project" id="centerProject">
-          <div class="preview-img" id="previewImg"><img alt="" /></div>
-          <p class="preview-cat" id="previewCat"></p>
-          <h2 class="preview-title" id="previewTitle"></h2>
-        </div>
-      </div>
-      <div class="labels" id="labels"></div>
+    </li>
+    <li class="menu-panel-item"><a class="menu-panel-link" data-nav-page="showroom" href="showroom/index.html">Showroom</a></li>
+    <li class="menu-panel-item"><a class="menu-panel-link" data-nav-page="iletisim" href="iletisim/index.html">İletişim</a></li>
+  </ul>
+  <div class="menu-panel-contact">
+    <a href="tel:+902122822609">0212 282 26 09</a>
+    <span>Levent, İstanbul</span>
+  </div>
+  <div class="menu-panel-lang">
+    <button type="button" class="is-active" data-lang="tr">TR</button>
+    <span>/</span>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</div>
+
+<main>
+
+  <!-- ANA SAYFA HALKASI — masaüstü / tablet -->
+  <section class="hero-ring" aria-label="Proje kategorileri">
+    <div class="ring-ellipse"></div>
+    <div class="ring-cards"></div>
+    <div class="ring-center">
+      <img class="ring-center-logo" src="assets/logo/corniche-logo-siyah-full.png" alt="Corniche İstanbul — Interior &amp; Life Style">
+      <p class="ring-center-tagline intro-line">[Firma tanıtım cümlesi]</p>
+    </div>
+    <a class="ring-corner ring-corner-left" href="projeler/index.html">Projeleri filtrele +</a>
+    <a class="ring-corner ring-corner-right" href="projeler/index.html">Izgara görünümü +</a>
+  </section>
+
+  <!-- ANA SAYFA — mobil -->
+  <section class="home-mobile">
+    <div class="filter-row">
+      <a href="projeler/index.html">Projeleri filtrele +</a>
+      <a href="projeler/index.html">Izgara görünümü +</a>
     </div>
 
-    <div class="mobile-preview" id="mobilePreview">
-      <p class="mp-cat" id="mpCat"></p>
-      <h1 class="mp-title" id="mpTitle"></h1>
-      <div class="mp-img" id="mpImg"><img alt="" /></div>
-      <a class="mp-view" id="mpView" href="#"><span data-i18n="ui.viewProject">Projeyi incele</span> <i>+</i></a>
+    <div class="category-row" role="tablist" aria-label="Proje kategorileri">
+      <button type="button" class="is-active" data-cat="otel">Otel</button>
+      <button type="button" data-cat="villa">Villa</button>
+      <button type="button" data-cat="konut">Konut</button>
+      <button type="button" data-cat="yat">Yat &amp; Marin</button>
+      <button type="button" data-cat="ticari">Ticari</button>
+      <button type="button" data-cat="yenileme">Yenileme</button>
     </div>
 
-    <!-- Flat alternative to the ring: every project, grouped by category, in
-         ordinary document flow. Also what a visitor who has asked for reduced
-         motion gets on arrival. -->
-    <main class="grid-view" id="gridView" hidden>
-      <div class="grid-brand">
-        <span class="cm-name">CORNICHE</span>
-        <span class="cm-city">ISTANBUL</span>
+    <p class="home-tagline-mobile intro-line">[Firma tanıtım cümlesi]</p>
+
+    <div class="featured-project">
+      <span class="small-label">OTEL PROJESİ</span>
+      <h2 class="featured-title">[Otel örnek proje adı]</h2>
+      <div class="featured-photo">
+        <div class="img-ph ratio-16-10" role="img" aria-label="Corniche İstanbul otel projesi öne çıkan fotoğraf (yakında)"><span>Otel Projeleri</span></div>
       </div>
-      <div class="grid-inner" id="gridInner"></div>
-    </main>
+      <a class="explore-link" href="projeler/index.html?kategori=otel">Projeyi incele +</a>
+    </div>
 
-    <div class="mobile-ring-hitbox" id="ringHitbox"></div>
-    <div class="custom-cursor" id="cursor"></div>
+    <div class="arc-wrap" aria-hidden="true">
+      <div class="arc-strips">
+        <div class="img-ph strip"></div>
+        <div class="img-ph strip"></div>
+        <div class="img-ph strip"></div>
+        <div class="img-ph strip"></div>
+        <div class="img-ph strip"></div>
+        <div class="img-ph strip"></div>
+      </div>
+    </div>
 
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-    <script src="script.js"></script>
-  </body>
+    <div class="home-grid-fallback">
+      <p><a href="projeler/index.html">Tüm projeleri ızgara görünümünde incele →</a></p>
+    </div>
+  </section>
+
+</main>
+
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-grid">
+      <div class="footer-logo"><img src="assets/logo/corniche-logo-beyaz-full.png" alt="Corniche İstanbul"></div>
+      <div class="footer-col">
+        <span>Levent Mah. Ebulula Mardin Cad. No:99, Beşiktaş/İstanbul 34330</span>
+        <span>Hafta içi 09:00–19:00 · Cumartesi 09:00–18:30 · Pazar kapalı</span>
+      </div>
+      <div class="footer-col">
+        <a href="tel:+902122822609">0212 282 26 09</a>
+        <a href="https://wa.me/905452822609" target="_blank" rel="noopener">0545 282 26 09 (WhatsApp)</a>
+        <a href="mailto:info@corniche.com.tr">info@corniche.com.tr</a>
+      </div>
+      <div class="footer-col">
+        <div class="footer-social">
+          <a href="https://instagram.com/cornicheistanbul" target="_blank" rel="noopener" aria-label="Instagram">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.2c3.2 0 3.6 0 4.9.1 1.2.1 2 .2 2.6.5.7.3 1.2.6 1.7 1.1.5.5.9 1 1.1 1.7.2.6.4 1.4.5 2.6.1 1.3.1 1.7.1 4.9s0 3.6-.1 4.9c-.1 1.2-.2 2-.5 2.6-.3.7-.6 1.2-1.1 1.7-.5.5-1 .9-1.7 1.1-.6.2-1.4.4-2.6.5-1.3.1-1.7.1-4.9.1s-3.6 0-4.9-.1c-1.2-.1-2-.2-2.6-.5-.7-.3-1.2-.6-1.7-1.1-.5-.5-.9-1-1.1-1.7-.2-.6-.4-1.4-.5-2.6C2.2 15.6 2.2 15.2 2.2 12s0-3.6.1-4.9c.1-1.2.2-2 .5-2.6.3-.7.6-1.2 1.1-1.7.5-.5 1-.9 1.7-1.1.6-.2 1.4-.4 2.6-.5C8.4 2.2 8.8 2.2 12 2.2zm0 1.8c-3.1 0-3.5 0-4.7.1-1 .1-1.6.2-2 .4-.5.2-.9.4-1.2.8-.4.4-.6.7-.8 1.2-.1.4-.3 1-.4 2-.1 1.2-.1 1.6-.1 4.7s0 3.5.1 4.7c.1 1 .2 1.6.4 2 .2.5.4.9.8 1.2.4.4.7.6 1.2.8.4.1 1 .3 2 .4 1.2.1 1.6.1 4.7.1s3.5 0 4.7-.1c1-.1 1.6-.2 2-.4.5-.2.9-.4 1.2-.8.4-.4.6-.7.8-1.2.1-.4.3-1 .4-2 .1-1.2.1-1.6.1-4.7s0-3.5-.1-4.7c-.1-1-.2-1.6-.4-2-.2-.5-.4-.9-.8-1.2-.4-.4-.7-.6-1.2-.8-.4-.1-1-.3-2-.4-1.2-.1-1.6-.1-4.7-.1zm0 3.7a5.3 5.3 0 1 1 0 10.6 5.3 5.3 0 0 1 0-10.6zm0 1.8a3.5 3.5 0 1 0 0 7 3.5 3.5 0 0 0 0-7zm5.5-2a1.2 1.2 0 1 1 0 2.5 1.2 1.2 0 0 1 0-2.5z"/></svg>
+          </a>
+          <a href="#" aria-label="Facebook">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M13.5 22v-8.5h2.85l.43-3.3H13.5V8c0-.96.27-1.6 1.64-1.6h1.75V3.46C16.56 3.32 15.52 3.2 14.3 3.2c-2.44 0-4.1 1.49-4.1 4.22v2.78H7.35v3.3h2.85V22h3.3z"/></svg>
+          </a>
+        </div>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <span>© 2026 Corniche İstanbul</span>
+      <a href="iletisim/index.html#kvkk">KVKK Aydınlatma Metni</a>
+      <a href="iletisim/index.html#cerezler">Çerez Politikası</a>
+      <span>TR / EN</span>
+    </div>
+  </div>
+</footer>
+
+<a class="wa-fixed" href="https://wa.me/905452822609" target="_blank" rel="noopener" aria-label="WhatsApp ile iletişime geç">
+  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M17.5 14.4c-.3-.1-1.7-.8-1.9-.9-.3-.1-.5-.1-.6.1-.2.3-.7.9-.9 1-.2.2-.3.2-.6.1-.3-.1-1.2-.4-2.3-1.4-.9-.8-1.4-1.7-1.6-2-.2-.3 0-.5.1-.6.1-.1.3-.3.4-.5.1-.1.2-.3.3-.4.1-.2 0-.3 0-.5 0-.1-.6-1.5-.8-2-.2-.5-.4-.4-.6-.4h-.5c-.2 0-.5.1-.7.3-.2.3-.9.9-.9 2.1 0 1.2.9 2.4 1 2.6.1.2 1.8 2.8 4.4 3.8.6.3 1.1.4 1.5.5.6.2 1.2.2 1.6.1.5-.1 1.5-.6 1.7-1.2.2-.6.2-1.1.1-1.2 0-.1-.2-.2-.5-.3z"/><path d="M12 2a10 10 0 0 0-8.6 15l-1.1 4 4.1-1.1A10 10 0 1 0 12 2zm0 1.8a8.2 8.2 0 0 1 7 12.5l-.2.3.7 2.5-2.6-.7-.3.2A8.2 8.2 0 1 1 12 3.8z"/></svg>
+</a>
+
+<script src="js/categories-data.js"></script>
+<script src="js/main.js"></script>
+</body>
 </html>

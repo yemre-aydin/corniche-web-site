@@ -3,3 +3,8 @@
 .vscode/
 Thumbs.db
 node_modules/
+pom.xml
+src/
+target/
+.vscode/
+site/assets/basinda-biz/_orijinal-buyuk-dosyalar/
