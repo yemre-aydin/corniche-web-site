@@ -77,136 +77,429 @@
     }
   }
 
-  /* ---------------- ANA SAYFA HALKASI (desktop + tablet) ---------------- */
-  function initHeroRing() {
-    var ring = document.querySelector('.hero-ring');
-    if (!ring || !window.CORNICHE_CATEGORIES) return;
+  /* ================================================================
+     ANA SAYFA HALKASI — eski GSAP + ScrollTrigger mekaniğinin taşınmış
+     hâli (bkz. git geçmişi 4150e09, site/script.js "Showcase ring" ve
+     "mobile ring" bölümleri). Masaüstü/tablet tarafı kavisli, dilimli
+     kartlardan oluşan, sayfa kaydırıldıkça dönen bir halka; mobil
+     tarafı dokunup sürükleyerek döndürülen düz kartlı küçük bir
+     atlıkarınca. İkisi de aynı 6 kategoriyi (window.CORNICHE_CATEGORIES)
+     kullanır; tıklanan/seçilen kart projeler/index.html?kategori=X'e
+     götürür — kategori içinde proje listesine "girme" (eski koddaki
+     categories→projects seviyesi) ana sayfada yok, o iş zaten
+     projeler/ sayfasında yapılıyor.
+     ================================================================ */
 
-    var cardsWrap = ring.querySelector('.ring-cards');
-    var categories = window.CORNICHE_CATEGORIES;
-    var cards = [];
+  var RING_DEG = Math.PI / 180;
 
-    categories.forEach(function (cat) {
-      var card = document.createElement('div');
-      card.className = 'ring-card ' + (cat.isHotel ? 'is-hotel ' : '') +
-        (cat.labelPos === 'above' ? 'label-above' : 'label-below');
-      card.setAttribute('data-cat', cat.id);
+  /* ---- masaüstü / tablet: kavisli, dilimli, ScrollTrigger'lı halka ---- */
+  function initHeroRingDesktop(ring, categories) {
+    if (!window.gsap || !window.ScrollTrigger) return;
+    gsap.registerPlugin(ScrollTrigger);
 
-      var a = document.createElement('a');
-      a.href = 'projeler/index.html?kategori=' + cat.id;
+    var scene = ring.querySelector('.ring-scene');
+    var gallery = ring.querySelector('.ring-gallery');
+    var ellipseLine = ring.querySelector('.ring-ellipse');
+    var centerWrap = ring.querySelector('.ring-center');
+    var previewCat = ring.querySelector('.ring-preview-cat');
+    var previewTitle = ring.querySelector('.ring-preview-title');
+    var previewLink = ring.querySelector('.ring-preview-link');
+    if (!scene || !gallery) return;
 
-      var inner = document.createElement('div');
-      inner.className = 'ring-card-inner';
+    var SEGMENTS = 8;
+    var CURVE_R = 620;     // kartın sarıldığı silindirin yarıçapı
+    var DEPTH = 330;       // halkanın arka tarafı ne kadar geride durur
+    var TURN = 22;         // halkanın yanlarındaki kart dönüş açısı
+    var LABEL_GAP = 30;
+    var HOVER_LIFT = 14, HOVER_SCALE = 1.05;
+    var PARALLAX = 4;
+    var ARC_STEPS = 1440;
 
-      var img = document.createElement('div');
-      img.className = 'img-ph ring-card-img';
-      img.setAttribute('role', 'img');
-      img.setAttribute('aria-label', 'Corniche İstanbul ' + cat.tr + ' fotoğrafı (yakında)');
-      img.innerHTML = '<span>' + cat.tr + '</span>';
+    var isTabletNow = false;
+    var showRx = 640, showRy = 190;
+    var arcTable = null, arcTotal = 0, arcTop = 0;
+    var items = [];
+    var hovered = null;
+    var ringRot = 0;
 
-      inner.appendChild(img);
-      a.appendChild(inner);
-      card.appendChild(a);
-
-      var label = document.createElement('span');
-      label.className = 'ring-card-label';
-      label.textContent = cat.tr;
-      card.appendChild(label);
-
-      cardsWrap.appendChild(card);
-      cards.push({ el: card, inner: inner, cat: cat });
-    });
-
-    var isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
-
-    function applySizes() {
-      isTablet = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
-      cards.forEach(function (c) {
-        var w = c.cat.w, h = c.cat.h;
-        if (isTablet) {
-          w = c.cat.isHotel ? 170 : 140;
-          h = c.cat.isHotel ? 113 : 93;
-        }
-        c.inner.style.width = w + 'px';
-        c.inner.style.height = h + 'px';
-      });
-    }
-    applySizes();
-
-    var ellipse = ring.querySelector('.ring-ellipse');
-
-    function layout(offsetDeg) {
-      var rect = ellipse.getBoundingClientRect();
-      var rx = rect.width / 2;
-      var ry = rect.height / 2;
-      cards.forEach(function (c) {
-        var rad = (c.cat.angle + offsetDeg) * Math.PI / 180;
-        var dx = rx * Math.cos(rad);
-        var dy = ry * Math.sin(rad);
-        c.el.style.left = 'calc(50% + ' + dx.toFixed(1) + 'px)';
-        c.el.style.top = 'calc(55% + ' + dy.toFixed(1) + 'px)';
-        c.el.style.transform = 'translate(-50%, -50%)';
-      });
-    }
-
-    window.addEventListener('resize', function () {
-      applySizes();
-      layout(currentOffset);
-    });
-
-    var currentOffset = 0;
-    layout(0);
-
-    if (prefersReducedMotion) return;
-
-    var isPaused = false;
-    ring.addEventListener('mouseenter', function () { isPaused = true; });
-    ring.addEventListener('mouseleave', function () { isPaused = false; });
-
-    var lastTs = null;
-    var DURATION = 60000; // 60s tam tur
-    function tick(ts) {
-      if (lastTs === null) lastTs = ts;
-      var delta = ts - lastTs;
-      lastTs = ts;
-      if (!isPaused) {
-        currentOffset = (currentOffset + (delta / DURATION) * 360) % 360;
-        layout(currentOffset);
+    function buildArcTable() {
+      arcTable = new Float64Array(ARC_STEPS + 1);
+      var prevX = showRx, prevY = 0, total = 0;
+      for (var s = 1; s <= ARC_STEPS; s++) {
+        var a = (s / ARC_STEPS) * Math.PI * 2;
+        var x = Math.cos(a) * showRx, y = Math.sin(a) * showRy;
+        total += Math.hypot(x - prevX, y - prevY);
+        arcTable[s] = total;
+        prevX = x; prevY = y;
       }
-      requestAnimationFrame(tick);
+      arcTotal = total;
+      arcTop = arcTable[Math.round((270 / 360) * ARC_STEPS)] / arcTotal;
     }
-    requestAnimationFrame(tick);
+
+    function angleAtArc(t) {
+      if (!arcTable || !arcTotal) return t * 360;
+      var want = ((((t % 1) + 1) % 1)) * arcTotal;
+      var lo = 0, hi = ARC_STEPS;
+      while (lo < hi) {
+        var mid = (lo + hi) >> 1;
+        if (arcTable[mid] < want) lo = mid + 1; else hi = mid;
+      }
+      return (lo / ARC_STEPS) * 360;
+    }
+
+    function geometry() {
+      var vw = window.innerWidth, vh = window.innerHeight;
+      isTabletNow = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
+      showRx = Math.min(vw * 0.39, 700);
+      // Eski versiyonda merkezde sadece bir metin logosu vardı; burada gerçek
+      // logo görseli + etiket cümlesi daha fazla dikey yer kaplıyor, o yüzden
+      // kartların üst/alt noktalarının onunla çakışmaması için dikey yarıçap
+      // eski orandan (vh*0.205) biraz büyütüldü.
+      showRy = Math.min(vh * 0.27, 260);
+      if (ellipseLine) {
+        ellipseLine.style.width = (showRx * 2) + 'px';
+        ellipseLine.style.height = (showRy * 2) + 'px';
+      }
+      buildArcTable();
+    }
+
+    function build() {
+      gallery.innerHTML = '';
+      items.length = 0;
+      categories.forEach(function (cat) {
+        var w = cat.w, h = cat.h;
+        if (isTabletNow) {
+          w = cat.isHotel ? 170 : 140;
+          h = cat.isHotel ? 113 : 93;
+        }
+        var segW = w / SEGMENTS;
+        var step = (segW / CURVE_R) * (180 / Math.PI);
+
+        var el = document.createElement('a');
+        el.className = 'ring-item' + (cat.isHotel ? ' is-hotel' : '');
+        el.href = 'projeler/index.html?kategori=' + cat.id;
+        el.style.width = w + 'px';
+        el.style.height = h + 'px';
+
+        var cardEl = document.createElement('div');
+        cardEl.className = 'ring-card3d';
+
+        var face = document.createElement('div');
+        face.className = 'ring-face';
+        face.style.transform = 'translateZ(' + (-CURVE_R) + 'px)';
+        for (var s = 0; s < SEGMENTS; s++) {
+          var seg = document.createElement('div');
+          seg.className = 'ring-seg';
+          seg.style.width = (segW + 1) + 'px';
+          seg.style.marginLeft = (-(segW + 1) / 2) + 'px';
+          seg.style.left = '50%';
+          var segAngle = (s - (SEGMENTS - 1) / 2) * step;
+          seg.style.transform = 'rotateY(' + segAngle + 'deg) translateZ(' + CURVE_R + 'px)';
+          var shade = 0.9 + 0.1 * Math.cos(segAngle * RING_DEG);
+          seg.style.filter = 'brightness(' + shade.toFixed(3) + ')';
+          face.appendChild(seg);
+        }
+        cardEl.appendChild(face);
+
+        var label = document.createElement('span');
+        label.className = 'ring-label';
+        label.textContent = (cat.tr || '').toLocaleUpperCase('en-US');
+
+        el.appendChild(cardEl);
+        el.appendChild(label);
+        gallery.appendChild(el);
+
+        items.push({ el: el, cardEl: cardEl, label: label, cat: cat, w: w, h: h });
+      });
+    }
+
+    function place() {
+      var n = items.length || 1;
+      items.forEach(function (card, i) {
+        var angle = angleAtArc(arcTop + i / n + ringRot / 360);
+        var rad = angle * RING_DEG;
+        var sin = Math.sin(rad), cos = Math.cos(rad);
+        var z = sin * DEPTH;          // elipsin üst yarısı daha geride durur
+        var near = (sin + 1) / 2;     // 0 uzak, 1 yakın
+        var lifted = card === hovered;
+
+        gsap.set(card.el, {
+          xPercent: -50, yPercent: -50,
+          x: cos * showRx,
+          y: sin * showRy - (lifted ? HOVER_LIFT : 0),
+          z: z,
+          opacity: 0.42 + near * 0.58
+        });
+        gsap.set(card.cardEl, {
+          rotationY: cos * TURN,
+          scale: (0.74 + near * 0.34) * (lifted ? HOVER_SCALE : 1)
+        });
+        card.label.style.top = sin < 0
+          ? (-LABEL_GAP) + 'px'
+          : (card.h + LABEL_GAP - 14) + 'px';
+      });
+    }
+
+    function setPreview(card) {
+      if (!centerWrap) return;
+      if (previewCat) previewCat.textContent = (card.cat.tr || '').toLocaleUpperCase('en-US');
+      if (previewTitle) previewTitle.textContent = card.cat.tr;
+      if (previewLink) previewLink.setAttribute('href', 'projeler/index.html?kategori=' + card.cat.id);
+      centerWrap.classList.add('show-preview');
+    }
+    function clearPreview() {
+      if (centerWrap) centerWrap.classList.remove('show-preview');
+    }
+
+    scene.addEventListener('pointermove', function (e) {
+      var under = document.elementFromPoint(e.clientX, e.clientY);
+      var hit = under && under.closest('.ring-item');
+      var card = null;
+      if (hit) {
+        for (var i = 0; i < items.length; i++) {
+          if (items[i].el === hit) { card = items[i]; break; }
+        }
+      }
+      if (card === hovered) return;
+      hovered = card;
+      place();
+      if (card) setPreview(card); else clearPreview();
+    });
+    scene.addEventListener('pointerleave', function () {
+      if (!hovered) return;
+      hovered = null;
+      place();
+      clearPreview();
+    });
+
+    function initParallax() {
+      window.addEventListener('mousemove', function (e) {
+        var px = (e.clientX - window.innerWidth / 2) / (window.innerWidth / 2);
+        var py = (e.clientY - window.innerHeight / 2) / (window.innerHeight / 2);
+        gsap.to(gallery, { rotationX: py * PARALLAX, rotationY: -px * PARALLAX, duration: 1, ease: 'power2.out', overwrite: 'auto' });
+      });
+    }
+
+    function initScroll() {
+      ScrollTrigger.create({
+        trigger: ring,
+        start: 'top top',
+        end: '+=140%',
+        pin: true,
+        pinSpacing: true,
+        scrub: 1.4,
+        onUpdate: function (self) { ringRot = self.progress * 360; place(); }
+      });
+    }
+
+    geometry();
+    build();
+    place();
+
+    if (!prefersReducedMotion) {
+      initScroll();
+      initParallax();
+    }
+
+    var rt;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () {
+        geometry();
+        build();
+        place();
+        if (window.ScrollTrigger) ScrollTrigger.refresh();
+      }, 150);
+    });
   }
 
-  /* ---------------- ANA SAYFA — mobil kategori satırı ---------------- */
-  function initMobileFeatured() {
-    var row = document.querySelector('.category-row');
-    if (!row || !window.CORNICHE_CATEGORIES) return;
-    var categories = window.CORNICHE_CATEGORIES;
-    var label = document.querySelector('.featured-project .small-label');
-    var title = document.querySelector('.featured-project .featured-title');
-    var photo = document.querySelector('.featured-project .featured-photo');
-    var exploreLink = document.querySelector('.featured-project .explore-link');
+  /* ---- mobil: dokunup sürükle-döndür halkası ---- */
+  function initHeroRingMobile(section, categories) {
+    if (!window.gsap) return;
 
-    row.querySelectorAll('button[data-cat]').forEach(function (btn) {
-      btn.addEventListener('click', function () {
-        row.querySelectorAll('button').forEach(function (b) { b.classList.remove('is-active'); });
-        btn.classList.add('is-active');
-        var catId = btn.getAttribute('data-cat');
-        var cat = categories.filter(function (c) { return c.id === catId; })[0];
-        if (!cat) return;
-        if (photo) photo.style.opacity = '0';
-        setTimeout(function () {
-          if (label) label.textContent = (cat.tr + ' PROJESİ').toUpperCase();
-          if (title) title.textContent = '[' + cat.tr + ' örnek proje adı]';
-          if (exploreLink) exploreLink.setAttribute('href', 'projeler/index.html?kategori=' + cat.id);
-          if (photo) {
-            photo.innerHTML = '<div class="img-ph ratio-16-10" role="img" aria-label="Corniche İstanbul ' + cat.tr + ' öne çıkan proje fotoğrafı (yakında)"><span>' + cat.tr + '</span></div>';
-            photo.style.opacity = '1';
-          }
-        }, 250);
+    var wrap = section.querySelector('.mobile-ring-wrap');
+    var hitbox = section.querySelector('.mobile-ring-hitbox');
+    var cardsWrap = section.querySelector('.mobile-ring');
+    var mrpCat = section.querySelector('.mrp-cat');
+    var mrpTitle = section.querySelector('.mrp-title');
+    var mrpImgSpan = section.querySelector('.mrp-img span');
+    var mrpImgWrap = section.querySelector('.mrp-img');
+    var mrpView = section.querySelector('.mrp-view');
+    if (!wrap || !hitbox || !cardsWrap) return;
+
+    // Eski mobil halka ("item"/"item-card") devasa, çoğu ekranın dışında
+    // duran bir çarktı — tam ekranlık bir sahnede bu normaldi, önden sadece
+    // bir dilim görünürdü. Burada halka, sayfanın normal akışındaki küçük
+    // bir kutuya (mobile-ring-wrap) sığmak zorunda; o yüzden aynı "pivot
+    // etrafında döndür" tekniği yerine, masaüstü halkasında zaten kanıtlanmış
+    // sınırlı-elips tekniğinin yatay/coverflow biçimi kullanılıyor: kartlar
+    // ringRot'a göre bir elips üstünde dizilir, öndeki (ringRot'a en yakın)
+    // kart en büyük/en net olanıdır. Sürükleme + eylemsizlik fiziği eski
+    // koddan birebir taşındı.
+    var TURN = 26;           // yan kartların hafif dönmesi (desktop'taki SHOW_TURN'ün küçük hali)
+    var DEPTH = 120;
+    var DRAG_SPEED = 0.6;
+
+    var INC = 360 / categories.length;
+    var ellRx = 120, ringRot = 0, currentRotation = 0, targetRotation = 0, velocity = 0, dragging = false;
+    var items = [];
+    var selected = null;
+
+    function build() {
+      cardsWrap.innerHTML = '';
+      items.length = 0;
+      categories.forEach(function (cat, i) {
+        var w = cat.isHotel ? 104 : 84;
+        var h = cat.isHotel ? 70 : 56;
+
+        var el = document.createElement('div');
+        el.className = 'mr-item';
+
+        var a = document.createElement('a');
+        a.href = 'projeler/index.html?kategori=' + cat.id;
+
+        var card = document.createElement('div');
+        card.className = 'mr-card' + (cat.isHotel ? ' is-hotel-card' : '');
+        card.style.width = w + 'px';
+        card.style.height = h + 'px';
+
+        var ph = document.createElement('div');
+        ph.className = 'img-ph mr-card-img';
+        ph.setAttribute('role', 'img');
+        ph.setAttribute('aria-label', 'Corniche İstanbul ' + cat.tr + ' fotoğrafı (yakında)');
+        ph.innerHTML = '<span>' + cat.tr + '</span>';
+
+        card.appendChild(ph);
+        a.appendChild(card);
+        el.appendChild(a);
+        cardsWrap.appendChild(el);
+
+        items.push({ el: el, card: card, cat: cat, index: i });
       });
+    }
+
+    function geometry() {
+      ellRx = Math.max(90, wrap.clientWidth * 0.34);
+      items.forEach(function (card) {
+        gsap.set(card.el, { xPercent: -50, yPercent: -50 });
+      });
+    }
+
+    function place() {
+      var n = items.length || 1;
+      items.forEach(function (card) {
+        var angle = card.index * INC + ringRot;
+        var rad = angle * RING_DEG;
+        var sin = Math.sin(rad), cos = Math.cos(rad);
+        var near = (cos + 1) / 2;          // 1 = tam önde, 0 = tam arkada
+        gsap.set(card.el, {
+          x: sin * ellRx,
+          z: (cos - 1) * DEPTH,
+          opacity: 0.35 + near * 0.65
+        });
+        gsap.set(card.card, {
+          rotationY: -sin * TURN,
+          scale: 0.66 + near * 0.5
+        });
+      });
+    }
+
+    function nearest() {
+      var n = items.length || 1;
+      var idx = Math.round(-ringRot / INC);
+      idx = ((idx % n) + n) % n;
+      return items[idx];
+    }
+
+    function updatePreview(card) {
+      if (mrpCat) mrpCat.textContent = (card.cat.tr || '').toLocaleUpperCase('en-US');
+      if (mrpTitle) mrpTitle.textContent = card.cat.tr;
+      if (mrpImgSpan) mrpImgSpan.textContent = card.cat.tr;
+      if (mrpImgWrap) mrpImgWrap.setAttribute('aria-label', 'Corniche İstanbul ' + card.cat.tr + ' fotoğrafı (yakında)');
+      if (mrpView) mrpView.setAttribute('href', 'projeler/index.html?kategori=' + card.cat.id);
+    }
+
+    function updateSelection() {
+      var card = nearest();
+      if (card === selected) return;
+      if (selected) selected.card.classList.remove('is-selected');
+      selected = card;
+      selected.card.classList.add('is-selected');
+      updatePreview(card);
+    }
+
+    function tick() {
+      if (!dragging) {
+        targetRotation += velocity;
+        velocity *= 0.92;
+        if (Math.abs(velocity) < 0.01) velocity = 0;
+      }
+      currentRotation += (targetRotation - currentRotation) * 0.18;
+      ringRot = currentRotation;
+      place();
+      updateSelection();
+      requestAnimationFrame(tick);
+    }
+
+    function initDrag() {
+      var lastX = 0;
+      hitbox.addEventListener('pointerdown', function (e) {
+        dragging = true; velocity = 0; lastX = e.clientX;
+        try { hitbox.setPointerCapture(e.pointerId); } catch (err) {}
+      });
+      hitbox.addEventListener('pointermove', function (e) {
+        if (!dragging) return;
+        e.preventDefault();
+        var dx = e.clientX - lastX; lastX = e.clientX;
+        var delta = dx * DRAG_SPEED;
+        targetRotation += delta;
+        velocity = delta;
+      }, { passive: false });
+      function endDrag(e) {
+        if (!dragging) return;
+        dragging = false;
+        try { if (hitbox.hasPointerCapture(e.pointerId)) hitbox.releasePointerCapture(e.pointerId); } catch (err) {}
+      }
+      hitbox.addEventListener('pointerup', endDrag);
+      hitbox.addEventListener('pointercancel', endDrag);
+    }
+
+    build();
+    geometry();
+    place();
+    initDrag();
+    updateSelection();
+    requestAnimationFrame(tick);
+
+    var rt;
+    window.addEventListener('resize', function () {
+      clearTimeout(rt);
+      rt = setTimeout(function () { geometry(); place(); }, 150);
     });
+  }
+
+  function initHeroRing() {
+    if (!window.CORNICHE_CATEGORIES) return;
+    var categories = window.CORNICHE_CATEGORIES;
+    var ring = document.querySelector('.hero-ring');
+    var mobileSection = document.querySelector('.home-mobile');
+    var isMobileNow = window.matchMedia('(max-width: 767px)').matches;
+
+    if (!isMobileNow && ring) {
+      initHeroRingDesktop(ring, categories);
+    }
+    if (isMobileNow && mobileSection && !prefersReducedMotion) {
+      initHeroRingMobile(mobileSection, categories);
+    }
+
+    // Masaüstü/mobil eşiğini geçen bir pencere boyutu değişikliğinde (nadir,
+    // ör. tablet döndürme değil gerçek genişlik sıçraması) sayfayı yeniden
+    // yükle — iki ayrı halka motorunu canlı canlı birbirine çevirmek yerine
+    // eski koddaki aynı kısayol (location.reload) kullanılıyor.
+    var mq = window.matchMedia('(max-width: 767px)');
+    var onBreakpointChange = function () { location.reload(); };
+    if (mq.addEventListener) mq.addEventListener('change', onBreakpointChange);
+    else if (mq.addListener) mq.addListener(onBreakpointChange);
   }
 
   /* ---------------- proje kategori sekmeleri / ızgara ---------------- */
@@ -512,7 +805,6 @@
     initActiveNav();
     initLangSwitch();
     initHeroRing();
-    initMobileFeatured();
     initCollectionHome();
     initProductGrid();
     initProjectGrid();

@@ -377,7 +377,16 @@ body.menu-open { overflow: hidden; }
 }
 
 /* ==========================================================================
-   ANA SAYFA — HALKA (DESKTOP)
+   ANA SAYFA — HALKA (DESKTOP / TABLET)
+   Müşterinin ilk gördüğü ve beğendiği eski GSAP + ScrollTrigger halka
+   mekaniğinin taşınmış hâli (bkz. git geçmişi 4150e09, site/script.js).
+   Kartlar bir silindire sarılmış ince dilimlerden oluşur (gerçek kavis);
+   sayfa kaydırıldıkça ScrollTrigger halkayı döndürür; imleç bir kartın
+   üstüne gelince kart öne/yukarı çıkar ve merkezdeki logo o kategorinin
+   önizlemesine döner. Kategori fotoğrafları henüz atanmadığı için kartların
+   yüzeyi (eski koddaki fotoğraf dilimleri yerine) düz renk + hafif gölgeleme
+   ile kavis hissini korur; gerçek fotoğraflar geldiğinde seg arka planı
+   image'e çevrilebilir.
    ========================================================================== */
 .hero-ring {
   position: relative;
@@ -388,12 +397,18 @@ body.menu-open { overflow: hidden; }
   overflow: hidden;
 }
 
+.ring-scene {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  perspective: 1600px;
+  perspective-origin: 50% 55%;
+}
+
 .ring-ellipse {
   position: absolute;
   top: 55%;
   left: 50%;
-  width: 72%;
-  height: 540px;
   transform: translate(-50%, -50%);
   border: 1px solid var(--bronz);
   border-radius: 50%;
@@ -401,30 +416,43 @@ body.menu-open { overflow: hidden; }
   pointer-events: none;
 }
 
-.ring-cards {
+.ring-gallery {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  width: 0;
+  height: 0;
+  transform-style: preserve-3d;
+  will-change: transform;
+}
+
+.ring-item {
+  position: absolute;
+  top: 0; left: 0;
+  display: block;
+  transform-style: preserve-3d;
+  cursor: pointer;
+}
+.ring-card3d {
   position: absolute;
   inset: 0;
+  transform-style: preserve-3d;
+  transition: box-shadow 400ms ease;
 }
-
-.ring-card {
-  position: absolute;
-  top: 50%; left: 50%;
-}
-
-.ring-card-inner {
-  position: relative;
-  width: 100%; height: 100%;
-  transition: transform 300ms ease-out, opacity 300ms ease-out;
-}
-.ring-card-img {
-  width: 100%; height: 100%;
-  object-fit: cover;
-}
-.ring-card.is-hotel .ring-card-inner {
+.ring-item.is-hotel .ring-card3d {
   outline: 2px solid var(--bronz);
   outline-offset: 4px;
 }
-.ring-card-label {
+.ring-face { position: absolute; inset: 0; transform-style: preserve-3d; }
+.ring-seg {
+  position: absolute;
+  top: 0; left: 0;
+  height: 100%;
+  background-color: var(--bej);
+  backface-visibility: visible;
+}
+
+.ring-label {
   position: absolute;
   left: 50%;
   transform: translateX(-50%);
@@ -432,19 +460,12 @@ body.menu-open { overflow: hidden; }
   font-family: 'Jost', sans-serif;
   font-weight: 500;
   font-size: 13px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.17em;
   text-transform: uppercase;
   color: var(--kahve);
+  pointer-events: none;
 }
-.ring-card.is-hotel .ring-card-label { color: var(--siyah); }
-.ring-card.label-above .ring-card-label { bottom: calc(100% + 10px); }
-.ring-card.label-below .ring-card-label { top: calc(100% + 10px); }
-
-.ring-card a { display: block; width: 100%; height: 100%; }
-
-.ring-card:hover .ring-card-inner { transform: scale(1.04); }
-.hero-ring:has(.ring-card:hover) .ring-card:not(:hover) .ring-card-inner { opacity: 0.55; }
-.ring-card:hover .ring-card-label { border-bottom: 1.5px solid var(--bronz); }
+.ring-item.is-hotel .ring-label { color: var(--siyah); }
 
 .ring-center {
   position: absolute;
@@ -455,6 +476,7 @@ body.menu-open { overflow: hidden; }
   display: flex;
   flex-direction: column;
   align-items: center;
+  pointer-events: none;
 }
 .ring-center-logo { width: 340px; height: auto; }
 .ring-center-logo.is-placeholder {
@@ -468,6 +490,38 @@ body.menu-open { overflow: hidden; }
   margin-top: 20px;
   max-width: 420px;
 }
+.ring-center-default,
+.ring-center-preview { transition: opacity 450ms ease; }
+.ring-center-preview {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  opacity: 0;
+  pointer-events: none;
+}
+.ring-center.show-preview .ring-center-default { opacity: 0; }
+.ring-center.show-preview .ring-center-preview { opacity: 1; }
+.ring-preview-cat {
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--taupe);
+}
+.ring-preview-title { margin-top: 10px; font-size: clamp(28px, 3vw, 40px); }
+.ring-preview-link {
+  display: inline-block;
+  pointer-events: auto;
+  margin-top: 14px;
+  font-family: 'Jost', sans-serif;
+  font-size: 14px;
+  color: var(--siyah);
+  border-bottom: 1.5px solid var(--bronz);
+  padding-bottom: 4px;
+}
 
 .ring-corner {
   position: absolute;
@@ -477,6 +531,7 @@ body.menu-open { overflow: hidden; }
   color: var(--siyah);
   border-bottom: 1.5px solid var(--bronz);
   padding-bottom: 6px;
+  z-index: 6;
 }
 .ring-corner-left { left: 56px; }
 .ring-corner-right { right: 56px; }
@@ -487,6 +542,8 @@ body.menu-open { overflow: hidden; }
 
 /* ==========================================================================
    ANA SAYFA — MOBİL
+   Eski mobil halkanın (dokunup sürükle-döndür, eylemsizlikle yavaşlama,
+   odaktaki kart öne çıkar) taşınmış hâli — düz kartlı, küçük bir atlıkarınca.
    ========================================================================== */
 .home-mobile { display: block; }
 @media (min-width: 1024px) { .home-mobile { display: none; } }
@@ -507,31 +564,6 @@ body.menu-open { overflow: hidden; }
   padding-bottom: 5px;
 }
 
-.category-row {
-  margin-top: 18px;
-  padding: 0 20px;
-  display: flex;
-  gap: 20px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  -ms-overflow-style: none;
-}
-.category-row::-webkit-scrollbar { display: none; }
-.category-row button {
-  flex: none;
-  font-family: 'Jost', sans-serif;
-  font-size: 15px;
-  color: var(--kahve);
-  white-space: nowrap;
-  padding-bottom: 6px;
-  border-bottom: 2px solid transparent;
-}
-.category-row button.is-active {
-  color: var(--siyah);
-  font-weight: 500;
-  border-bottom-color: var(--bronz);
-}
-
 .home-tagline-mobile {
   margin-top: 20px;
   padding: 0 20px;
@@ -539,66 +571,85 @@ body.menu-open { overflow: hidden; }
   font-size: 18px;
 }
 
-.featured-project {
-  margin-top: 16px;
+.mobile-ring-wrap {
+  position: relative;
+  margin-top: 28px;
+  height: 300px;
+  overflow: hidden;
+  touch-action: none;
+  perspective: 1600px;
+  perspective-origin: 50% 50%;
+}
+.mobile-ring-hitbox {
+  position: absolute;
+  inset: 0;
+  z-index: 5;
+  touch-action: none;
+}
+.mobile-ring {
+  position: absolute;
+  top: 48%; left: 50%;
+  width: 0; height: 0;
+  transform-style: preserve-3d;
+}
+.mr-item {
+  position: absolute;
+  top: 0; left: 0;
+  transform-style: preserve-3d;
+}
+.mr-item a { display: block; width: 100%; height: 100%; }
+.mr-card {
+  position: relative;
+  width: 100%; height: 100%;
+  transition: transform 250ms ease-out, opacity 250ms ease-out;
+}
+.mr-card.is-selected { box-shadow: 0 10px 22px -14px rgba(0,0,0,0.4); }
+.mr-card.is-hotel-card { outline: 1.5px solid var(--bronz); outline-offset: 3px; }
+.mr-card-img { width: 100%; height: 100%; }
+.mr-card-img span {
+  font-size: 9px;
+  letter-spacing: 0.04em;
+  line-height: 1.25;
+  text-align: center;
+  padding: 0 3px;
+}
+
+.mobile-ring-preview {
+  margin-top: 40px;
   padding: 0 20px;
 }
-.featured-project .small-label { color: var(--kahve); }
-.featured-project h2 {
-  margin-top: 6px;
-  font-size: 32px;
+.mrp-cat {
+  font-family: 'Jost', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--taupe);
 }
-.featured-project .featured-photo {
-  margin-top: 12px;
-}
-.featured-project .explore-link {
+.mrp-title { margin-top: 6px; font-size: 30px; }
+.mrp-img { margin-top: 14px; }
+.mrp-view {
   display: inline-block;
-  margin-top: 16px;
+  margin-top: 14px;
   font-family: 'Jost', sans-serif;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 15px;
   color: var(--siyah);
   border-bottom: 1.5px solid var(--bronz);
   padding-bottom: 4px;
 }
 
-.arc-wrap {
-  margin-top: 32px;
-  position: relative;
-  height: 260px;
-  overflow: hidden;
-}
-.arc-strips {
-  position: absolute;
-  right: -60px;
-  top: 0;
-  display: flex;
-  gap: 6px;
-  height: 100%;
-  transform: rotate(-8deg);
-  transform-origin: right center;
-}
-.arc-strips .strip {
-  width: 44px;
-  height: 220px;
-  align-self: center;
-}
-.arc-strips .strip:nth-child(odd) { height: 260px; }
-.arc-strips .strip:nth-child(3n) { height: 190px; }
-
 .home-grid-fallback { display: none; }
 
 @media (prefers-reduced-motion: reduce) {
-  .arc-wrap { display: none; }
+  .mobile-ring-wrap,
+  .mobile-ring-preview { display: none; }
   .home-grid-fallback { display: block; margin-top: 32px; padding: 0 20px; }
 }
 
-/* tablet: masaüstü halka küçültülmüş */
+/* tablet: masaüstü halka, kategoriye göre boyutlanmış kartlarla (JS içinde) */
 @media (min-width: 768px) and (max-width: 1023px) {
   .home-mobile { display: none; }
   .hero-ring { display: block; }
-  .ring-card[data-cat="otel"] .ring-card-inner { width: 170px; height: 113px; }
-  .ring-card:not([data-cat="otel"]) .ring-card-inner { width: 140px; height: 93px; }
 }
 
 /* ==========================================================================
