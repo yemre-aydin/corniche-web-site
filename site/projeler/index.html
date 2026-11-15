@@ -19,6 +19,7 @@
     <a class="header-logo" href="../index.html" aria-label="Corniche İstanbul anasayfa">
       <img src="../assets/logo/corniche-logo-siyah-header.png" alt="Corniche İstanbul">
     </a>
+    <div class="header-right">
     <nav class="nav-desktop" aria-label="Ana menü">
       <ul class="menu-list">
         <li><a class="menu-item" data-nav-page="projeler" href="index.html">Projeler</a></li>
@@ -48,6 +49,7 @@
     <button class="menu-burger" aria-label="Menüyü aç" aria-expanded="false">
       <span class="bar"></span><span class="bar"></span>
     </button>
+    </div>
   </div>
 </header>
 
@@ -82,6 +84,40 @@
     <span>Levent, İstanbul</span>
   </div>
   <div class="menu-panel-lang">
+    <button type="button" class="is-active" data-lang="tr">TR</button>
+    <span>/</span>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</div>
+
+<!-- Masaüstü (>=1024px) hamburger paneli — TÜM sayfalarda ortak, sadece
+     data-page="home" dışında küçük logo header solda kalır. İki dilli
+     (TR büyük + EN küçük), Koleksiyon yok — ana sayfadakiyle birebir aynı
+     bileşen/görünüm. Mobildeki .menu-panel (üstte, Koleksiyon dahil) buna
+     dokunulmadan aynen kalıyor; hangisinin açılacağı main.js'te genişliğe
+     göre seçiliyor. -->
+<div class="menu-panel-home" aria-hidden="true">
+  <div class="menu-panel-home-top">
+    <button class="menu-panel-close menu-panel-home-close" aria-label="Menüyü kapat"><span></span><span></span></button>
+  </div>
+  <ul class="menu-panel-home-list">
+    <li class="menu-panel-home-item">
+      <a data-nav-page="projeler" href="index.html"><span class="mph-tr">PROJELER</span><span class="mph-en">PROJECTS</span></a>
+    </li>
+    <li class="menu-panel-home-item">
+      <a data-nav-page="hakkimizda" href="../hakkimizda/index.html"><span class="mph-tr">HAKKIMIZDA</span><span class="mph-en">ABOUT US</span></a>
+    </li>
+    <li class="menu-panel-home-item">
+      <a data-nav-page="hizmetlerimiz" href="../hizmetlerimiz/index.html"><span class="mph-tr">HİZMETLERİMİZ</span><span class="mph-en">OUR SERVICES</span></a>
+    </li>
+    <li class="menu-panel-home-item">
+      <a data-nav-page="showroom" href="../showroom/index.html"><span class="mph-tr">SHOWROOM</span><span class="mph-en">SHOWROOM</span></a>
+    </li>
+    <li class="menu-panel-home-item">
+      <a data-nav-page="iletisim" href="../iletisim/index.html"><span class="mph-tr">İLETİŞİM</span><span class="mph-en">CONTACT</span></a>
+    </li>
+  </ul>
+  <div class="menu-panel-lang menu-panel-home-lang">
     <button type="button" class="is-active" data-lang="tr">TR</button>
     <span>/</span>
     <button type="button" data-lang="en">EN</button>

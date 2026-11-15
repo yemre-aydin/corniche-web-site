@@ -19,12 +19,14 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
-  /* ---------------- mobil menü paneli (+ ana sayfa masaüstü paneli) ----------------
-     Aynı hamburger düğmesi iki farklı paneli açabilir:
-     - .menu-panel          : mevcut mobil panel (tüm sayfalar, <1024px) — DOKUNULMADI.
-     - .menu-panel-home     : yeni, sadece ana sayfa + >=1024px için (Emel Hanım'ın
-       konsept görseli). Hangisinin açılacağı tıklama anındaki sayfa/genişliğe göre
-       seçilir, böylece pencere mobil/masaüstü eşiğini geçerse de doğru panel açılır. */
+  /* ---------------- mobil menü paneli (+ masaüstü hamburger paneli) ----------------
+     Aynı hamburger düğmesi, genişliğe göre iki farklı panelden birini açar:
+     - .menu-panel          : mevcut mobil panel (tüm sayfalar, <1024px, Koleksiyon
+       dahil) — DOKUNULMADI, aynen çalışmaya devam ediyor.
+     - .menu-panel-home     : Emel Hanım'ın konsept görseliyle aynı iki dilli panel;
+       önce sadece ana sayfadaydı, artık >=1024px'te TÜM sayfalarda kullanılıyor.
+     Hangisinin açılacağı tıklama anındaki genişliğe göre seçilir, böylece pencere
+     mobil/masaüstü eşiğini geçerse de doğru panel açılır. */
   function initMobileMenu() {
     var burger = document.querySelector('.menu-burger');
     var panel = document.querySelector('.menu-panel');
@@ -33,9 +35,8 @@
     var homeCloseBtn = homePanel && homePanel.querySelector('.menu-panel-home-close');
     if (!burger) return;
 
-    function isHomeDesktop() {
-      return document.body.getAttribute('data-page') === 'home' &&
-        window.matchMedia('(min-width: 1024px)').matches;
+    function isDesktop() {
+      return window.matchMedia('(min-width: 1024px)').matches;
     }
     function open(p) {
       if (!p) return;
@@ -50,7 +51,7 @@
       burger.setAttribute('aria-expanded', 'false');
     }
     burger.addEventListener('click', function () {
-      open(isHomeDesktop() ? homePanel : panel);
+      open(isDesktop() && homePanel ? homePanel : panel);
     });
     if (closeBtn) closeBtn.addEventListener('click', function () { close(panel); });
     if (homeCloseBtn) homeCloseBtn.addEventListener('click', function () { close(homePanel); });

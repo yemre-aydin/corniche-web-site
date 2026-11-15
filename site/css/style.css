@@ -184,12 +184,13 @@ section + section,
     display: flex;
     align-items: center;
     gap: 36px;
-    margin-left: auto;
   }
+  /* Tüm sayfalarda masaüstü (>=1024px) header artık eski yatay menü çubuğunu
+     değil, Emel Hanım'ın konsept görseliyle aynı hamburger + TR/EN görünümünü
+     kullanıyor (önceden sadece ana sayfadaydı). Menü öğeleri CSS ile gizli;
+     gerçek içerikleri aşağıdaki .menu-panel-home panelinde. */
   .nav-desktop .menu-list {
-    display: flex;
-    align-items: center;
-    gap: 36px;
+    display: none;
   }
   .nav-desktop .menu-item {
     position: relative;
@@ -221,15 +222,18 @@ section + section,
   .site-header.theme-dark .lang-switch button { color: var(--kum); }
   .site-header.theme-dark .lang-switch button.is-active { color: var(--beyaz); }
 
-  .menu-burger { display: none; }
-
-  /* ANA SAYFA — Emel Hanım'ın konsept görseli: masaüstünde de sadece sağ üstte
-     hamburger (3 çizgi) + TR/EN olacak, menü çubuğu gizlenecek. Diğer sayfalar
-     bu bloktan etkilenmiyor (hepsi normal tam menüyü gösterir). */
-  body[data-page="home"] .header-inner { justify-content: flex-end; }
-  body[data-page="home"] .nav-desktop { order: 2; margin-left: 28px; }
-  body[data-page="home"] .nav-desktop .menu-list { display: none; }
-  body[data-page="home"] .menu-burger { display: flex; order: 1; }
+  /* .header-right, hamburger ile dil seçiciyi (.nav-desktop, artık sadece
+     TR/EN barındırıyor) TEK bir flex grup halinde sağda tutuyor. header-logo
+     + bu tek grup = header-inner'daki sadece 2 flex öge; justify-content:
+     space-between bu ikisini otomatik olarak sol/sağ kenara iter, önceki
+     "3 öge arasına da boşluk girer, burger TR/EN'den kopar" sorunu kalmıyor —
+     bu yüzden sayfa başına ayrı order/justify-content hack'ine gerek yok. */
+  .header-right {
+    display: flex;
+    align-items: center;
+  }
+  .menu-burger { display: flex; order: 1; }
+  .nav-desktop { order: 2; margin-left: 28px; }
 }
 
 /* koleksiyon açılır menü */
@@ -381,14 +385,18 @@ body.menu-open { overflow: hidden; }
 .menu-panel-lang button.is-active { color: var(--beyaz); border-bottom: 1.5px solid var(--bronz); }
 
 @media (min-width: 1024px) {
-  .menu-panel, .menu-burger { display: none; }
+  /* Eski mobil panel (Koleksiyon dahil) masaüstünde kapalı kalır — .menu-burger
+     burada artık gizlenmiyor, çünkü >=1024px'te de kullanılıyor (bkz. yukarıdaki
+     .header-right bloğu: display:flex; order:1). */
+  .menu-panel { display: none; }
 }
 
 /* ==========================================================================
-   ANA SAYFA — MASAÜSTÜ HAMBURGER PANELİ (Emel Hanım'ın konsept görseli)
-   Mobildeki .menu-panel'den bilerek ayrı: iki dilli (TR büyük + EN küçük),
-   Koleksiyon / adres / telefon yok, sadece 5 öğe + altta tekrar TR/EN.
-   Sadece data-page="home" ve >=1024px genişlikte kullanılır.
+   MASAÜSTÜ (>=1024px) HAMBURGER PANELİ — TÜM SAYFALAR (Emel Hanım'ın konsept
+   görseli). Mobildeki .menu-panel'den bilerek ayrı: iki dilli (TR büyük + EN
+   küçük), Koleksiyon / adres / telefon yok, sadece 5 öğe + altta tekrar TR/EN.
+   Her sayfada mevcut; sadece >=1024px genişlikte kullanılır (<1024 gizli,
+   orada mobildeki eski .menu-panel aynen çalışmaya devam ediyor).
    ========================================================================== */
 .menu-panel-home {
   position: fixed;
@@ -438,7 +446,8 @@ body.menu-open { overflow: hidden; }
   color: var(--bej);
 }
 .menu-panel-home-item a:hover .mph-tr,
-.menu-panel-home-item a:focus-visible .mph-tr { color: var(--bronz); }
+.menu-panel-home-item a:focus-visible .mph-tr,
+.menu-panel-home-item a.is-active .mph-tr { color: var(--bronz); }
 
 .menu-panel-home-lang { margin-top: auto; }
 
