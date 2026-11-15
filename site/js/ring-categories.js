@@ -21,12 +21,15 @@
    isHotel alanı da kaldırıldı — "Otel Projeleri" kartının çerçeve rengi artık
    diğerleriyle aynı (gümüş), ayrım kavramı geçersiz (bkz. main.js / style.css).
 
-   Alan notları (değişmedi):
-   - "tr" alanı, kod tarafında (main.js initHeroRingDesktop/Mobile) olduğu gibi
-     kullanılabilmesi için CORNICHE_CATEGORIES ile aynı isimde tutuldu, ama
-     İÇERİĞİ TÜRKÇE DEĞİL — görseldeki gibi İngilizce kategori adı. Müşteri
-     net talimat verdi: "şimdilik görseldeki kategori sayısı ve isimleri
-     kalsın, isimlere sonra Emel Hanım'la karar verilecek."
+   DÜZELTME (2026-11-15, üçüncü tur): "tr" alanı yanlışlıkla İngilizce
+   kategori adlarıyla doldurulmuştu (Emel Hanım'ın referans görseli İngilizce
+   etiketli olduğu için) — ama sitede gerçek bir EN sürümü henüz yok (TR/EN
+   butonu main.js'te sadece "hazırlanıyor" uyarısı veriyor, içerik hiç
+   değişmiyor), yani TR tek çalışan sürümdü ve İngilizce isimler TR sayfasında
+   görünüyordu. "tr" alanı artık CORNICHE_CATEGORIES ile birebir aynı Türkçe
+   isimleri kullanıyor (Otel Projeleri/Villa/Konut/Yat & Marin/Ticari
+   Mekânlar/Yenileme), "en" alanı ileride gerçek EN sürümü kodlanınca
+   kullanılmak üzere eklendi.
    - "link": CORNICHE_CATEGORIES id'leriyle eşleştirildi (otel/villa/konut/
      yat/ticari/yenileme) — ileride project.category alanları doldurulduğunda
      bu halka kartları doğru filtreye düşsün diye.
@@ -36,12 +39,12 @@
      yoktu. */
 (function (global) {
   var RING_CATEGORIES = [
-    { id: 'villa',       tr: 'Villa',             img: 'assets/projeler-web/savoy-project/02-salon.webp',       link: 'projeler/index.html?kategori=villa',  w: 180, h: 120 },
-    { id: 'renovation',  tr: 'Renovation',        img: 'assets/projeler-web/proje-h-a/07-yemek-odasi.webp',     link: 'projeler/index.html?kategori=yenileme', w: 180, h: 120 },
-    { id: 'residential', tr: 'Residential',       img: 'assets/projeler-web/yenikoy-project/08-salon.webp',     link: 'projeler/index.html?kategori=konut',   w: 180, h: 120 },
-    { id: 'hospitality', tr: 'Hospitality',       img: 'assets/projeler-web/kemer-prive/01-merdiven-alti.webp', link: 'projeler/index.html?kategori=otel',    w: 180, h: 120 },
-    { id: 'yacht-marine',tr: 'Yacht & Marine',    img: 'assets/projeler-web/yenikoy-project/01-banyo.webp',     link: 'projeler/index.html?kategori=yat',     w: 180, h: 120 },
-    { id: 'commercial',  tr: 'Commercial Spaces', img: 'assets/projeler-web/berkozan/01-toplanti-odasi.webp',   link: 'projeler/index.html?kategori=ticari',  w: 180, h: 120 }
+    { id: 'villa',       tr: 'Villa',             en: 'Villa',             img: 'assets/projeler-web/savoy-project/02-salon.webp',       link: 'projeler/index.html?kategori=villa',  w: 180, h: 120 },
+    { id: 'renovation',  tr: 'Yenileme',          en: 'Renovation',        img: 'assets/projeler-web/proje-h-a/07-yemek-odasi.webp',     link: 'projeler/index.html?kategori=yenileme', w: 180, h: 120 },
+    { id: 'residential', tr: 'Konut',             en: 'Residential',       img: 'assets/projeler-web/yenikoy-project/08-salon.webp',     link: 'projeler/index.html?kategori=konut',   w: 180, h: 120 },
+    { id: 'hospitality', tr: 'Otel Projeleri',    en: 'Hospitality',       img: 'assets/projeler-web/kemer-prive/01-merdiven-alti.webp', link: 'projeler/index.html?kategori=otel',    w: 180, h: 120 },
+    { id: 'yacht-marine',tr: 'Yat & Marin',       en: 'Yacht & Marine',    img: 'assets/projeler-web/yenikoy-project/01-banyo.webp',     link: 'projeler/index.html?kategori=yat',     w: 180, h: 120 },
+    { id: 'commercial',  tr: 'Ticari Mekânlar',   en: 'Commercial Spaces', img: 'assets/projeler-web/berkozan/01-toplanti-odasi.webp',   link: 'projeler/index.html?kategori=ticari',  w: 180, h: 120 }
   ];
 
   global.CORNICHE_RING_CATEGORIES = RING_CATEGORIES;
