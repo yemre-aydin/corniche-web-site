@@ -155,7 +155,11 @@
     var DEPTH = 330;       // halkanın arka tarafı ne kadar geride durur
     var TURN = 22;         // halkanın yanlarındaki kart dönüş açısı
     var LABEL_GAP = 30;
-    var HOVER_LIFT = 14, HOVER_SCALE = 1.08;
+    // HOVER_SCALE 1.04 = kart hover'da %4 büyür (2026-11-15 ikinci tur,
+    // Emel Hanım talimatı — eski değer 1.08'di).
+    var HOVER_LIFT = 14, HOVER_SCALE = 1.04;
+    var SIBLING_DIM = 0.6; // hover'da diğer kartların ek soluklaşma çarpanı
+    var HOVER_TRANSITION = 0.3; // saniye — hover'da kart/çizgi geçiş süresi
     var PARALLAX = 4;
     var ARC_STEPS = 1440;
     // Header altı / köşe linkleri üstü güvenli payları — geometry() (merkezi
@@ -244,10 +248,9 @@
       categories.forEach(function (cat) {
         var w = cat.w, h = cat.h;
         if (isTabletNow) {
-          // isHotel artık SADECE çerçeve rengini ayırt etmek için var (bkz.
-          // CSS .ring-item.is-hotel .ring-card3d) — 10 kart da aynı boyutta
-          // (2026-11-15, Emel Hanım talimatı: "Otel Projeleri" kartı da aynı
-          // stilde, sadece çerçevesi gri).
+          // 6 kart da aynı boyutta (2026-11-15 ikinci tur, Emel Hanım
+          // talimatı) — "Otel Projeleri" dahil kategoriler arasında artık
+          // boyut/çerçeve rengi ayrımı yok.
           w = 140;
           h = 93;
         }
@@ -255,7 +258,7 @@
         var step = (segW / CURVE_R) * (180 / Math.PI);
 
         var el = document.createElement('a');
-        el.className = 'ring-item' + (cat.isHotel ? ' is-hotel' : '');
+        el.className = 'ring-item';
         el.href = cat.link || ('projeler/index.html?kategori=' + cat.id);
         el.style.width = w + 'px';
         el.style.height = h + 'px';
@@ -289,11 +292,9 @@
             seg.style.backgroundPosition = (-(s * segW)) + 'px 0';
             seg.style.backgroundRepeat = 'no-repeat';
           } else {
-            // Gerçek fotoğrafı olmayan kategoriler (Art, Textiles, Kids' Rooms):
-            // spec'teki "görsel yer tutucu kutu" rengi (--cerceve, antrasit),
-            // görsel icat edilmedi (2026-11-15 palet değişimi — eski --vizon
-            // kaldırıldı).
-            seg.style.backgroundColor = 'var(--cerceve)';
+            // Gerçek fotoğrafı olmayan kategoriler: spec'teki "görsel yer
+            // tutucu kutu" rengi (--kart, antrasit), görsel icat edilmedi.
+            seg.style.backgroundColor = 'var(--kart)';
           }
           face.appendChild(seg);
         }
@@ -316,8 +317,14 @@
     var DIM_DEFAULT = 0.8, SAT_DEFAULT = 0.9;
     var DIM_ACTIVE = 1, SAT_ACTIVE = 1;
 
-    function place() {
+    // animate=true (hover değişimi) hareketi 300ms'de yumuşatır (gsap.to);
+    // animate olmadan (sürekli tekerlek dönüşü/resize/ilk yerleşim) anlık
+    // uygulanır (gsap.set) — performans için dönüş sırasında tween kuyruğu
+    // oluşmasın.
+    function place(animate) {
       var n = items.length || 1;
+      var tween = animate ? gsap.to : gsap.set;
+      var dur = animate ? HOVER_TRANSITION : 0;
       items.forEach(function (card, i) {
         var angle = angleAtArc(arcTop + i / n + ringRot / 360);
         var rad = angle * RING_DEG;
@@ -325,15 +332,21 @@
         var z = sin * DEPTH;          // elipsin üst yarısı daha geride durur
         var near = (sin + 1) / 2;     // 0 uzak, 1 yakın
         var lifted = card === hovered;
+        // Hover'da hovered olmayan kartlar hafifçe ek soluklaşır (2026-11-15
+        // ikinci tur, Emel Hanım talimatı: "diğer kartlar hafif soluklaşır").
+        var opacity = 0.42 + near * 0.58;
+        if (hovered && !lifted) opacity *= SIBLING_DIM;
 
-        gsap.set(card.el, {
+        tween(card.el, {
+          duration: dur,
           xPercent: -50, yPercent: -50,
           x: cos * showRx,
           y: sin * showRy - (lifted ? HOVER_LIFT : 0),
           z: z,
-          opacity: 0.42 + near * 0.58
+          opacity: opacity
         });
-        gsap.set(card.cardEl, {
+        tween(card.cardEl, {
+          duration: dur,
           rotationY: cos * TURN,
           scale: (0.74 + near * 0.34) * (lifted ? HOVER_SCALE : 1)
         });
@@ -376,14 +389,14 @@
       if (hovered) hovered.el.classList.remove('is-active');
       hovered = card;
       if (hovered) hovered.el.classList.add('is-active');
-      place();
+      place(true);
       if (card) setPreview(card); else clearPreview();
     });
     scene.addEventListener('pointerleave', function () {
       if (!hovered) return;
       hovered.el.classList.remove('is-active');
       hovered = null;
-      place();
+      place(true);
       clearPreview();
     });
 
@@ -473,10 +486,10 @@
     /* ---- merkez logo bloğuyla çakışmayı çöz ----
        showRy'yi merkezin/kartın yaklaşık yarı yükseklikleriyle sınırlamak
        sadece TAM üstteki/alttaki kartı (sin≈±1, x≈0) merkezden uzak tutuyor;
-       10 kart eşit açıyla dağıldığı için üst/alt komşu kartlar (ör. Yacht &
-       Marine, Kids' Rooms, Renovation, Art — ~54°/126° açıda) hem x hem y'de
-       orta değerler alıyor ve küçük elipslerde (dar viewport) merkez kutusunun
-       köşelerine giriyor. Analitik olarak çözmek yerine gerçek konumları
+       kartlar eşit açıyla (360°/n, n=items.length — kategori sayısı değişse
+       de otomatik yeniden hesaplanır) dağıldığı için üst/alt komşu kartlar
+       hem x hem y'de orta değerler alıyor ve küçük elipslerde (dar viewport)
+       merkez kutusunun köşelerine giriyor. Analitik olarak çözmek yerine gerçek konumları
        ölçüp (getBoundingClientRect) merkezle kesişen en küçük eksendeki
        girişim miktarınca elipsi büyüterek birkaç adımda çakışmayı sıfırlıyor
        — büyüyen elips daha sonra fitToViewport() tarafından viewport'a
@@ -565,8 +578,7 @@
       cardsWrap.innerHTML = '';
       items.length = 0;
       categories.forEach(function (cat, i) {
-        // isHotel burada da SADECE çerçeve rengi için (bkz. CSS .mr-card.is-hotel-card) —
-        // tüm kartlar aynı boyut.
+        // Tüm kartlar aynı boyut, aynı çerçeve (2026-11-15 ikinci tur).
         var w = 84;
         var h = 56;
 
@@ -577,7 +589,7 @@
         a.href = cat.link || ('projeler/index.html?kategori=' + cat.id);
 
         var card = document.createElement('div');
-        card.className = 'mr-card' + (cat.isHotel ? ' is-hotel-card' : '');
+        card.className = 'mr-card';
         card.style.width = w + 'px';
         card.style.height = h + 'px';
 
@@ -825,54 +837,107 @@
 
     document.title = 'Corniche İstanbul — ' + project.name;
 
+    // Başlık bandı — SADECE 4 satır (2026-11-15 ikinci tur, Emel Hanım
+    // talimatı): kategori / proje adı / alt satır / şehir. subtitle/city veri
+    // henüz yok (hepsi null) — boş bırakılırsa CSS (:empty) satırı gizliyor,
+    // sahte içerik yazılmadı. Konum/Yıl/Kapsam (eski info-row) kaldırıldı.
     var catLabelEl = root.querySelector('[data-f-category]');
     var titleEl = root.querySelector('[data-f-title]');
-    var storyEl = root.querySelector('[data-f-story]');
+    var subtitleEl = root.querySelector('[data-f-subtitle]');
+    var cityEl = root.querySelector('[data-f-city]');
     var heroEl = root.querySelector('[data-f-hero]');
     var categories = window.CORNICHE_CATEGORIES || [];
     var catObj = categories.filter(function (c) { return c.id === project.category; })[0];
 
     if (catLabelEl) catLabelEl.textContent = catObj ? catObj.tr.toUpperCase() : '[Kategori]';
     if (titleEl) titleEl.textContent = project.name;
-    if (storyEl) storyEl.textContent = '[Proje hikâyesi — ihtiyaç, çözüm ve sonuç metni eklenecek]';
+    if (subtitleEl) subtitleEl.textContent = project.subtitle || '';
+    if (cityEl) cityEl.textContent = project.city || '';
 
     if (heroEl) {
       heroEl.innerHTML = '<img src="../' + project.cover.src + '" alt="Corniche İstanbul ' + project.name + ' projesi, ' + project.cover.label + '" loading="eager" fetchpriority="high" width="1280" height="600" style="width:100%;height:100%;object-fit:cover;">';
     }
 
-    var rows = [
-      { key: 'location', label: 'Konum', val: project.location },
-      { key: 'year', label: 'Yıl', val: project.year },
-      { key: 'scope', label: 'Kapsam', val: project.scope }
-    ];
-    var infoRowsWrap = root.querySelector('[data-f-inforows]');
-    if (infoRowsWrap) {
-      rows.forEach(function (r) {
-        if (!r.val) return; // bilgi yoksa satır gösterilmez
-        var row = document.createElement('div');
-        row.className = 'info-row';
-        row.innerHTML = '<span class="label">' + r.label + '</span><span class="value">' + r.val + '</span>';
-        infoRowsWrap.appendChild(row);
-      });
-    }
-
-    // galeri
+    // galeri (2026-11-15 ikinci tur, Emel Hanım talimatı) — masaüstünde
+    // fotoğrafın yönüne göre 3 olası satır düzeni (iki yatay yan yana / dikey
+    // + iki yatay / tek güçlü fotoğraf), mobilde hepsi tek sütun (bkz. CSS
+    // .gallery-row--*). Veride yön bilgisi yok, bu yüzden her fotoğraf önce
+    // sessizce (offscreen Image()) yüklenip naturalWidth/naturalHeight'tan
+    // oranına bakılarak yatay/dikey sınıflandırılıyor, hepsi bittiğinde
+    // satırlar bir kerede inşa ediliyor. lightboxImgs (orijinal sıra) bu
+    // sınıflandırmadan bağımsız, hemen dolduruluyor — ok tuşları/önceki-
+    // sonraki hep orijinal galeri sırasında çalışsın diye.
     var galleryGrid = root.querySelector('[data-f-gallery]');
     var lightboxImgs = [];
-    if (galleryGrid) {
-      project.gallery.forEach(function (g, idx) {
-        var fig = document.createElement('div');
-        fig.className = 'img-ph-wrap';
-        var img = document.createElement('img');
-        img.src = '../' + g.src;
-        img.alt = 'Corniche İstanbul ' + project.name + ' projesi, ' + g.label;
-        img.loading = idx < 2 ? 'eager' : 'lazy';
-        img.setAttribute('data-lightbox-idx', idx);
-        img.style.cssText = 'width:100%;height:100%;object-fit:cover;cursor:zoom-in;aspect-ratio:3/2;';
-        fig.appendChild(img);
-        galleryGrid.appendChild(fig);
-        lightboxImgs.push('../' + g.src);
-      });
+    if (galleryGrid && project.gallery.length) {
+      (function () {
+        var photos = project.gallery;
+        var n = photos.length;
+        var orient = new Array(n);
+        var loadedCount = 0;
+
+        function makeImg(idx) {
+          var g = photos[idx];
+          var img = document.createElement('img');
+          img.src = '../' + g.src;
+          img.alt = 'Corniche İstanbul ' + project.name + ' projesi, ' + g.label;
+          img.loading = idx < 2 ? 'eager' : 'lazy';
+          img.setAttribute('data-lightbox-idx', idx);
+          return img;
+        }
+
+        function renderRows() {
+          galleryGrid.innerHTML = '';
+          var i = 0;
+          while (i < n) {
+            var o = orient[i], o2 = orient[i + 1], o3 = orient[i + 2];
+            var row = document.createElement('div');
+            if (o === 'portrait' && o2 === 'landscape' && o3 === 'landscape') {
+              // dikey solda (büyük) + iki yatay sağda üst üste
+              row.className = 'gallery-row gallery-row--portrait-two';
+              var portraitWrap = document.createElement('div');
+              portraitWrap.className = 'gr-portrait';
+              portraitWrap.appendChild(makeImg(i));
+              var stackWrap = document.createElement('div');
+              stackWrap.className = 'gr-stack';
+              stackWrap.appendChild(makeImg(i + 1));
+              stackWrap.appendChild(makeImg(i + 2));
+              row.appendChild(portraitWrap);
+              row.appendChild(stackWrap);
+              i += 3;
+            } else if (o === 'landscape' && o2 === 'landscape') {
+              // iki yatay fotoğraf yan yana, eşit boyutta
+              row.className = 'gallery-row gallery-row--two';
+              row.appendChild(makeImg(i));
+              row.appendChild(makeImg(i + 1));
+              i += 2;
+            } else {
+              // tek ve güçlü bir fotoğraf (dikey tek başına kaldıysa da
+              // buraya düşer — zorla yanlış eşleşme yapılmıyor)
+              row.className = 'gallery-row gallery-row--single';
+              row.appendChild(makeImg(i));
+              i += 1;
+            }
+            galleryGrid.appendChild(row);
+          }
+        }
+
+        photos.forEach(function (g, idx) {
+          lightboxImgs.push('../' + g.src);
+          var probe = new Image();
+          probe.onload = function () {
+            orient[idx] = (probe.naturalHeight && probe.naturalWidth / probe.naturalHeight < 0.95) ? 'portrait' : 'landscape';
+            loadedCount++;
+            if (loadedCount === n) renderRows();
+          };
+          probe.onerror = function () {
+            orient[idx] = 'landscape'; // yön bilinmiyorsa yatay say (güvenli varsayılan)
+            loadedCount++;
+            if (loadedCount === n) renderRows();
+          };
+          probe.src = '../' + g.src;
+        });
+      })();
     }
 
     // süreç / öncesi-sonrası

@@ -142,14 +142,16 @@
 
     <div class="detail-hero" data-f-hero></div>
 
+    <!-- Başlık bandı (2026-11-15 ikinci tur, Emel Hanım talimatı) — SADECE 4
+         satır: kategori etiketi / proje adı / alt satır (proje bazında
+         değişen açıklama) / şehir. Konum/Yıl/Kapsam satırları (eski
+         .info-side, data-f-inforows) tamamen kaldırıldı. Alt satır ve şehir
+         veri yoksa (henüz hiçbir projede yok) main.js o satırı basmıyor. -->
     <div class="detail-info">
-      <div class="info-main">
-        <span class="small-label" data-f-category>[Kategori]</span>
-        <h1 data-f-title>Proje</h1>
-        <hr class="detail-rule">
-        <p class="detail-story" data-f-story></p>
-      </div>
-      <div class="info-side" data-f-inforows></div>
+      <span class="small-label" data-f-category>[Kategori]</span>
+      <h1 data-f-title>Proje</h1>
+      <p class="detail-subtitle" data-f-subtitle></p>
+      <p class="detail-city small-label" data-f-city></p>
     </div>
 
     <section class="detail-gallery">

@@ -3,7 +3,15 @@
    Görseller WebP'ye dönüştürüldü (max genişlik 2000px, kalite 80) -> assets/projeler-web/
    category / location / year / scope ALANLARI HENÜZ YOK — kullanıcı bu bilgilerin sonra geleceğini söyledi.
    null oldukları sürece: kart/detay sayfasında küçük etiket "[Kategori]" gösterilir,
-   konum/yıl/kapsam satırları spec kuralına göre (bilgi yoksa satır gösterilmez) gizlenir.
+   location/year/scope artık proje detay şablonunda HİÇ gösterilmiyor (2026-11-15
+   ikinci tur, Emel Hanım talimatı — "Konum/Yıl/Kapsam satırları varsa tamamen
+   kaldır"); alanlar ileride başka bir kullanım için veri kaynağında duruyor.
+   city / subtitle ALANLARI da HENÜZ YOK (2026-11-15 ikinci tur eklendi, hepsi
+   null) — city: başlık bandındaki 4. satır, SADECE şehir adı (mahalle/adres
+   DEĞİL); subtitle: başlık bandındaki 3. satır, proje bazında değişen kısa
+   açıklama (ör. "İç Mimari Konsept Proje ve Uygulaması"). Emel Hanım her
+   proje için fotoğraf + bu notları ayrı klasörde gönderecek; şimdilik sahte
+   içerik UYDURULMADI, ikisi de null — main.js null ise o satırı göstermiyor.
    NOT: "Proje A. B", "dragos" ve "savoy project" klasörleri BİREBİR AYNI 5 fotoğrafı içeriyor
    (md5 ile doğrulandı) — muhtemelen kopyalama hatası, kullanıcıya ayrıca bildirildi. */
 (function (global) {
@@ -17,6 +25,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/berkozan/01-toplanti-odasi.webp",
       "label": "Toplantı odası"
@@ -61,6 +71,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/dragos/02-salon.webp",
       "label": "Salon"
@@ -97,6 +109,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/grel-maya-project/01-corniche-salon.webp",
       "label": "Corniche salon"
@@ -133,6 +147,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/kemer-prive/01-merdiven-alti.webp",
       "label": "Merdiven altı"
@@ -161,6 +177,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/kozan/18-salon.webp",
       "label": "Salon"
@@ -257,6 +275,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/proje-02/06-salon.webp",
       "label": "Salon"
@@ -301,6 +321,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/proje-a-b/02-salon.webp",
       "label": "Salon"
@@ -337,6 +359,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/proje-h-a/04-salon.webp",
       "label": "Salon"
@@ -385,6 +409,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/savoy-project/02-salon.webp",
       "label": "Salon"
@@ -421,6 +447,8 @@
     "location": null,
     "year": null,
     "scope": null,
+    "city": null,
+    "subtitle": null,
     "cover": {
       "src": "assets/projeler-web/yenikoy-project/08-salon.webp",
       "label": "Salon"
