@@ -457,22 +457,19 @@ body.menu-open { overflow: hidden; }
 
 /* ==========================================================================
    ANA SAYFA — HALKA (DESKTOP / TABLET)
-   Müşterinin ilk gördüğü ve beğendiği eski GSAP + ScrollTrigger halka
-   mekaniğinin taşınmış hâli (bkz. git geçmişi 4150e09, site/script.js).
    Kartlar bir silindire sarılmış ince dilimlerden oluşur (gerçek kavis);
-   sayfa kaydırıldıkça ScrollTrigger halkayı döndürür; imleç bir kartın
-   üstüne gelince kart öne/yukarı çıkar ve merkezdeki logo o kategorinin
-   önizlemesine döner. Kategori fotoğrafları henüz atanmadığı için kartların
-   yüzeyi (eski koddaki fotoğraf dilimleri yerine) düz renk + hafif gölgeleme
-   ile kavis hissini korur; gerçek fotoğraflar geldiğinde seg arka planı
-   image'e çevrilebilir.
-   ========================================================================== */
+   dönüş artık sayfa scroll'una değil, imleç halka alanının üstündeyken fare
+   tekerleğine bağlı (bkz. main.js initWheelRotate) — scroll'un kendisi halkanın
+   dışında her zaman normal çalışır. İmleç bir kartın üstüne gelince kart
+   öne/yukarı çıkar ve merkezdeki logo o kategorinin önizlemesine döner.
+   Yükseklik artık sabit min/max px ile sınırlı DEĞİL — main.js her yüklemede
+   ve resize'da section'ı gerçek window.innerHeight'a eşitliyor (bkz. geometry()
+   içindeki ring.style.height), ve halkanın tamamı (kartlar+etiketler) o
+   yükseklikte sığmıyorsa main.js (fitToViewport) .ring-scale'i ortadan
+   küçülterek hepsinin tek ekranda, scroll'suz görünmesini sağlıyor. */
 .hero-ring {
   position: relative;
   background: var(--kum);
-  height: 100vh;
-  min-height: 760px;
-  max-height: 900px;
   overflow: hidden;
 }
 
@@ -482,6 +479,17 @@ body.menu-open { overflow: hidden; }
   overflow: hidden;
   perspective: 1600px;
   perspective-origin: 50% 55%;
+}
+
+/* Taşma olduğunda main.js bu katmanın transform'unu scale(k) yapar — perspective
+   .ring-scene üzerinde kaldığı için 3B derinlik etkilenmeden sadece görünür
+   boyut küçülür. transform-origin merkez noktasıyla (ellipse/floor-sheen/center
+   hep %55 dikeyde) aynı, böylece küçültme halkanın merkezini kaydırmaz. */
+.ring-scale {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 55%;
+  will-change: transform;
 }
 
 .ring-ellipse {

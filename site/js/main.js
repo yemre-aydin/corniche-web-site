@@ -96,26 +96,29 @@
   }
 
   /* ================================================================
-     ANA SAYFA HALKASI — eski GSAP + ScrollTrigger mekaniğinin taşınmış
-     hâli (bkz. git geçmişi 4150e09, site/script.js "Showcase ring" ve
-     "mobile ring" bölümleri). Masaüstü/tablet tarafı kavisli, dilimli
-     kartlardan oluşan, sayfa kaydırıldıkça dönen bir halka; mobil
-     tarafı dokunup sürükleyerek döndürülen düz kartlı küçük bir
-     atlıkarınca. İkisi de aynı 6 kategoriyi (window.CORNICHE_CATEGORIES)
-     kullanır; tıklanan/seçilen kart projeler/index.html?kategori=X'e
-     götürür — kategori içinde proje listesine "girme" (eski koddaki
-     categories→projects seviyesi) ana sayfada yok, o iş zaten
-     projeler/ sayfasında yapılıyor.
+     ANA SAYFA HALKASI — GSAP tabanlı (bkz. git geçmişi 4150e09, site/script.js
+     "Showcase ring" ve "mobile ring" bölümleri; ScrollTrigger pin/scrub
+     mekaniği 2026-11-15'te kaldırıldı — müşteri geri bildirimi: dönüş sayfa
+     scroll'una bağlıyken bir "limiti" oluyordu ve ikisi birbirine karışıyordu).
+     Masaüstü/tablet tarafı kavisli, dilimli kartlardan oluşan bir halka; imleç
+     halka alanındayken fare tekerleği halkayı döndürür (initWheelRotate),
+     dışarıdayken sayfa normal kayar. Mobil tarafı dokunup sürükleyerek
+     döndürülen düz kartlı küçük bir atlıkarınca (dokunulmadı). Masaüstü halka
+     ayrıca viewport'a otomatik sığdırılır (fitToViewport) — kartlar+etiketler
+     hiçbir ekran yüksekliğinde taşmaz/scroll gerektirmez. İkisi de aynı
+     kategori verisini (window.CORNICHE_RING_CATEGORIES, yoksa
+     window.CORNICHE_CATEGORIES) kullanır; tıklanan/seçilen kart kendi `link`
+     alanına (veya projeler/index.html?kategori=X'e) götürür.
      ================================================================ */
 
   var RING_DEG = Math.PI / 180;
 
-  /* ---- masaüstü / tablet: kavisli, dilimli, ScrollTrigger'lı halka ---- */
+  /* ---- masaüstü / tablet: kavisli, dilimli halka (dönüş artık fare tekerleğiyle) ---- */
   function initHeroRingDesktop(ring, categories) {
-    if (!window.gsap || !window.ScrollTrigger) return;
-    gsap.registerPlugin(ScrollTrigger);
+    if (!window.gsap) return;
 
     var scene = ring.querySelector('.ring-scene');
+    var scaleWrap = ring.querySelector('.ring-scale');
     var gallery = ring.querySelector('.ring-gallery');
     var ellipseLine = ring.querySelector('.ring-ellipse');
     var centerWrap = ring.querySelector('.ring-center');
@@ -167,13 +170,26 @@
 
     function geometry() {
       var vw = window.innerWidth, vh = window.innerHeight;
+      // Bölüm artık sabit min/max px'e değil, doğrudan gerçek viewport
+      // yüksekliğine eşitleniyor — "1440/1280/1024'te halka sığmıyor" sorunu,
+      // eski min-height:760px'in kısa pencerelerde viewport'tan uzun bir
+      // section'a zorlamasından kaynaklanıyordu (bkz. fitToViewport, aşağıda).
+      ring.style.height = Math.max(vh, 480) + 'px';
       isTabletNow = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
       showRx = Math.min(vw * 0.39, 700);
-      // Eski versiyonda merkezde sadece bir metin logosu vardı; burada gerçek
-      // logo görseli + etiket cümlesi daha fazla dikey yer kaplıyor, o yüzden
-      // kartların üst/alt noktalarının onunla çakışmaması için dikey yarıçap
-      // eski orandan (vh*0.205) biraz büyütüldü.
-      showRy = Math.min(vh * 0.27, 260);
+      // Dikey yarıçap sadece vh oranına göre küçülürse (kısa viewport'larda)
+      // en üst/alt kartlar ortadaki logo+etiket cümlesi bloğuyla çakışabiliyordu
+      // (ikisi de aynı merkeze göre konumlanıyor, kart kutusu küçülse de blok
+      // sabit kalıyordu). Bu yüzden showRy'nin, kartın + merkez bloğun yaklaşık
+      // yarı yüksekliklerinin toplamından (+ güvenlik payı) KÜÇÜK olmasına izin
+      // verilmiyor; sığmadığı viewport'larda bütün halka zaten fitToViewport()
+      // tarafından orantılı küçültülüyor (çakışma oranı sabit kaldığı için
+      // bu minimum, küçültülmüş halde de korunuyor).
+      var CENTER_HALF_H = 150;  // logo (~220) + boşluk (20) + etiket cümlesi, yaklaşık yarısı
+      var CARD_HALF_H = 65;     // en yakın kartın (h=120, ~1.08 ölçek) yaklaşık yarı yüksekliği
+      var CENTER_CARD_GAP = 24;
+      var showRyMin = CENTER_HALF_H + CARD_HALF_H + CENTER_CARD_GAP;
+      showRy = Math.max(showRyMin, Math.min(vh * 0.27, 260));
       if (ellipseLine) {
         ellipseLine.style.width = (showRx * 2) + 'px';
         ellipseLine.style.height = (showRy * 2) + 'px';
@@ -311,24 +327,107 @@
       });
     }
 
-    function initScroll() {
-      ScrollTrigger.create({
-        trigger: ring,
-        start: 'top top',
-        end: '+=140%',
-        pin: true,
-        pinSpacing: true,
-        scrub: 1.4,
-        onUpdate: function (self) { ringRot = self.progress * 360; place(); }
+    /* ---- fare tekerleği ile döndürme ----
+       Önceki ScrollTrigger (pin + scrub) dönüşü sayfa scroll pozisyonuna
+       bağlıyordu: dönüşün bir "sonu" vardı ve sayfa kaydırma ile halka dönüşü
+       birbirine karışıyordu. Artık tamamen bağımsız: imleç halka alanının
+       (bu .hero-ring section'ı — ellipse, kartlar, köşe linkleri dahil)
+       SINIRLARI İÇİNDEYKEN wheel olayı sayfayı kaydırmaz, halkayı döndürür
+       (360° sınırsız, place() zaten % ile sarıyor). İmleç dışarıdayken normal
+       sayfa scroll'u hiç etkilenmez — listener sadece ring elemanına bağlı,
+       başka hiçbir şeye dokunulmuyor. */
+    var WHEEL_SENS = 0.12;
+    function initWheelRotate() {
+      var pending = 0, raf = null;
+      ring.addEventListener('wheel', function (e) {
+        e.preventDefault();
+        pending += (e.deltaY || e.deltaX);
+        if (raf) return;
+        raf = requestAnimationFrame(function () {
+          ringRot += pending * WHEEL_SENS;
+          pending = 0;
+          raf = null;
+          place();
+        });
+      }, { passive: false });
+    }
+
+    /* ---- viewport'a sığdırma ----
+       Halkanın tamamı (en üstteki/alttaki kart + etiketi dahil) her zaman tek
+       ekranda, scroll'suz görünmeli. Kartları+etiketleri gerçek konumlarından
+       ölçüp (getBoundingClientRect) header ile alt köşe linkleri arasındaki
+       kullanılabilir alana sığmıyorsa .ring-scale'i merkezden (%55, CSS
+       transform-origin ile aynı nokta) küçültür. Doğal boyutta zaten
+       sığıyorsa scale 1'de kalır — büyütme yapılmaz. */
+    function fitToViewport() {
+      if (!scaleWrap) return;
+      scaleWrap.style.transform = 'scale(1)';
+      var minTop = Infinity, maxBottom = -Infinity;
+      items.forEach(function (card) {
+        var r1 = card.el.getBoundingClientRect();
+        var r2 = card.label.getBoundingClientRect();
+        if (r1.height) { minTop = Math.min(minTop, r1.top); maxBottom = Math.max(maxBottom, r1.bottom); }
+        if (r2.height) { minTop = Math.min(minTop, r2.top); maxBottom = Math.max(maxBottom, r2.bottom); }
       });
+      if (!isFinite(minTop)) return;
+
+      var heroRect = ring.getBoundingClientRect();
+      var headerH = 88; // bkz. --header-h (bilgisayar)
+      var topLimit = heroRect.top + headerH + 24;
+      var bottomLimit = heroRect.bottom - 64; // alt köşe linkleri için pay
+      var centerY = heroRect.top + heroRect.height * 0.55;
+
+      var neededHalf = Math.max(centerY - minTop, maxBottom - centerY);
+      var availableHalf = Math.min(centerY - topLimit, bottomLimit - centerY);
+      if (availableHalf <= 20) availableHalf = 20; // aşırı kısa pencerede son çare
+
+      var scale = Math.min(1, availableHalf / neededHalf);
+      scaleWrap.style.transform = 'scale(' + scale.toFixed(4) + ')';
+    }
+
+    /* ---- merkez logo bloğuyla çakışmayı çöz ----
+       showRy'yi merkezin/kartın yaklaşık yarı yükseklikleriyle sınırlamak
+       sadece TAM üstteki/alttaki kartı (sin≈±1, x≈0) merkezden uzak tutuyor;
+       10 kart eşit açıyla dağıldığı için üst/alt komşu kartlar (ör. Yacht &
+       Marine, Kids' Rooms, Renovation, Art — ~54°/126° açıda) hem x hem y'de
+       orta değerler alıyor ve küçük elipslerde (dar viewport) merkez kutusunun
+       köşelerine giriyor. Analitik olarak çözmek yerine gerçek konumları
+       ölçüp (getBoundingClientRect) merkezle kesişen en küçük eksendeki
+       girişim miktarınca elipsi büyüterek birkaç adımda çakışmayı sıfırlıyor
+       — büyüyen elips daha sonra fitToViewport() tarafından viewport'a
+       orantılı küçültülüyor (çakışmasızlık oran olarak korunuyor). */
+    function resolveCenterOverlap() {
+      var centerBox = centerWrap && centerWrap.querySelector('.ring-center-default');
+      if (!centerBox) return;
+      for (var iter = 0; iter < 16; iter++) {
+        var c = centerBox.getBoundingClientRect();
+        var worst = 0;
+        items.forEach(function (card) {
+          var r = card.el.getBoundingClientRect();
+          var ox = Math.min(r.right, c.right) - Math.max(r.left, c.left);
+          var oy = Math.min(r.bottom, c.bottom) - Math.max(r.top, c.top);
+          if (ox > 0 && oy > 0) worst = Math.max(worst, Math.min(ox, oy));
+        });
+        if (worst <= 0.5) break;
+        showRx += worst * 0.6;
+        showRy += worst * 0.6;
+        if (ellipseLine) {
+          ellipseLine.style.width = (showRx * 2) + 'px';
+          ellipseLine.style.height = (showRy * 2) + 'px';
+        }
+        buildArcTable();
+        place();
+      }
     }
 
     geometry();
     build();
     place();
+    resolveCenterOverlap();
+    fitToViewport();
 
     if (!prefersReducedMotion) {
-      initScroll();
+      initWheelRotate();
       initParallax();
     }
 
@@ -339,7 +438,8 @@
         geometry();
         build();
         place();
-        if (window.ScrollTrigger) ScrollTrigger.refresh();
+        resolveCenterOverlap();
+        fitToViewport();
       }, 150);
     });
   }
