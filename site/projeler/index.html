@@ -6,7 +6,7 @@
 <title>Projeler — Corniche İstanbul</title>
 <meta name="description" content="Corniche İstanbul'un otel, villa, konut, yat ve ticari mekân iç mimarlık projeleri.">
 <link rel="canonical" href="https://www.corniche.com.tr/projeler/">
-<meta name="theme-color" content="#E9DFD0">
+<meta name="theme-color" content="#171717">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
@@ -17,7 +17,7 @@
 <header class="site-header">
   <div class="header-inner">
     <a class="header-logo" href="../index.html" aria-label="Corniche İstanbul anasayfa">
-      <img src="../assets/logo/corniche-logo-siyah-header.png" alt="Corniche İstanbul">
+      <img src="../assets/logo/corniche-logo-beyaz-header.png" alt="Corniche İstanbul">
     </a>
     <div class="header-right">
     <nav class="nav-desktop" aria-label="Ana menü">
@@ -140,15 +140,11 @@
 <main>
   <div class="container page-head">
     <h1 data-grid-heading>Tüm Projeler</h1>
-    <nav class="cat-tabs" aria-label="Kategori filtrele">
-      <button type="button" data-cat="tumu">Tümü</button>
-      <button type="button" data-cat="otel">Otel Projeleri</button>
-      <button type="button" data-cat="villa">Villa</button>
-      <button type="button" data-cat="konut">Konut</button>
-      <button type="button" data-cat="yat">Yat &amp; Marin</button>
-      <button type="button" data-cat="ticari">Ticari Mekânlar</button>
-      <button type="button" data-cat="yenileme">Yenileme</button>
-    </nav>
+    <!-- Kategori filtre sekmeleri kaldırıldı (2026-11-15, Emel Hanım talimatı) —
+         filtreleme artık sağdaki hamburger menüsünün Projeler alt menüsünden
+         yapılıyor, aynı kategoriler iki yerde tekrar etmesin. ?kategori=X URL
+         parametresiyle filtreleme main.js'te (initProjectGrid/categoryParam)
+         aynen çalışıyor; kaldırılan sadece bu görünür sekme UI'ı. -->
     <div class="project-grid" data-project-grid></div>
   </div>
 </main>

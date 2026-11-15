@@ -77,6 +77,22 @@
     }
     wireCollapsibles(panel);
     wireCollapsibles(homePanel);
+
+    // Projeler alt menüsü (masaüstü hamburger paneli): Projeler sayfasında
+    // (hem ızgara hem proje detay — ikisi de data-page="projeler") panel
+    // elle açılmadan Projeler alt menüsü zaten açık gelsin — kullanıcı
+    // kategori sekmeleri kaldırıldıktan sonra (2026-11-15, Emel Hanım
+    // talimatı) filtrelemeyi doğrudan buradan yapıyor. Diğer sayfalarda
+    // eski davranış (kapalı, tıklanınca açılır) değişmiyor.
+    if (document.body.getAttribute('data-page') === 'projeler' && homePanel) {
+      var projelerSub = document.getElementById('sub-projeler-home');
+      var projelerToggle = homePanel.querySelector('[data-toggle-sub="sub-projeler-home"]');
+      if (projelerSub) projelerSub.classList.add('is-open');
+      if (projelerToggle) {
+        var projelerSign = projelerToggle.querySelector('.toggle-sign');
+        if (projelerSign) projelerSign.textContent = '−';
+      }
+    }
   }
 
   /* ---------------- aktif menü öğesi ---------------- */
@@ -228,8 +244,12 @@
       categories.forEach(function (cat) {
         var w = cat.w, h = cat.h;
         if (isTabletNow) {
-          w = cat.isHotel ? 170 : 140;
-          h = cat.isHotel ? 113 : 93;
+          // isHotel artık SADECE çerçeve rengini ayırt etmek için var (bkz.
+          // CSS .ring-item.is-hotel .ring-card3d) — 10 kart da aynı boyutta
+          // (2026-11-15, Emel Hanım talimatı: "Otel Projeleri" kartı da aynı
+          // stilde, sadece çerçevesi gri).
+          w = 140;
+          h = 93;
         }
         var segW = w / SEGMENTS;
         var step = (segW / CURVE_R) * (180 / Math.PI);
@@ -270,8 +290,10 @@
             seg.style.backgroundRepeat = 'no-repeat';
           } else {
             // Gerçek fotoğrafı olmayan kategoriler (Art, Textiles, Kids' Rooms):
-            // spec'teki "görsel yer tutucu kutu" rengi (--vizon), görsel icat edilmedi.
-            seg.style.backgroundColor = 'var(--vizon)';
+            // spec'teki "görsel yer tutucu kutu" rengi (--cerceve, antrasit),
+            // görsel icat edilmedi (2026-11-15 palet değişimi — eski --vizon
+            // kaldırıldı).
+            seg.style.backgroundColor = 'var(--cerceve)';
           }
           face.appendChild(seg);
         }
@@ -543,8 +565,10 @@
       cardsWrap.innerHTML = '';
       items.length = 0;
       categories.forEach(function (cat, i) {
-        var w = cat.isHotel ? 104 : 84;
-        var h = cat.isHotel ? 70 : 56;
+        // isHotel burada da SADECE çerçeve rengi için (bkz. CSS .mr-card.is-hotel-card) —
+        // tüm kartlar aynı boyut.
+        var w = 84;
+        var h = 56;
 
         var el = document.createElement('div');
         el.className = 'mr-item';

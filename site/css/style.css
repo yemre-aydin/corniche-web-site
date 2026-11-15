@@ -4,14 +4,16 @@
    ========================================================================== */
 
 :root {
-  --kum:   #E9DFD0;
-  --bej:   #D4BEA5;
-  --vizon: #A18D7B;
-  --taupe: #796A60;
-  --kahve: #48382F;
-  --bronz: #A47C52;
-  --siyah: #171717;
-  --beyaz: #FFFFFF;
+  /* Palet değişimi (2026-11-15, Emel Hanım talimatı): site genelinde açık
+     zemin + bronz vurgu paleti tamamen kaldırıldı, her sayfa artık siyah
+     zeminli. Eski 8 token (kum/bej/vizon/taupe/kahve/bronz/siyah/beyaz)
+     kodun hiçbir yerinde kalmadı — bkz. proje notları. */
+  --zemin:   #171717;
+  --cerceve: #33312E;
+  --yazi:    #F3F0EA;
+  --gri:     #8C8882;
+  --acikgri: #B5B1AB;
+  --beyaz:   #FFFFFF;
 
   --header-h: 88px;
   --content-max: 1280px;
@@ -43,8 +45,8 @@
 html, body { overflow-x: hidden; }
 body {
   margin: 0;
-  background: var(--kum);
-  color: var(--kahve);
+  background: var(--zemin);
+  color: var(--yazi);
   font-family: 'Jost', sans-serif;
   font-weight: 400;
   font-size: 17px;
@@ -65,30 +67,40 @@ h1, h2, h3 {
   font-family: 'Jost', sans-serif;
   font-weight: 500;
   margin: 0;
-  color: var(--siyah);
+  color: var(--beyaz);
 }
 h1 { font-size: 56px; line-height: 1.05; }
 h2 { font-size: 40px; line-height: 1.1; }
 h3 { font-size: 28px; line-height: 1.2; }
 
+/* Ana sayfa slogan satırı (TR) — bu sitede Cormorant Garamond'un KALDIĞI tek
+   yer (2026-11-15, Emel Hanım talimatı); marka wordmark'ı zaten görsel logo
+   olduğu için (metin değil) başka bir kullanım yok. Sadece index.html bu
+   fontu Google Fonts'tan yüklüyor. */
 .intro-line {
-  font-family: 'Jost', sans-serif;
+  font-family: 'Cormorant Garamond', serif;
   font-style: italic;
   font-weight: 400;
-  font-size: 22px;
+  font-size: 20px;
   line-height: 1.4;
-  color: var(--kahve);
+  color: var(--acikgri);
+}
+.intro-line .tagline-en {
+  display: block;
+  margin-top: 4px;
+  font-size: 16px;
+  opacity: 0.85;
 }
 
 p { max-width: 640px; }
 
 :focus-visible {
-  outline: 1px solid var(--bronz);
+  outline: 1px solid var(--gri);
   outline-offset: 4px;
 }
 
 /* Tarayıcı varsayılan mavi vurgu/seçim rengi kaldırılır */
-::selection { background: var(--bronz); color: var(--beyaz); }
+::selection { background: var(--yazi); color: var(--zemin); }
 
 .visually-hidden {
   position: absolute !important;
@@ -116,25 +128,71 @@ section + section,
 
 .section-heading { margin-bottom: var(--heading-gap); }
 
-.dark-theme { background: var(--kahve); color: var(--kum); }
+.dark-theme { background: var(--zemin); color: var(--yazi); }
 .dark-theme h1, .dark-theme h2, .dark-theme h3 { color: var(--beyaz); }
 
-/* ---------- görsel yer tutucu ---------- */
+/* ---------- görsel yer tutucu ----------
+   Gerçek fotoğrafı henüz olmayan her alan (ileride kurallı: ring'de Art/
+   Textiles/Kids' Rooms, Referanslar'daki Yakında kartları, vb.) antrasit
+   zemin + açık gri etiket kullanır. Çerçeve kuralı (10px masaüstü/8px mobil,
+   bkz. aşağıdaki "FOTOĞRAF ÇERÇEVELERİ" bloğu) buna da uygulanıyor — fill ve
+   çerçeve aynı tonda olduğu için şu an görsel olarak ayrışmıyor, gerçek
+   fotoğraf eklendiğinde çerçeve netleşir. */
 .img-ph {
-  background: var(--vizon);
+  background: var(--cerceve);
   width: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: var(--kum);
+  color: var(--acikgri);
   font-family: 'Jost', sans-serif;
   font-size: 12px;
   letter-spacing: 0.1em;
   text-align: center;
   padding: 8px;
   overflow: hidden;
+  box-sizing: border-box;
+  border: 10px solid var(--cerceve);
 }
 .img-ph span { opacity: 0.85; }
+@media (max-width: 1023px) {
+  .img-ph { border-width: 8px; }
+}
+
+/* ==========================================================================
+   FOTOĞRAF ÇERÇEVELERİ (2026-11-15, Emel Hanım talimatı) — sitedeki her
+   gerçek <img> fotoğrafının etrafına antrasit çerçeve: masaüstü 10px, mobil
+   8px. Ring kartları ve mobil "atlıkarınca" kendi outline mekanizmasını
+   kullanıyor (aşağıda ANA SAYFA HALKASI bölümünde), çünkü border eklemek
+   3B/absolute iç katmanların ölçülerini bozar — outline layout'u etkilemez.
+   ========================================================================== */
+.project-card .card-photo img,
+.detail-related .card-photo img,
+.collection-card img,
+.press-card .cover-photo img,
+.product-card .ratio-4-5 img,
+.about-grid img,
+.showroom-hero img,
+.detail-hero img,
+.gallery-grid img,
+.before-after img {
+  box-sizing: border-box;
+  border: 10px solid var(--cerceve);
+}
+@media (max-width: 1023px) {
+  .project-card .card-photo img,
+  .detail-related .card-photo img,
+  .collection-card img,
+  .press-card .cover-photo img,
+  .product-card .ratio-4-5 img,
+  .about-grid img,
+  .showroom-hero img,
+  .detail-hero img,
+  .gallery-grid img,
+  .before-after img {
+    border-width: 8px;
+  }
+}
 
 .ratio-3-2 { aspect-ratio: 3 / 2; }
 .ratio-4-5 { aspect-ratio: 4 / 5; }
@@ -153,15 +211,15 @@ section + section,
   transition: background-color 200ms ease, border-color 200ms ease;
 }
 .site-header.is-scrolled {
-  background: var(--kum);
-  border-bottom-color: var(--bej);
+  background: var(--zemin);
+  border-bottom-color: var(--gri);
 }
 .site-header.theme-dark {
-  background: var(--kahve);
+  background: var(--zemin);
 }
 .site-header.theme-dark.is-scrolled {
-  background: var(--kahve);
-  border-bottom-color: var(--taupe);
+  background: var(--zemin);
+  border-bottom-color: var(--gri);
 }
 
 .header-inner {
@@ -204,16 +262,16 @@ section + section,
     font-family: 'Jost', sans-serif;
     font-size: 14px;
     letter-spacing: 0.08em;
-    color: var(--kahve);
+    color: var(--yazi);
     padding-bottom: 6px;
     border-bottom: 1.5px solid transparent;
     transition: color 200ms ease, border-color 200ms ease;
   }
-  .site-header.theme-dark .nav-desktop .menu-item { color: var(--kum); }
+  .site-header.theme-dark .nav-desktop .menu-item { color: var(--yazi); }
   .nav-desktop .menu-item:hover,
-  .nav-desktop .menu-item.is-active { color: var(--siyah); border-color: var(--bronz); }
+  .nav-desktop .menu-item.is-active { color: var(--beyaz); border-color: var(--gri); }
   .site-header.theme-dark .nav-desktop .menu-item:hover,
-  .site-header.theme-dark .nav-desktop .menu-item.is-active { color: var(--beyaz); border-color: var(--bronz); }
+  .site-header.theme-dark .nav-desktop .menu-item.is-active { color: var(--beyaz); border-color: var(--gri); }
 
   .lang-switch {
     display: flex;
@@ -223,10 +281,10 @@ section + section,
     font-family: 'Jost', sans-serif;
     font-size: 14px;
   }
-  .lang-switch .lang-sep { color: var(--kahve); }
-  .lang-switch button { color: var(--kahve); font-weight: 400; }
-  .lang-switch button.is-active { color: var(--siyah); font-weight: 500; }
-  .site-header.theme-dark .lang-switch button { color: var(--kum); }
+  .lang-switch .lang-sep { color: var(--yazi); }
+  .lang-switch button { color: var(--yazi); font-weight: 400; }
+  .lang-switch button.is-active { color: var(--beyaz); font-weight: 500; }
+  .site-header.theme-dark .lang-switch button { color: var(--yazi); }
   .site-header.theme-dark .lang-switch button.is-active { color: var(--beyaz); }
 
   /* .header-right, hamburger ile dil seçiciyi (.nav-desktop, artık sadece
@@ -254,8 +312,8 @@ section + section,
   top: 100%;
   left: 50%;
   transform: translateX(-50%);
-  background: var(--kum);
-  border: 1px solid var(--bej);
+  background: var(--zemin);
+  border: 1px solid var(--gri);
   padding: 20px 24px;
   min-width: 220px;
   z-index: 10;
@@ -266,12 +324,12 @@ section + section,
 .dropdown-panel a {
   font-family: 'Jost', sans-serif;
   font-size: 14px;
-  color: var(--kahve);
+  color: var(--yazi);
   white-space: nowrap;
   border-bottom: 1.5px solid transparent;
   padding-bottom: 2px;
 }
-.dropdown-panel a:hover { color: var(--siyah); border-color: var(--bronz); }
+.dropdown-panel a:hover { color: var(--beyaz); border-color: var(--gri); }
 
 /* mobil hamburger */
 .menu-burger {
@@ -284,7 +342,7 @@ section + section,
 }
 .menu-burger .bar {
   width: 30px; height: 2px;
-  background: var(--siyah);
+  background: var(--beyaz);
 }
 .site-header.theme-dark .menu-burger .bar { background: var(--beyaz); }
 
@@ -305,7 +363,7 @@ section + section,
   position: fixed;
   top: 0; right: 0;
   width: 100%; height: 100%;
-  background: var(--kahve);
+  background: var(--cerceve);
   transform: translateX(100%);
   transition: transform 300ms ease-out;
   z-index: 1000;
@@ -341,7 +399,7 @@ body.menu-open { overflow: hidden; }
   margin-top: 44px;
 }
 .menu-panel-item {
-  border-bottom: 1px solid var(--taupe);
+  border-bottom: 1px solid var(--gri);
 }
 .menu-panel-link {
   display: flex;
@@ -351,11 +409,11 @@ body.menu-open { overflow: hidden; }
   font-size: 20px;
   text-transform: uppercase;
   letter-spacing: 0.1em;
-  color: var(--kum);
+  color: var(--yazi);
   padding: 16px 0;
 }
 .menu-panel-link.is-active { color: var(--beyaz); }
-.menu-panel-item .toggle-sign { color: var(--bronz); font-size: 20px; }
+.menu-panel-item .toggle-sign { color: var(--gri); font-size: 20px; }
 
 .menu-panel-sub {
   max-height: 0;
@@ -367,7 +425,7 @@ body.menu-open { overflow: hidden; }
 .menu-panel-sub a {
   font-family: 'Jost', sans-serif;
   font-size: 15px;
-  color: var(--bej);
+  color: var(--acikgri);
 }
 
 .menu-panel-contact {
@@ -380,7 +438,7 @@ body.menu-open { overflow: hidden; }
 .menu-panel-contact span {
   font-family: 'Jost', sans-serif;
   font-size: 14px;
-  color: var(--bej);
+  color: var(--acikgri);
 }
 
 .menu-panel-lang {
@@ -391,8 +449,8 @@ body.menu-open { overflow: hidden; }
   font-family: 'Jost', sans-serif;
   font-size: 14px;
 }
-.menu-panel-lang button { color: var(--kum); }
-.menu-panel-lang button.is-active { color: var(--beyaz); border-bottom: 1.5px solid var(--bronz); }
+.menu-panel-lang button { color: var(--yazi); }
+.menu-panel-lang button.is-active { color: var(--beyaz); border-bottom: 1.5px solid var(--gri); }
 
 @media (min-width: 1024px) {
   /* Eski mobil panel (Koleksiyon dahil) masaüstünde kapalı kalır — .menu-burger
@@ -414,7 +472,7 @@ body.menu-open { overflow: hidden; }
   width: 440px;
   max-width: 90vw;
   height: 100%;
-  background: var(--kahve);
+  background: var(--cerceve);
   transform: translateX(100%);
   transition: transform 300ms ease-out;
   z-index: 1000;
@@ -433,7 +491,7 @@ body.menu-open { overflow: hidden; }
 }
 
 .menu-panel-home-list { margin-top: 20px; }
-.menu-panel-home-item { border-bottom: 1px solid var(--taupe); }
+.menu-panel-home-item { border-bottom: 1px solid var(--gri); }
 .menu-panel-home-item a {
   display: block;
   padding: 16px 0;
@@ -462,12 +520,15 @@ body.menu-open { overflow: hidden; }
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--bej);
+  color: var(--acikgri);
 }
+/* Not: bronz vurgu rengi kaldırıldığı için (kritik kural, bkz. notlar) hover/
+   active durumunda metin rengi değişmiyor artık (zaten en parlak ton olan
+   beyazdı) — görsel geri bildirim alt çizgi/işaretlerden geliyor. */
 .menu-panel-home-item a:hover .mph-tr,
 .menu-panel-home-item a:focus-visible .mph-tr,
-.menu-panel-home-item a.is-active .mph-tr { color: var(--bronz); }
-.menu-panel-home-item .toggle-sign { color: var(--bronz); font-size: 17px; }
+.menu-panel-home-item a.is-active .mph-tr { color: var(--beyaz); }
+.menu-panel-home-item .toggle-sign { color: var(--gri); font-size: 17px; }
 
 /* Projeler alt menüsü (masaüstü hamburger paneli) — mobildeki Koleksiyon
    .menu-panel-sub mekaniğiyle aynı aç/kapa mantığı, sadece sınıf adı ayrı
@@ -485,10 +546,10 @@ body.menu-open { overflow: hidden; }
   font-family: 'Jost', sans-serif;
   font-size: 14px;
   letter-spacing: 0.04em;
-  color: var(--bej);
+  color: var(--acikgri);
 }
 .menu-panel-home-sub a:hover,
-.menu-panel-home-sub a:focus-visible { color: var(--bronz); }
+.menu-panel-home-sub a:focus-visible { color: var(--yazi); }
 
 .menu-panel-home-lang { margin-top: auto; }
 
@@ -510,7 +571,7 @@ body.menu-open { overflow: hidden; }
    küçülterek hepsinin tek ekranda, scroll'suz görünmesini sağlıyor. */
 .hero-ring {
   position: relative;
-  background: var(--kum);
+  background: var(--zemin);
   overflow: hidden;
 }
 
@@ -543,7 +604,9 @@ body.menu-open { overflow: hidden; }
   top: var(--ring-cy, 55%);
   left: 50%;
   transform: translate(-50%, -50%);
-  border: 1px solid var(--bronz);
+  /* Tek seferlik özel hex (2026-11-15, Emel Hanım talimatı) — yeni palet
+     token'larından biri değil, bilerek doğrudan hex. */
+  border: 1px solid #5E5A55;
   border-radius: 50%;
   opacity: 0.5;
   pointer-events: none;
@@ -586,17 +649,27 @@ body.menu-open { overflow: hidden; }
   inset: 0;
   transform-style: preserve-3d;
   transition: box-shadow 400ms ease;
+  /* Fotoğraf çerçevesi kuralı (masaüstü 10px) ring kartlarına da uygulanıyor —
+     border yerine outline kullanılıyor çünkü bu kutu absolute inset:0 ile
+     konumlanan iç katmanların (ring-face/ring-seg) temel kutusu; outline
+     layout'u etkilemediği için kavisli dilim matematiği bozulmuyor. */
+  outline: 10px solid var(--cerceve);
+  outline-offset: 0;
 }
+@media (max-width: 1023px) {
+  .ring-card3d { outline-width: 8px; }
+}
+/* "Otel Projeleri" kartı: tek başına gri çerçeve, diğer 9 kart antrasit
+   (2026-11-15, Emel Hanım talimatı) — bkz. js/ring-categories.js isHotel. */
 .ring-item.is-hotel .ring-card3d {
-  outline: 2px solid var(--bronz);
-  outline-offset: 4px;
+  outline-color: var(--gri);
 }
 .ring-face { position: absolute; inset: 0; transform-style: preserve-3d; }
 .ring-seg {
   position: absolute;
   top: 0; left: 0;
   height: 100%;
-  background-color: var(--bej);
+  background-color: var(--cerceve);
   backface-visibility: visible;
   /* Parlaklık değeri burada SABİT değil — main.js (place()) her dilimin
      3B "ışık alma" shade'ini (açıya göre) hover durumuna göre bir soluklaştırma
@@ -615,10 +688,9 @@ body.menu-open { overflow: hidden; }
   font-size: 13px;
   letter-spacing: 0.17em;
   text-transform: uppercase;
-  color: var(--kahve);
+  color: var(--acikgri);
   pointer-events: none;
 }
-.ring-item.is-hotel .ring-label { color: var(--siyah); }
 
 .ring-center {
   position: absolute;
@@ -634,9 +706,9 @@ body.menu-open { overflow: hidden; }
 .ring-center-logo { width: 340px; height: auto; }
 .ring-center-logo.is-placeholder {
   width: 340px; height: 220px;
-  border: 1px dashed var(--taupe);
+  border: 1px dashed var(--gri);
   display: flex; align-items: center; justify-content: center;
-  color: var(--taupe);
+  color: var(--acikgri);
   font-size: 12px;
 }
 .ring-center-tagline {
@@ -662,7 +734,7 @@ body.menu-open { overflow: hidden; }
   font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--taupe);
+  color: var(--acikgri);
 }
 .ring-preview-title { margin-top: 10px; font-size: clamp(28px, 3vw, 40px); }
 .ring-preview-link {
@@ -671,8 +743,8 @@ body.menu-open { overflow: hidden; }
   margin-top: 14px;
   font-family: 'Jost', sans-serif;
   font-size: 14px;
-  color: var(--siyah);
-  border-bottom: 1.5px solid var(--bronz);
+  color: var(--beyaz);
+  border-bottom: 1.5px solid var(--gri);
   padding-bottom: 4px;
 }
 
@@ -681,8 +753,8 @@ body.menu-open { overflow: hidden; }
   bottom: 32px;
   font-family: 'Jost', sans-serif;
   font-size: 14px;
-  color: var(--siyah);
-  border-bottom: 1.5px solid var(--bronz);
+  color: var(--beyaz);
+  border-bottom: 1.5px solid var(--gri);
   padding-bottom: 6px;
   z-index: 6;
 }
@@ -712,8 +784,8 @@ body.menu-open { overflow: hidden; }
 .filter-row button {
   font-family: 'Jost', sans-serif;
   font-size: 15px;
-  color: var(--siyah);
-  border-bottom: 1.5px solid var(--kahve);
+  color: var(--beyaz);
+  border-bottom: 1.5px solid var(--gri);
   padding-bottom: 5px;
 }
 
@@ -755,9 +827,13 @@ body.menu-open { overflow: hidden; }
   position: relative;
   width: 100%; height: 100%;
   transition: transform 250ms ease-out, opacity 250ms ease-out;
+  /* Fotoğraf çerçevesi (mobil 8px) — mr-card sadece telefon genişliğinde
+     (<768px) göründüğü için doğrudan mobil değerle sabitlendi. */
+  outline: 8px solid var(--cerceve);
+  outline-offset: 0;
 }
 .mr-card.is-selected { box-shadow: 0 10px 22px -14px rgba(0,0,0,0.4); }
-.mr-card.is-hotel-card { outline: 1.5px solid var(--bronz); outline-offset: 3px; }
+.mr-card.is-hotel-card { outline-color: var(--gri); }
 .mr-card-img { width: 100%; height: 100%; }
 .mr-card-img span {
   font-size: 9px;
@@ -776,7 +852,7 @@ body.menu-open { overflow: hidden; }
   font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: var(--taupe);
+  color: var(--acikgri);
 }
 .mrp-title { margin-top: 6px; font-size: 30px; }
 .mrp-img { margin-top: 14px; }
@@ -786,8 +862,8 @@ body.menu-open { overflow: hidden; }
   font-family: 'Jost', sans-serif;
   font-weight: 500;
   font-size: 15px;
-  color: var(--siyah);
-  border-bottom: 1.5px solid var(--bronz);
+  color: var(--beyaz);
+  border-bottom: 1.5px solid var(--gri);
   padding-bottom: 4px;
 }
 
@@ -824,11 +900,11 @@ body.menu-open { overflow: hidden; }
 .cat-tabs button {
   font-family: 'Jost', sans-serif;
   font-size: 14px;
-  color: var(--kahve);
+  color: var(--yazi);
   padding-bottom: 6px;
   border-bottom: 1.5px solid transparent;
 }
-.cat-tabs button.is-active { color: var(--siyah); border-color: var(--bronz); }
+.cat-tabs button.is-active { color: var(--beyaz); border-color: var(--gri); }
 
 @media (max-width: 1023px) {
   .cat-tabs {
@@ -864,7 +940,7 @@ body.menu-open { overflow: hidden; }
 .project-card:hover .card-photo img,
 .project-card:hover .card-photo .img-ph { transform: scale(1.03); }
 .project-card .small-label { margin-top: 16px; display: block; }
-.project-card .card-title { margin-top: 6px; font-size: 24px; color: var(--siyah); }
+.project-card .card-title { margin-top: 6px; font-size: 24px; color: var(--beyaz); }
 @media (max-width: 1023px) {
   .project-card .small-label { margin-top: 12px; }
   .project-card .card-title { margin-top: 4px; font-size: 22px; }
@@ -885,9 +961,9 @@ body.menu-open { overflow: hidden; }
   font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--kahve);
+  color: var(--acikgri);
 }
-.dark-theme .small-label { color: var(--bej); }
+.dark-theme .small-label { color: var(--acikgri); }
 
 /* ==========================================================================
    PROJE DETAY (koyu tema)
@@ -897,8 +973,8 @@ body.menu-open { overflow: hidden; }
   display: inline-block;
   font-family: 'Jost', sans-serif;
   font-size: 14px;
-  color: var(--kum);
-  border-bottom: 1.5px solid var(--bronz);
+  color: var(--yazi);
+  border-bottom: 1.5px solid var(--gri);
   padding-bottom: 2px;
 }
 @media (max-width: 1023px) {
@@ -927,7 +1003,7 @@ body.menu-open { overflow: hidden; }
 .detail-rule {
   margin-top: 20px;
   width: 64px; height: 1px;
-  background: var(--bronz);
+  background: var(--gri);
   border: none;
 }
 .detail-story { margin-top: 20px; font-size: 17px; }
@@ -936,12 +1012,12 @@ body.menu-open { overflow: hidden; }
   display: flex;
   justify-content: space-between;
   padding: 12px 0;
-  border-bottom: 1px solid var(--taupe);
+  border-bottom: 1px solid var(--gri);
   font-family: 'Jost', sans-serif;
   font-size: 14px;
 }
-.info-row .label { color: var(--bej); }
-.info-row .value { color: var(--kum); }
+.info-row .label { color: var(--acikgri); }
+.info-row .value { color: var(--yazi); }
 
 @media (max-width: 1023px) {
   .detail-info { margin-top: 28px; display: block; }
@@ -991,7 +1067,7 @@ body.menu-open { overflow: hidden; }
   font-size: 12px;
   letter-spacing: 0.16em;
   text-transform: uppercase;
-  color: var(--bej);
+  color: var(--acikgri);
 }
 @media (max-width: 1023px) {
   .before-after { grid-template-columns: 1fr; gap: 12px; }
@@ -1005,7 +1081,7 @@ body.menu-open { overflow: hidden; }
 .btn-outline-dark {
   width: 280px; height: 56px;
   display: flex; align-items: center; justify-content: center;
-  border: 1px solid var(--bronz);
+  border: 1px solid var(--gri);
   background: transparent;
   color: var(--beyaz);
   font-family: 'Jost', sans-serif;
@@ -1013,7 +1089,7 @@ body.menu-open { overflow: hidden; }
   letter-spacing: 0.1em;
   transition: background-color 200ms ease, color 200ms ease;
 }
-.btn-outline-dark:hover { background: var(--kum); color: var(--kahve); }
+.btn-outline-dark:hover { background: var(--yazi); color: var(--zemin); }
 
 @media (max-width: 1023px) {
   .detail-cta { margin-top: 56px; }
@@ -1037,7 +1113,7 @@ body.menu-open { overflow: hidden; }
 .lightbox {
   position: fixed;
   inset: 0;
-  background: var(--kahve);
+  background: var(--zemin);
   display: none;
   align-items: center;
   justify-content: center;
@@ -1049,14 +1125,14 @@ body.menu-open { overflow: hidden; }
 .lightbox-close {
   position: absolute; top: 24px; right: 24px;
   width: 44px; height: 44px;
-  color: var(--kum);
+  color: var(--yazi);
   font-size: 28px;
   display: flex; align-items: center; justify-content: center;
 }
 .lightbox-nav {
   position: absolute; top: 50%; transform: translateY(-50%);
   width: 44px; height: 44px;
-  color: var(--kum);
+  color: var(--yazi);
   font-size: 28px;
   display: flex; align-items: center; justify-content: center;
 }
@@ -1106,15 +1182,15 @@ body.menu-open { overflow: hidden; }
   margin-top: 14px;
   font-family: 'Jost', sans-serif;
   font-size: 22px;
-  color: var(--siyah);
+  color: var(--beyaz);
 }
 .product-card .product-info-link {
   display: inline-block;
   margin-top: 8px;
   font-family: 'Jost', sans-serif;
   font-size: 14px;
-  color: var(--kahve);
-  border-bottom: 1.5px solid var(--bronz);
+  color: var(--yazi);
+  border-bottom: 1.5px solid var(--gri);
   padding-bottom: 2px;
 }
 @media (max-width: 1023px) {
@@ -1148,8 +1224,7 @@ body.menu-open { overflow: hidden; }
 .press-card a { display: block; }
 .press-card .cover-photo {
   aspect-ratio: 3 / 4;
-  background: var(--kum);
-  border: 1px solid var(--bej);
+  background: var(--zemin);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1158,28 +1233,34 @@ body.menu-open { overflow: hidden; }
 .press-card .cover-photo img { width: 100%; height: 100%; object-fit: contain; }
 /* Referanslar bölümü — gerçek referans/müşteri verisi yok (sahte logo/isim
    uydurulmadı), halkadaki Art/Textiles/Kids' Rooms placeholder yaklaşımıyla
-   aynı mantık: --vizon renk blok + "Yakında" etiketi. */
+   aynı mantık: --cerceve (antrasit) renk blok + açık gri "Yakında" etiketi. */
 .press-card .cover-photo.cover-placeholder {
-  background: var(--vizon);
-  border-color: var(--vizon);
+  /* İçinde gerçek <img> yok (henüz referans fotoğrafı yok) — çerçeve burada
+     img'e değil doğrudan konteynıre uygulanıyor. */
+  background: var(--cerceve);
+  box-sizing: border-box;
+  border: 10px solid var(--cerceve);
+}
+@media (max-width: 1023px) {
+  .press-card .cover-photo.cover-placeholder { border-width: 8px; }
 }
 .press-card .cover-placeholder span {
   font-family: 'Jost', sans-serif;
   font-size: 13px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--kum);
+  color: var(--acikgri);
 }
 .press-card .press-title {
   margin-top: 14px;
   font-family: 'Jost', sans-serif;
   font-size: 14px;
-  color: var(--kahve);
+  color: var(--yazi);
   border-bottom: 1.5px solid transparent;
   padding-bottom: 4px;
   display: inline-block;
 }
-.press-card a:hover .press-title { color: var(--siyah); border-color: var(--bronz); }
+.press-card a:hover .press-title { color: var(--beyaz); border-color: var(--gri); }
 @media (max-width: 1023px) {
   .press-grid { grid-template-columns: repeat(2, 1fr); gap: 20px; margin-top: 72px; }
   .press-section { margin-top: 72px; }
@@ -1194,7 +1275,7 @@ body.menu-open { overflow: hidden; }
   grid-template-columns: 4fr 7fr;
   gap: var(--grid-gap);
   padding: 32px 0;
-  border-bottom: 1px solid var(--bej);
+  border-bottom: 1px solid var(--gri);
 }
 .service-row:first-child { padding-top: 0; }
 @media (max-width: 1023px) {
@@ -1211,7 +1292,7 @@ body.menu-open { overflow: hidden; }
 .how-steps .step-number {
   font-family: 'Jost', sans-serif;
   font-size: 40px;
-  color: var(--siyah);
+  color: var(--beyaz);
 }
 .how-steps h3 { margin-top: 16px; }
 .how-steps p { margin-top: 8px; }
@@ -1254,7 +1335,7 @@ body.menu-open { overflow: hidden; }
 
 .contact-info-list { display: flex; flex-direction: column; gap: 28px; }
 .contact-info-item .small-label { display: block; }
-.contact-info-item .value { margin-top: 8px; display: block; font-size: 17px; color: var(--siyah); }
+.contact-info-item .value { margin-top: 8px; display: block; font-size: 17px; color: var(--yazi); }
 
 .contact-buttons {
   margin-top: 24px;
@@ -1266,8 +1347,8 @@ body.menu-open { overflow: hidden; }
   .btn-outline-light {
     height: 52px;
     display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--bronz);
-    color: var(--siyah);
+    border: 1px solid var(--gri);
+    color: var(--yazi);
     background: transparent;
     font-family: 'Jost', sans-serif;
     font-size: 15px;
@@ -1280,24 +1361,24 @@ body.menu-open { overflow: hidden; }
   font-family: 'Jost', sans-serif;
   font-size: 12px;
   text-transform: uppercase;
-  color: var(--kahve);
+  color: var(--acikgri);
 }
 .form-field input,
 .form-field textarea {
   background: transparent;
   border: none;
-  border-bottom: 1px solid var(--taupe);
+  border-bottom: 1px solid var(--gri);
   height: 48px;
   font-size: 16px;
-  color: var(--siyah);
+  color: var(--yazi);
   padding: 0;
 }
-.form-field textarea { height: auto; min-height: 96px; padding-top: 8px; border: 1px solid var(--taupe); }
-.form-field input:focus, .form-field textarea:focus { border-color: var(--bronz); outline: none; }
+.form-field textarea { height: auto; min-height: 96px; padding-top: 8px; border: 1px solid var(--gri); }
+.form-field input:focus, .form-field textarea:focus { border-color: var(--gri); outline: none; }
 
 .form-kvkk { display: flex; align-items: flex-start; gap: 10px; font-size: 14px; }
 .form-kvkk input { width: 20px; height: 20px; flex: none; margin-top: 2px; }
-.form-kvkk a { border-bottom: 1px solid var(--kahve); }
+.form-kvkk a { border-bottom: 1px solid var(--gri); }
 @media (max-width: 1023px) {
   .form-kvkk { min-height: 44px; align-items: center; }
 }
@@ -1306,15 +1387,15 @@ body.menu-open { overflow: hidden; }
   align-self: flex-start;
   width: 280px; height: 56px;
   display: flex; align-items: center; justify-content: center;
-  border: 1px solid var(--bronz);
+  border: 1px solid var(--gri);
   background: transparent;
-  color: var(--siyah);
+  color: var(--yazi);
   font-family: 'Jost', sans-serif;
   font-size: 14px;
   letter-spacing: 0.1em;
   transition: background-color 200ms ease, color 200ms ease;
 }
-.btn-outline-contact:hover { background: var(--kahve); color: var(--kum); }
+.btn-outline-contact:hover { background: var(--yazi); color: var(--zemin); }
 @media (max-width: 1023px) {
   .btn-outline-contact { width: 100%; height: 52px; font-size: 15px; }
 }
@@ -1328,8 +1409,10 @@ body.menu-open { overflow: hidden; }
    ========================================================================== */
 .site-footer {
   margin-top: var(--section-gap);
-  background: var(--kahve);
-  color: var(--kum);
+  /* Sayfa zemini artık siyah olduğu için footer'ı antrasit (var(--cerceve))
+     ile ayırıyoruz — menü panelleriyle aynı "yüzey" katmanı mantığı. */
+  background: var(--cerceve);
+  color: var(--yazi);
   padding: 80px 0 32px;
 }
 .footer-grid {
@@ -1343,7 +1426,7 @@ body.menu-open { overflow: hidden; }
 .footer-social a {
   width: 20px; height: 20px;
   display: flex; align-items: center; justify-content: center;
-  color: var(--kum);
+  color: var(--yazi);
 }
 .footer-social a:hover { color: var(--beyaz); }
 .footer-social svg { width: 20px; height: 20px; fill: currentColor; }
@@ -1351,13 +1434,13 @@ body.menu-open { overflow: hidden; }
 .footer-bottom {
   margin-top: 56px;
   padding-top: 32px;
-  border-top: 1px solid var(--taupe);
+  border-top: 1px solid var(--gri);
   display: flex;
   gap: 24px;
   flex-wrap: wrap;
   font-family: 'Jost', sans-serif;
   font-size: 13px;
-  color: var(--bej);
+  color: var(--acikgri);
 }
 
 @media (max-width: 1023px) {
@@ -1378,15 +1461,17 @@ body.menu-open { overflow: hidden; }
   right: 16px; bottom: 20px;
   width: 56px; height: 56px;
   border-radius: 50%;
-  background: var(--kahve);
-  border: 1px solid var(--bronz);
+  background: var(--cerceve);
+  border: 1px solid var(--gri);
   align-items: center;
   justify-content: center;
   z-index: 900;
 }
 .wa-fixed svg { width: 24px; height: 24px; fill: var(--beyaz); }
-.wa-fixed.theme-light { background: var(--kum); }
-.wa-fixed.theme-light svg { fill: var(--kahve); }
+/* .theme-light şu an hiçbir sayfada kullanılmıyor (tüm sayfalar koyu zemin) —
+   token tutarlılığı için güncellendi, kod tabanında ölü/yedek kalıyor. */
+.wa-fixed.theme-light { background: var(--yazi); }
+.wa-fixed.theme-light svg { fill: var(--zemin); }
 body.menu-open .wa-fixed { display: none !important; }
 
 @media (max-width: 1023px) {

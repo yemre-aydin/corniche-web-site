@@ -23,14 +23,17 @@
      Bespoke Furniture / Textiles / Art ilgili Koleksiyon alt sayfasına gider.
      Kids' Rooms için gerçek bir hedef yok (kategori hiç var olmadı) — genel
      projeler sayfasına gider, kesinleşmedi.
-   - Halkada artık "Otel Projeleri" gibi özel bronz-çerçeveli bir kart yok;
-     görselde 10 kart da aynı stilde, o yüzden isHotel kaldırıldı. */
+   - 2026-11-15 palet güncellemesinde "Otel Projeleri" (id: hospitality)
+     kartına isHotel:true GERİ EKLENDİ — ama artık boyut için değil, SADECE
+     çerçeve rengi için (bkz. main.js build(): isHotel artık w/h hesabına
+     girmiyor, hep aynı boyut; CSS .ring-item.is-hotel / .mr-card.is-hotel-card
+     sadece outline rengini gri yapıyor, diğer 9 kart antrasit kalıyor). */
 (function (global) {
   var RING_CATEGORIES = [
     { id: 'villa',       tr: 'Villa',             img: 'assets/projeler-web/savoy-project/02-salon.webp',       link: 'projeler/index.html?kategori=villa',  w: 180, h: 120 },
     { id: 'renovation',  tr: 'Renovation',        img: 'assets/projeler-web/proje-h-a/07-yemek-odasi.webp',     link: 'projeler/index.html?kategori=yenileme', w: 180, h: 120 },
     { id: 'residential', tr: 'Residential',       img: 'assets/projeler-web/yenikoy-project/08-salon.webp',     link: 'projeler/index.html?kategori=konut',   w: 180, h: 120 },
-    { id: 'hospitality', tr: 'Hospitality',       img: 'assets/projeler-web/kemer-prive/01-merdiven-alti.webp', link: 'projeler/index.html?kategori=otel',    w: 180, h: 120 },
+    { id: 'hospitality', tr: 'Hospitality',       img: 'assets/projeler-web/kemer-prive/01-merdiven-alti.webp', link: 'projeler/index.html?kategori=otel',    w: 180, h: 120, isHotel: true },
     { id: 'yacht-marine',tr: 'Yacht & Marine',    img: 'assets/projeler-web/yenikoy-project/01-banyo.webp',     link: 'projeler/index.html?kategori=yat',     w: 180, h: 120 },
     { id: 'commercial',  tr: 'Commercial Spaces', img: 'assets/projeler-web/berkozan/01-toplanti-odasi.webp',   link: 'projeler/index.html?kategori=ticari',  w: 180, h: 120 },
     { id: 'kids-rooms',  tr: "Kids' Rooms",       img: null,                                                     link: 'projeler/index.html',                  w: 180, h: 120 },
