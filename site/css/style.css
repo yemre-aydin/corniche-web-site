@@ -58,7 +58,11 @@ button { font-family: inherit; background: none; border: none; cursor: pointer; 
 input, textarea { font-family: inherit; }
 
 h1, h2, h3 {
-  font-family: 'Cormorant Garamond', serif;
+  /* Tek font ailesi kararı (2026-11-15, müşteri geri bildirimi): site genelinde
+     başlık/gövde ayrımı yapan Cormorant Garamond (serif) kaldırıldı, her yerde
+     Jost (sans) kullanılıyor — zaten gövde/sekme metinlerinin fontuydu. Google
+     Fonts linki de tüm sayfalarda sadece Jost yüklüyor artık. */
+  font-family: 'Jost', sans-serif;
   font-weight: 500;
   margin: 0;
   color: var(--siyah);
@@ -68,7 +72,7 @@ h2 { font-size: 40px; line-height: 1.1; }
 h3 { font-size: 28px; line-height: 1.2; }
 
 .intro-line {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Jost', sans-serif;
   font-style: italic;
   font-weight: 400;
   font-size: 22px;
@@ -171,7 +175,10 @@ section + section,
 }
 
 .header-logo { display: flex; align-items: center; }
-.header-logo img { height: 40px; width: auto; }
+/* ~2 kat büyütüldü (eski: 40px/32px) — müşteri geri bildirimi, logo site
+   genelinde çok küçük duruyordu. --header-h (88px masaüstü/64px mobil)
+   içine align-items:center ile ortalanıyor, taşma yok. */
+.header-logo img { height: 80px; width: auto; }
 .header-logo.is-hidden { visibility: hidden; }
 
 /* masaüstü menü */
@@ -227,13 +234,16 @@ section + section,
      + bu tek grup = header-inner'daki sadece 2 flex öge; justify-content:
      space-between bu ikisini otomatik olarak sol/sağ kenara iter, önceki
      "3 öge arasına da boşluk girer, burger TR/EN'den kopar" sorunu kalmıyor —
-     bu yüzden sayfa başına ayrı order/justify-content hack'ine gerek yok. */
+     bu yüzden sayfa başına ayrı order/justify-content hack'ine gerek yok.
+     Sıra (Emel Hanım geri bildirimi): TR/EN hamburger'ın SOLUNDA durmalı,
+     yani görsel sıra [TR/EN][hamburger] — nav-desktop'u order:1, burger'ı
+     order:2 yapıyoruz (DOM sırası tersi, ama CSS order ile görünüm değişiyor). */
   .header-right {
     display: flex;
     align-items: center;
   }
-  .menu-burger { display: flex; order: 1; }
-  .nav-desktop { order: 2; margin-left: 28px; }
+  .nav-desktop { order: 1; margin-right: 28px; }
+  .menu-burger { display: flex; order: 2; }
 }
 
 /* koleksiyon açılır menü */
@@ -279,7 +289,7 @@ section + section,
 .site-header.theme-dark .menu-burger .bar { background: var(--beyaz); }
 
 @media (max-width: 1023px) {
-  .header-logo img { height: 32px; }
+  .header-logo img { height: 56px; }
 }
 
 /* Ana sayfada (masaüstü) ortada büyük logo olduğu için solda küçük logo yok;
@@ -422,25 +432,34 @@ body.menu-open { overflow: hidden; }
   justify-content: flex-end;
 }
 
-.menu-panel-home-list { margin-top: 24px; }
+.menu-panel-home-list { margin-top: 20px; }
 .menu-panel-home-item { border-bottom: 1px solid var(--taupe); }
 .menu-panel-home-item a {
   display: block;
-  padding: 22px 0;
+  padding: 16px 0;
+}
+/* Projeler öğesindeki +/- işareti ile metni aynı satırda sağa/sola yaslamak
+   için tek satırlık flex sarmalayıcı — diğer (alt menüsüz) öğelerde kullanılmaz. */
+.menu-panel-home-item .mph-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 .menu-panel-home-item .mph-tr {
   display: block;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Jost', sans-serif;
   font-weight: 500;
-  font-size: 30px;
+  /* Mockup'taki gibi daha ince/zarif durması için küçültüldü (eski: 30px —
+     "kaba" duruyordu, bkz. Emel Hanım geri bildirimi). */
+  font-size: 21px;
   color: var(--beyaz);
   transition: color 200ms ease;
 }
 .menu-panel-home-item .mph-en {
   display: block;
-  margin-top: 4px;
+  margin-top: 3px;
   font-family: 'Jost', sans-serif;
-  font-size: 12px;
+  font-size: 11px;
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--bej);
@@ -448,6 +467,28 @@ body.menu-open { overflow: hidden; }
 .menu-panel-home-item a:hover .mph-tr,
 .menu-panel-home-item a:focus-visible .mph-tr,
 .menu-panel-home-item a.is-active .mph-tr { color: var(--bronz); }
+.menu-panel-home-item .toggle-sign { color: var(--bronz); font-size: 17px; }
+
+/* Projeler alt menüsü (masaüstü hamburger paneli) — mobildeki Koleksiyon
+   .menu-panel-sub mekaniğiyle aynı aç/kapa mantığı, sadece sınıf adı ayrı
+   (bu panelin kendi tipografisine göre stillendi). */
+.menu-panel-home-sub {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 250ms ease;
+}
+.menu-panel-home-sub.is-open { max-height: 320px; }
+.menu-panel-home-sub ul { padding: 0 0 14px 2px; display: flex; flex-direction: column; gap: 10px; }
+.menu-panel-home-sub a {
+  display: block;
+  padding: 0;
+  font-family: 'Jost', sans-serif;
+  font-size: 14px;
+  letter-spacing: 0.04em;
+  color: var(--bej);
+}
+.menu-panel-home-sub a:hover,
+.menu-panel-home-sub a:focus-visible { color: var(--bronz); }
 
 .menu-panel-home-lang { margin-top: auto; }
 
@@ -494,7 +535,12 @@ body.menu-open { overflow: hidden; }
 
 .ring-ellipse {
   position: absolute;
-  top: 55%;
+  /* --ring-cy, main.js (geometry()) tarafından header altı ile köşe linkleri
+     üstü arasındaki kullanılabilir dikey bandın tam ortasına göre hesaplanıp
+     yazılıyor — sabit %55 üstte/altta eşit olmayan boşluk bırakıyordu
+     (üst payı 112px, alt payı 64px farklı olduğu için). Değer yoksa %55'e
+     düşer (JS çalışmazsa bile düzen bozulmaz). */
+  top: var(--ring-cy, 55%);
   left: 50%;
   transform: translate(-50%, -50%);
   border: 1px solid var(--bronz);
@@ -507,7 +553,7 @@ body.menu-open { overflow: hidden; }
    yansıma yerine (spec'in izin verdiği gibi) yaklaşık bir gradient/opaklık efekti. */
 .ring-floor-sheen {
   position: absolute;
-  top: 55%;
+  top: var(--ring-cy, 55%);
   left: 50%;
   width: 74%;
   height: 48%;
@@ -519,7 +565,7 @@ body.menu-open { overflow: hidden; }
 
 .ring-gallery {
   position: absolute;
-  top: 55%;
+  top: var(--ring-cy, 55%);
   left: 50%;
   width: 0;
   height: 0;
@@ -552,6 +598,11 @@ body.menu-open { overflow: hidden; }
   height: 100%;
   background-color: var(--bej);
   backface-visibility: visible;
+  /* Parlaklık değeri burada SABİT değil — main.js (place()) her dilimin
+     3B "ışık alma" shade'ini (açıya göre) hover durumuna göre bir soluklaştırma
+     çarpanıyla (varsayılan .8, hover/aktifte 1) çarpıp inline filter olarak
+     yazıyor; CSS'teki değer sadece geçişi yumuşatıyor. */
+  transition: filter 350ms ease;
 }
 
 .ring-label {
@@ -571,7 +622,7 @@ body.menu-open { overflow: hidden; }
 
 .ring-center {
   position: absolute;
-  top: 55%; left: 50%;
+  top: var(--ring-cy, 55%); left: 50%;
   transform: translate(-50%, -50%);
   text-align: center;
   z-index: 5;
@@ -791,7 +842,11 @@ body.menu-open { overflow: hidden; }
 }
 
 .project-grid {
-  margin-top: var(--section-gap);
+  /* Eskiden var(--section-gap) (120px masaüstü) — filtre sekmeleri ile ilk
+     görsel sırası arasında aşırı boş alan bırakıyordu (müşteri geri
+     bildirimi). ~2 satır yüksekliğine (gövde satır yüksekliği ~29px)
+     indirildi. */
+  margin-top: 48px;
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: var(--grid-gap);
@@ -813,6 +868,16 @@ body.menu-open { overflow: hidden; }
 @media (max-width: 1023px) {
   .project-card .small-label { margin-top: 12px; }
   .project-card .card-title { margin-top: 4px; font-size: 22px; }
+}
+/* Tüm Projeler ızgarasında (data-project-grid) "[Kategori]" satırı
+   kaldırıldığı için (bkz. main.js initProjectGrid) başlık doğrudan fotoğrafın
+   altına geliyor — small-label'ın bıraktığı aralığı (16px) korumak için
+   card-title'ın üst boşluğu burada ayrıca büyütüldü. Proje detayındaki
+   "Diğer Projeler" ızgarası (data-f-related) small-label'ı koruduğu için
+   bu kuraldan etkilenmiyor. */
+[data-project-grid] .card-title { margin-top: 16px; }
+@media (max-width: 1023px) {
+  [data-project-grid] .card-title { margin-top: 12px; }
 }
 
 .small-label {
@@ -1039,7 +1104,7 @@ body.menu-open { overflow: hidden; }
 .product-card .img-ph { aspect-ratio: 4/5; }
 .product-card .product-name {
   margin-top: 14px;
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Jost', sans-serif;
   font-size: 22px;
   color: var(--siyah);
 }
@@ -1091,6 +1156,20 @@ body.menu-open { overflow: hidden; }
   overflow: hidden;
 }
 .press-card .cover-photo img { width: 100%; height: 100%; object-fit: contain; }
+/* Referanslar bölümü — gerçek referans/müşteri verisi yok (sahte logo/isim
+   uydurulmadı), halkadaki Art/Textiles/Kids' Rooms placeholder yaklaşımıyla
+   aynı mantık: --vizon renk blok + "Yakında" etiketi. */
+.press-card .cover-photo.cover-placeholder {
+  background: var(--vizon);
+  border-color: var(--vizon);
+}
+.press-card .cover-placeholder span {
+  font-family: 'Jost', sans-serif;
+  font-size: 13px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--kum);
+}
 .press-card .press-title {
   margin-top: 14px;
   font-family: 'Jost', sans-serif;
@@ -1130,7 +1209,7 @@ body.menu-open { overflow: hidden; }
   gap: var(--grid-gap);
 }
 .how-steps .step-number {
-  font-family: 'Cormorant Garamond', serif;
+  font-family: 'Jost', sans-serif;
   font-size: 40px;
   color: var(--siyah);
 }

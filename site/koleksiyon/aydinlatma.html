@@ -9,7 +9,7 @@
 <meta name="theme-color" content="#E9DFD0">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;1,400&family=Jost:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Jost:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="../css/style.css">
 </head>
 <body data-page="koleksiyon">
@@ -101,8 +101,21 @@
     <button class="menu-panel-close menu-panel-home-close" aria-label="Menüyü kapat"><span></span><span></span></button>
   </div>
   <ul class="menu-panel-home-list">
-    <li class="menu-panel-home-item">
-      <a data-nav-page="projeler" href="../projeler/index.html"><span class="mph-tr">PROJELER</span><span class="mph-en">PROJECTS</span></a>
+    <li class="menu-panel-home-item menu-panel-home-item-has-sub">
+      <a data-nav-page="projeler" href="../projeler/index.html" data-toggle-sub="sub-projeler-home" onclick="return false;">
+        <span class="mph-row"><span class="mph-tr">PROJELER</span><span class="toggle-sign">+</span></span>
+        <span class="mph-en">PROJECTS</span>
+      </a>
+      <div class="menu-panel-home-sub" id="sub-projeler-home">
+        <ul>
+          <li><a href="../projeler/index.html?kategori=otel">Otel Projeleri</a></li>
+          <li><a href="../projeler/index.html?kategori=villa">Villa</a></li>
+          <li><a href="../projeler/index.html?kategori=konut">Konut</a></li>
+          <li><a href="../projeler/index.html?kategori=yat">Yat &amp; Marin</a></li>
+          <li><a href="../projeler/index.html?kategori=ticari">Ticari Mekânlar</a></li>
+          <li><a href="../projeler/index.html?kategori=yenileme">Yenileme</a></li>
+        </ul>
+      </div>
     </li>
     <li class="menu-panel-home-item">
       <a data-nav-page="hakkimizda" href="../hakkimizda/index.html"><span class="mph-tr">HAKKIMIZDA</span><span class="mph-en">ABOUT US</span></a>

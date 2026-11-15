@@ -56,20 +56,27 @@
     if (closeBtn) closeBtn.addEventListener('click', function () { close(panel); });
     if (homeCloseBtn) homeCloseBtn.addEventListener('click', function () { close(homePanel); });
 
-    if (!panel) return;
-    var collapsibles = panel.querySelectorAll('[data-toggle-sub]');
-    for (var i = 0; i < collapsibles.length; i++) {
-      (function (btn) {
-        btn.addEventListener('click', function () {
-          var subId = btn.getAttribute('data-toggle-sub');
-          var sub = document.getElementById(subId);
-          var sign = btn.querySelector('.toggle-sign');
-          if (!sub) return;
-          var isOpen = sub.classList.toggle('is-open');
-          if (sign) sign.textContent = isOpen ? '−' : '+';
-        });
-      })(collapsibles[i]);
+    // [data-toggle-sub] aç/kapa mekaniği hem mobil .menu-panel'deki (Koleksiyon)
+    // hem masaüstü .menu-panel-home'daki (Projeler) alt menülerde aynı — tek
+    // bir fonksiyonla ikisine de bağlanıyor.
+    function wireCollapsibles(root) {
+      if (!root) return;
+      var collapsibles = root.querySelectorAll('[data-toggle-sub]');
+      for (var i = 0; i < collapsibles.length; i++) {
+        (function (btn) {
+          btn.addEventListener('click', function () {
+            var subId = btn.getAttribute('data-toggle-sub');
+            var sub = document.getElementById(subId);
+            var sign = btn.querySelector('.toggle-sign');
+            if (!sub) return;
+            var isOpen = sub.classList.toggle('is-open');
+            if (sign) sign.textContent = isOpen ? '−' : '+';
+          });
+        })(collapsibles[i]);
+      }
     }
+    wireCollapsibles(panel);
+    wireCollapsibles(homePanel);
   }
 
   /* ---------------- aktif menü öğesi ---------------- */
@@ -135,9 +142,17 @@
     var HOVER_LIFT = 14, HOVER_SCALE = 1.08;
     var PARALLAX = 4;
     var ARC_STEPS = 1440;
+    // Header altı / köşe linkleri üstü güvenli payları — geometry() (merkezi
+    // dengelemek için) ve fitToViewport() (taşmayı önlemek için) AYNI
+    // değerleri kullanıyor, bkz. her ikisindeki yorumlar.
+    var HEADER_H = 88; // bkz. --header-h (masaüstü)
+    var TOP_PAD = 24;
+    var BOTTOM_PAD = 64; // alt köşe linkleri için pay
+    var SIDE_PAD = 32;    // sol/sağ kenar güvenlik payı (yatay taşma kontrolü)
 
     var isTabletNow = false;
     var showRx = 640, showRy = 190;
+    var centerYFrac = 0.55; // geometry() tarafından her yüklemede/resize'da yeniden hesaplanır
     var arcTable = null, arcTotal = 0, arcTop = 0;
     var items = [];
     var hovered = null;
@@ -174,22 +189,32 @@
       // yüksekliğine eşitleniyor — "1440/1280/1024'te halka sığmıyor" sorunu,
       // eski min-height:760px'in kısa pencerelerde viewport'tan uzun bir
       // section'a zorlamasından kaynaklanıyordu (bkz. fitToViewport, aşağıda).
-      ring.style.height = Math.max(vh, 480) + 'px';
+      var vhSafe = Math.max(vh, 480);
+      ring.style.height = vhSafe + 'px';
       isTabletNow = window.matchMedia('(min-width: 768px) and (max-width: 1023px)').matches;
-      showRx = Math.min(vw * 0.39, 700);
-      // Dikey yarıçap sadece vh oranına göre küçülürse (kısa viewport'larda)
-      // en üst/alt kartlar ortadaki logo+etiket cümlesi bloğuyla çakışabiliyordu
-      // (ikisi de aynı merkeze göre konumlanıyor, kart kutusu küçülse de blok
-      // sabit kalıyordu). Bu yüzden showRy'nin, kartın + merkez bloğun yaklaşık
-      // yarı yüksekliklerinin toplamından (+ güvenlik payı) KÜÇÜK olmasına izin
-      // verilmiyor; sığmadığı viewport'larda bütün halka zaten fitToViewport()
-      // tarafından orantılı küçültülüyor (çakışma oranı sabit kaldığı için
-      // bu minimum, küçültülmüş halde de korunuyor).
+      // Yarıçaplar büyütüldü (eski: vw*.39/700, vh*.27/260) — halka artık
+      // viewport'u daha agresif dolduruyor; taşma riski fitToViewport()'un
+      // hem dikey hem yatay sınırlara göre küçültmesiyle karşılanıyor (bkz.
+      // aşağıda), o yüzden burada büyük tutmak güvenli.
+      showRx = Math.min(vw * 0.46, 860);
       var CENTER_HALF_H = 150;  // logo (~220) + boşluk (20) + etiket cümlesi, yaklaşık yarısı
       var CARD_HALF_H = 65;     // en yakın kartın (h=120, ~1.08 ölçek) yaklaşık yarı yüksekliği
       var CENTER_CARD_GAP = 24;
       var showRyMin = CENTER_HALF_H + CARD_HALF_H + CENTER_CARD_GAP;
-      showRy = Math.max(showRyMin, Math.min(vh * 0.27, 260));
+      showRy = Math.max(showRyMin, Math.min(vh * 0.38, 370));
+
+      // Halkanın düşey merkezi (--ring-cy) artık sabit %55 DEĞİL — header
+      // altındaki güvenli alan (HEADER_H+TOP_PAD) ile köşe linklerinin
+      // üstündeki güvenli alan (BOTTOM_PAD) arasındaki bandın tam ortası.
+      // Sabit %55'te üst pay (112px) alt paydan (64px) büyük olduğu için
+      // üstte hep kullanılmayan bir boşluk kalıyordu; ortalama alınca iki
+      // taraf da eşit kullanılabilir alana sahip oluyor (fitToViewport bu
+      // SIFIR fazlalık ilkesini koruyarak küçültüyor/büyütüyor).
+      var topLimitPx = HEADER_H + TOP_PAD;
+      var bottomLimitPx = vhSafe - BOTTOM_PAD;
+      centerYFrac = ((topLimitPx + bottomLimitPx) / 2) / vhSafe;
+      ring.style.setProperty('--ring-cy', (centerYFrac * 100).toFixed(2) + '%');
+
       if (ellipseLine) {
         ellipseLine.style.width = (showRx * 2) + 'px';
         ellipseLine.style.height = (showRy * 2) + 'px';
@@ -221,6 +246,7 @@
         var face = document.createElement('div');
         face.className = 'ring-face';
         face.style.transform = 'translateZ(' + (-CURVE_R) + 'px)';
+        var segs = [];
         for (var s = 0; s < SEGMENTS; s++) {
           var seg = document.createElement('div');
           seg.className = 'ring-seg';
@@ -229,8 +255,11 @@
           seg.style.left = '50%';
           var segAngle = (s - (SEGMENTS - 1) / 2) * step;
           seg.style.transform = 'rotateY(' + segAngle + 'deg) translateZ(' + CURVE_R + 'px)';
+          // "shade" dilimin 3B ışık alma değeri (açıya göre); varsayılan/hover
+          // soluklaştırma çarpanı bununla çarpılıp place()'te uygulanıyor
+          // (bkz. DIM_DEFAULT/DIM_ACTIVE, aşağıda) — ikisi birden tek filter'da.
           var shade = 0.9 + 0.1 * Math.cos(segAngle * RING_DEG);
-          seg.style.filter = 'brightness(' + shade.toFixed(3) + ')';
+          segs.push({ el: seg, shade: shade });
           if (cat.img) {
             // Kartın tam fotoğrafı (w x h), her dilimde sadece kendi dikey
             // şeridi görünecek şekilde kaydırılıyor — dilimler silindire
@@ -256,9 +285,14 @@
         el.appendChild(label);
         gallery.appendChild(el);
 
-        items.push({ el: el, cardEl: cardEl, label: label, cat: cat, w: w, h: h });
+        items.push({ el: el, cardEl: cardEl, label: label, cat: cat, w: w, h: h, segs: segs });
       });
     }
+
+    // Kart görsellerinin parlaklığı: varsayılan hepsi eşit oranda hafif soluk
+    // (DIM_DEFAULT), hover/aktifte tam parlaklık (DIM_ACTIVE) — bkz. place().
+    var DIM_DEFAULT = 0.8, SAT_DEFAULT = 0.9;
+    var DIM_ACTIVE = 1, SAT_ACTIVE = 1;
 
     function place() {
       var n = items.length || 1;
@@ -284,6 +318,15 @@
         card.label.style.top = sin < 0
           ? (-LABEL_GAP) + 'px'
           : (card.h + LABEL_GAP - 14) + 'px';
+
+        var dim = lifted ? DIM_ACTIVE : DIM_DEFAULT;
+        var sat = lifted ? SAT_ACTIVE : SAT_DEFAULT;
+        if (card.segs) {
+          for (var si = 0; si < card.segs.length; si++) {
+            var sg = card.segs[si];
+            sg.el.style.filter = 'brightness(' + (sg.shade * dim).toFixed(3) + ') saturate(' + sat + ')';
+          }
+        }
       });
     }
 
@@ -308,12 +351,15 @@
         }
       }
       if (card === hovered) return;
+      if (hovered) hovered.el.classList.remove('is-active');
       hovered = card;
+      if (hovered) hovered.el.classList.add('is-active');
       place();
       if (card) setPreview(card); else clearPreview();
     });
     scene.addEventListener('pointerleave', function () {
       if (!hovered) return;
+      hovered.el.classList.remove('is-active');
       hovered = null;
       place();
       clearPreview();
@@ -362,26 +408,43 @@
     function fitToViewport() {
       if (!scaleWrap) return;
       scaleWrap.style.transform = 'scale(1)';
-      var minTop = Infinity, maxBottom = -Infinity;
+      var minTop = Infinity, maxBottom = -Infinity, minLeft = Infinity, maxRight = -Infinity;
       items.forEach(function (card) {
         var r1 = card.el.getBoundingClientRect();
         var r2 = card.label.getBoundingClientRect();
-        if (r1.height) { minTop = Math.min(minTop, r1.top); maxBottom = Math.max(maxBottom, r1.bottom); }
-        if (r2.height) { minTop = Math.min(minTop, r2.top); maxBottom = Math.max(maxBottom, r2.bottom); }
+        if (r1.height) {
+          minTop = Math.min(minTop, r1.top); maxBottom = Math.max(maxBottom, r1.bottom);
+          minLeft = Math.min(minLeft, r1.left); maxRight = Math.max(maxRight, r1.right);
+        }
+        if (r2.height) {
+          minTop = Math.min(minTop, r2.top); maxBottom = Math.max(maxBottom, r2.bottom);
+          minLeft = Math.min(minLeft, r2.left); maxRight = Math.max(maxRight, r2.right);
+        }
       });
       if (!isFinite(minTop)) return;
 
       var heroRect = ring.getBoundingClientRect();
-      var headerH = 88; // bkz. --header-h (bilgisayar)
-      var topLimit = heroRect.top + headerH + 24;
-      var bottomLimit = heroRect.bottom - 64; // alt köşe linkleri için pay
-      var centerY = heroRect.top + heroRect.height * 0.55;
+      var topLimit = heroRect.top + HEADER_H + TOP_PAD;
+      var bottomLimit = heroRect.bottom - BOTTOM_PAD;
+      // geometry() ile AYNI dengelenmiş merkez (centerYFrac) kullanılıyor —
+      // böylece üstte/altta kullanılabilir pay birbirine eşit, "üstte
+      // kullanılmayan fazla boşluk" yapısal olarak oluşmuyor.
+      var centerY = heroRect.top + heroRect.height * centerYFrac;
 
-      var neededHalf = Math.max(centerY - minTop, maxBottom - centerY);
-      var availableHalf = Math.min(centerY - topLimit, bottomLimit - centerY);
-      if (availableHalf <= 20) availableHalf = 20; // aşırı kısa pencerede son çare
+      var neededHalfV = Math.max(centerY - minTop, maxBottom - centerY);
+      var availableHalfV = Math.min(centerY - topLimit, bottomLimit - centerY);
+      if (availableHalfV <= 20) availableHalfV = 20; // aşırı kısa pencerede son çare
+      var scaleV = Math.min(1, availableHalfV / neededHalfV);
 
-      var scale = Math.min(1, availableHalf / neededHalf);
+      // Yatay taşma kontrolü: showRx büyütüldüğü için (bkz. geometry()) dar
+      // pencerelerde kartlar viewport kenarlarını aşabilir — dikey skalaya
+      // ek olarak yatay bir skala da hesaplanıp ikisinin küçüğü uygulanıyor.
+      var centerX = heroRect.left + heroRect.width / 2;
+      var neededHalfH = Math.max(centerX - minLeft, maxRight - centerX);
+      var availableHalfH = Math.max(40, heroRect.width / 2 - SIDE_PAD);
+      var scaleH = Math.min(1, availableHalfH / neededHalfH);
+
+      var scale = Math.min(scaleV, scaleH);
       scaleWrap.style.transform = 'scale(' + scale.toFixed(4) + ')';
     }
 
@@ -686,16 +749,14 @@
         img.width = 800; img.height = 533;
         photoWrap.appendChild(img);
 
-        var small = document.createElement('span');
-        small.className = 'small-label';
-        small.textContent = p.category ? catLabel(p.category) : '[Kategori]';
-
+        // "[Kategori]" placeholder satırı kaldırıldı (müşteri geri bildirimi) —
+        // kategori verisi henüz atanmadığı için her kartta aynı uydurma metin
+        // görünüyordu. Proje adı (h3) tek etiket olarak kalıyor.
         var h3 = document.createElement('h3');
         h3.className = 'card-title';
         h3.textContent = p.name;
 
         a.appendChild(photoWrap);
-        a.appendChild(small);
         a.appendChild(h3);
         card.appendChild(a);
         grid.appendChild(card);
