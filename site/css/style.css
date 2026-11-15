@@ -222,6 +222,14 @@ section + section,
   .site-header.theme-dark .lang-switch button.is-active { color: var(--beyaz); }
 
   .menu-burger { display: none; }
+
+  /* ANA SAYFA — Emel Hanım'ın konsept görseli: masaüstünde de sadece sağ üstte
+     hamburger (3 çizgi) + TR/EN olacak, menü çubuğu gizlenecek. Diğer sayfalar
+     bu bloktan etkilenmiyor (hepsi normal tam menüyü gösterir). */
+  body[data-page="home"] .header-inner { justify-content: flex-end; }
+  body[data-page="home"] .nav-desktop { order: 2; margin-left: 28px; }
+  body[data-page="home"] .nav-desktop .menu-list { display: none; }
+  body[data-page="home"] .menu-burger { display: flex; order: 1; }
 }
 
 /* koleksiyon açılır menü */
@@ -377,6 +385,68 @@ body.menu-open { overflow: hidden; }
 }
 
 /* ==========================================================================
+   ANA SAYFA — MASAÜSTÜ HAMBURGER PANELİ (Emel Hanım'ın konsept görseli)
+   Mobildeki .menu-panel'den bilerek ayrı: iki dilli (TR büyük + EN küçük),
+   Koleksiyon / adres / telefon yok, sadece 5 öğe + altta tekrar TR/EN.
+   Sadece data-page="home" ve >=1024px genişlikte kullanılır.
+   ========================================================================== */
+.menu-panel-home {
+  position: fixed;
+  top: 0; right: 0;
+  width: 440px;
+  max-width: 90vw;
+  height: 100%;
+  background: var(--kahve);
+  transform: translateX(100%);
+  transition: transform 300ms ease-out;
+  z-index: 1000;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  padding: 0 56px;
+}
+.menu-panel-home.is-open { transform: translateX(0); }
+
+.menu-panel-home-top {
+  height: 88px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+}
+
+.menu-panel-home-list { margin-top: 24px; }
+.menu-panel-home-item { border-bottom: 1px solid var(--taupe); }
+.menu-panel-home-item a {
+  display: block;
+  padding: 22px 0;
+}
+.menu-panel-home-item .mph-tr {
+  display: block;
+  font-family: 'Cormorant Garamond', serif;
+  font-weight: 500;
+  font-size: 30px;
+  color: var(--beyaz);
+  transition: color 200ms ease;
+}
+.menu-panel-home-item .mph-en {
+  display: block;
+  margin-top: 4px;
+  font-family: 'Jost', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--bej);
+}
+.menu-panel-home-item a:hover .mph-tr,
+.menu-panel-home-item a:focus-visible .mph-tr { color: var(--bronz); }
+
+.menu-panel-home-lang { margin-top: auto; }
+
+@media (max-width: 1023px) {
+  .menu-panel-home { display: none; }
+}
+
+/* ==========================================================================
    ANA SAYFA — HALKA (DESKTOP / TABLET)
    Müşterinin ilk gördüğü ve beğendiği eski GSAP + ScrollTrigger halka
    mekaniğinin taşınmış hâli (bkz. git geçmişi 4150e09, site/script.js).
@@ -416,6 +486,20 @@ body.menu-open { overflow: hidden; }
   pointer-events: none;
 }
 
+/* Emel Hanım'ın görselindeki hafif parlak zemin yansıması — birebir fotogerçekçi
+   yansıma yerine (spec'in izin verdiği gibi) yaklaşık bir gradient/opaklık efekti. */
+.ring-floor-sheen {
+  position: absolute;
+  top: 55%;
+  left: 50%;
+  width: 74%;
+  height: 48%;
+  transform: translate(-50%, -34%);
+  background: radial-gradient(ellipse at center, rgba(255,255,255,0.38) 0%, rgba(255,255,255,0.14) 42%, rgba(255,255,255,0) 72%);
+  pointer-events: none;
+  z-index: 0;
+}
+
 .ring-gallery {
   position: absolute;
   top: 55%;
@@ -424,6 +508,7 @@ body.menu-open { overflow: hidden; }
   height: 0;
   transform-style: preserve-3d;
   will-change: transform;
+  z-index: 1;
 }
 
 .ring-item {

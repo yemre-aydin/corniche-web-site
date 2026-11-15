@@ -19,26 +19,43 @@
     window.addEventListener('scroll', onScroll, { passive: true });
   }
 
-  /* ---------------- mobil menü paneli ---------------- */
+  /* ---------------- mobil menü paneli (+ ana sayfa masaüstü paneli) ----------------
+     Aynı hamburger düğmesi iki farklı paneli açabilir:
+     - .menu-panel          : mevcut mobil panel (tüm sayfalar, <1024px) — DOKUNULMADI.
+     - .menu-panel-home     : yeni, sadece ana sayfa + >=1024px için (Emel Hanım'ın
+       konsept görseli). Hangisinin açılacağı tıklama anındaki sayfa/genişliğe göre
+       seçilir, böylece pencere mobil/masaüstü eşiğini geçerse de doğru panel açılır. */
   function initMobileMenu() {
     var burger = document.querySelector('.menu-burger');
     var panel = document.querySelector('.menu-panel');
-    var closeBtn = document.querySelector('.menu-panel-close');
-    if (!burger || !panel) return;
+    var closeBtn = panel && panel.querySelector('.menu-panel-close');
+    var homePanel = document.querySelector('.menu-panel-home');
+    var homeCloseBtn = homePanel && homePanel.querySelector('.menu-panel-home-close');
+    if (!burger) return;
 
-    function open() {
-      panel.classList.add('is-open');
+    function isHomeDesktop() {
+      return document.body.getAttribute('data-page') === 'home' &&
+        window.matchMedia('(min-width: 1024px)').matches;
+    }
+    function open(p) {
+      if (!p) return;
+      p.classList.add('is-open');
       document.body.classList.add('menu-open');
       burger.setAttribute('aria-expanded', 'true');
     }
-    function close() {
-      panel.classList.remove('is-open');
+    function close(p) {
+      if (!p) return;
+      p.classList.remove('is-open');
       document.body.classList.remove('menu-open');
       burger.setAttribute('aria-expanded', 'false');
     }
-    burger.addEventListener('click', open);
-    if (closeBtn) closeBtn.addEventListener('click', close);
+    burger.addEventListener('click', function () {
+      open(isHomeDesktop() ? homePanel : panel);
+    });
+    if (closeBtn) closeBtn.addEventListener('click', function () { close(panel); });
+    if (homeCloseBtn) homeCloseBtn.addEventListener('click', function () { close(homePanel); });
 
+    if (!panel) return;
     var collapsibles = panel.querySelectorAll('[data-toggle-sub]');
     for (var i = 0; i < collapsibles.length; i++) {
       (function (btn) {
@@ -111,7 +128,7 @@
     var DEPTH = 330;       // halkanın arka tarafı ne kadar geride durur
     var TURN = 22;         // halkanın yanlarındaki kart dönüş açısı
     var LABEL_GAP = 30;
-    var HOVER_LIFT = 14, HOVER_SCALE = 1.05;
+    var HOVER_LIFT = 14, HOVER_SCALE = 1.08;
     var PARALLAX = 4;
     var ARC_STEPS = 1440;
 
@@ -177,7 +194,7 @@
 
         var el = document.createElement('a');
         el.className = 'ring-item' + (cat.isHotel ? ' is-hotel' : '');
-        el.href = 'projeler/index.html?kategori=' + cat.id;
+        el.href = cat.link || ('projeler/index.html?kategori=' + cat.id);
         el.style.width = w + 'px';
         el.style.height = h + 'px';
 
@@ -197,6 +214,19 @@
           seg.style.transform = 'rotateY(' + segAngle + 'deg) translateZ(' + CURVE_R + 'px)';
           var shade = 0.9 + 0.1 * Math.cos(segAngle * RING_DEG);
           seg.style.filter = 'brightness(' + shade.toFixed(3) + ')';
+          if (cat.img) {
+            // Kartın tam fotoğrafı (w x h), her dilimde sadece kendi dikey
+            // şeridi görünecek şekilde kaydırılıyor — dilimler silindire
+            // sarılınca fotoğraf kavisli kartın üstünde bütün görünür.
+            seg.style.backgroundImage = 'url(' + cat.img + ')';
+            seg.style.backgroundSize = w + 'px ' + h + 'px';
+            seg.style.backgroundPosition = (-(s * segW)) + 'px 0';
+            seg.style.backgroundRepeat = 'no-repeat';
+          } else {
+            // Gerçek fotoğrafı olmayan kategoriler (Art, Textiles, Kids' Rooms):
+            // spec'teki "görsel yer tutucu kutu" rengi (--vizon), görsel icat edilmedi.
+            seg.style.backgroundColor = 'var(--vizon)';
+          }
           face.appendChild(seg);
         }
         cardEl.appendChild(face);
@@ -244,7 +274,7 @@
       if (!centerWrap) return;
       if (previewCat) previewCat.textContent = (card.cat.tr || '').toLocaleUpperCase('en-US');
       if (previewTitle) previewTitle.textContent = card.cat.tr;
-      if (previewLink) previewLink.setAttribute('href', 'projeler/index.html?kategori=' + card.cat.id);
+      if (previewLink) previewLink.setAttribute('href', card.cat.link || ('projeler/index.html?kategori=' + card.cat.id));
       centerWrap.classList.add('show-preview');
     }
     function clearPreview() {
@@ -356,7 +386,7 @@
         el.className = 'mr-item';
 
         var a = document.createElement('a');
-        a.href = 'projeler/index.html?kategori=' + cat.id;
+        a.href = cat.link || ('projeler/index.html?kategori=' + cat.id);
 
         var card = document.createElement('div');
         card.className = 'mr-card' + (cat.isHotel ? ' is-hotel-card' : '');
@@ -416,7 +446,7 @@
       if (mrpTitle) mrpTitle.textContent = card.cat.tr;
       if (mrpImgSpan) mrpImgSpan.textContent = card.cat.tr;
       if (mrpImgWrap) mrpImgWrap.setAttribute('aria-label', 'Corniche İstanbul ' + card.cat.tr + ' fotoğrafı (yakında)');
-      if (mrpView) mrpView.setAttribute('href', 'projeler/index.html?kategori=' + card.cat.id);
+      if (mrpView) mrpView.setAttribute('href', card.cat.link || ('projeler/index.html?kategori=' + card.cat.id));
     }
 
     function updateSelection() {
@@ -479,8 +509,11 @@
   }
 
   function initHeroRing() {
-    if (!window.CORNICHE_CATEGORIES) return;
-    var categories = window.CORNICHE_CATEGORIES;
+    // Ana sayfa halkası artık kendi ayrı veri kaynağını kullanıyor (bkz.
+    // js/ring-categories.js) — CORNICHE_CATEGORIES'e (projeler sayfası
+    // filtrelerini besleyen gerçek taksonomi) dokunulmadı.
+    var categories = window.CORNICHE_RING_CATEGORIES || window.CORNICHE_CATEGORIES;
+    if (!categories) return;
     var ring = document.querySelector('.hero-ring');
     var mobileSection = document.querySelector('.home-mobile');
     var isMobileNow = window.matchMedia('(max-width: 767px)').matches;

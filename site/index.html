@@ -88,12 +88,45 @@
   </div>
 </div>
 
+<!-- ANA SAYFA — masaüstü hamburger paneli (Emel Hanım'ın yeni konsept görseli).
+     Mobildeki .menu-panel'den AYRI: iki dilli (TR büyük başlık + EN küçük alt
+     başlık), Koleksiyon yok, adres/telefon yok — sadece görseldeki 5 öğe.
+     Sadece data-page="home" + >=1024px genişlikte görünür (bkz. style.css). -->
+<div class="menu-panel-home" aria-hidden="true">
+  <div class="menu-panel-home-top">
+    <button class="menu-panel-close menu-panel-home-close" aria-label="Menüyü kapat"><span></span><span></span></button>
+  </div>
+  <ul class="menu-panel-home-list">
+    <li class="menu-panel-home-item">
+      <a href="projeler/index.html"><span class="mph-tr">PROJELER</span><span class="mph-en">PROJECTS</span></a>
+    </li>
+    <li class="menu-panel-home-item">
+      <a href="hakkimizda/index.html"><span class="mph-tr">HAKKIMIZDA</span><span class="mph-en">ABOUT US</span></a>
+    </li>
+    <li class="menu-panel-home-item">
+      <a href="hizmetlerimiz/index.html"><span class="mph-tr">HİZMETLERİMİZ</span><span class="mph-en">OUR SERVICES</span></a>
+    </li>
+    <li class="menu-panel-home-item">
+      <a href="showroom/index.html"><span class="mph-tr">SHOWROOM</span><span class="mph-en">SHOWROOM</span></a>
+    </li>
+    <li class="menu-panel-home-item">
+      <a href="iletisim/index.html"><span class="mph-tr">İLETİŞİM</span><span class="mph-en">CONTACT</span></a>
+    </li>
+  </ul>
+  <div class="menu-panel-lang menu-panel-home-lang">
+    <button type="button" class="is-active" data-lang="tr">TR</button>
+    <span>/</span>
+    <button type="button" data-lang="en">EN</button>
+  </div>
+</div>
+
 <main>
 
   <!-- ANA SAYFA HALKASI — masaüstü / tablet (eski GSAP+ScrollTrigger halka mekaniği) -->
   <section class="hero-ring" aria-label="Proje kategorileri">
     <div class="ring-scene">
       <div class="ring-ellipse"></div>
+      <div class="ring-floor-sheen" aria-hidden="true"></div>
       <div class="ring-gallery"></div>
       <div class="ring-center">
         <div class="ring-center-default">
@@ -181,7 +214,7 @@
      halka kodunu window.gsap/window.ScrollTrigger yoksa hiç çalıştırmaz. -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="js/categories-data.js"></script>
+<script src="js/ring-categories.js"></script>
 <script src="js/main.js"></script>
 </body>
 </html>
