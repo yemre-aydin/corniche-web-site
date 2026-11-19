@@ -1067,6 +1067,86 @@
     });
   }
 
+  /* ---------------- dünya haritası (Hakkımızda, madde 4) ----------------
+     PDF s.5-6 "Faaliyet Gösterdiğimiz Ülke & Şehirler" + Azerbaycan/Bakü.
+     href değerleri sadece gerçekten var olan proje sayfalarına gidiyor
+     (Bakü Villa, Moskova Malikanesi) — diğerlerinde proje galerisi yok,
+     sahte proje/link uydurulmadı, sadece ülke adı (+ varsa referans adı)
+     gösteriliyor. */
+  var WORLD_MAP_DATA = {
+    tr: { name: 'Türkiye — İstanbul', note: 'Merkez ofisimiz', href: null },
+    us: { name: 'Amerika', note: null, href: null },
+    gb: { name: 'Londra', note: null, href: null },
+    ae: { name: 'Dubai', note: null, href: null },
+    qa: { name: 'Katar', note: 'Doha Khalid Fakhroo Residence (referans)', href: null },
+    es: { name: 'İspanya', note: null, href: null },
+    tz: { name: 'Tanzanya / Zanzibar', note: null, href: null },
+    ru: { name: 'Moskova (Rusya)', note: 'Malikâne Projesi', href: '../projeler/proje-detay.html?id=moskova-malikanesi' },
+    dz: { name: 'Cezayir', note: null, href: null },
+    iq: { name: 'Irak', note: null, href: null },
+    rs: { name: 'Sırbistan', note: 'Hotel Vranje (referans)', href: null },
+    az: { name: 'Azerbaycan — Bakü', note: 'Villa Projesi', href: '../projeler/proje-detay.html?id=baku-villa' }
+  };
+
+  function initWorldMap() {
+    var svg = document.getElementById('dunya-haritasi-svg');
+    var infoBox = document.querySelector('[data-wm-info]');
+    if (!svg || !infoBox) return;
+    var nameEl = infoBox.querySelector('.wm-info-name');
+    var noteEl = infoBox.querySelector('.wm-info-note');
+    var listBtns = Array.prototype.slice.call(document.querySelectorAll('.wm-list-btn'));
+    var shapeEls = {};
+
+    Object.keys(WORLD_MAP_DATA).forEach(function (iso) {
+      var el = svg.querySelector('[id="' + iso + '"]');
+      if (el) {
+        // Bazı ülkeler <path id="xx">, bazıları (ada/takımadalı — us/gb/es/ru
+        // gibi) <g id="xx"><path/>...</g>. Class'ı sadece üst elemana eklemek
+        // yetmiyor — generic ".wm-svg path" kuralı iç path'leri ezip koyu
+        // bırakıyor (fill doğrudan hedeflenen elemanda kazanıyor, inherit
+        // değil). Bu yüzden class'ı kendisine VE tüm iç path'lerine ekliyoruz.
+        el.classList.add('wm-active');
+        el.querySelectorAll('path').forEach(function (p) { p.classList.add('wm-active'); });
+        shapeEls[iso] = el;
+      }
+    });
+
+    function select(iso) {
+      var data = WORLD_MAP_DATA[iso];
+      if (!data) return;
+      nameEl.textContent = data.name;
+      if (data.href) {
+        noteEl.innerHTML = '<a href="' + data.href + '">' + data.note + ' →</a>';
+      } else if (data.note) {
+        noteEl.textContent = data.note;
+      } else {
+        noteEl.textContent = '';
+      }
+      Object.keys(shapeEls).forEach(function (k) {
+        var isSel = k === iso;
+        shapeEls[k].classList.toggle('is-selected', isSel);
+        shapeEls[k].querySelectorAll('path').forEach(function (p) { p.classList.toggle('is-selected', isSel); });
+      });
+      listBtns.forEach(function (b) {
+        b.classList.toggle('is-selected', b.getAttribute('data-wm') === iso);
+      });
+    }
+
+    Object.keys(shapeEls).forEach(function (iso) {
+      // <g> üzerine değil, her zaman tek tek path'lere dinleyici bağlanıyor —
+      // SVG'de mouseenter bir <g>'ye güvenilir biçimde bubble/yayılmıyor.
+      var targets = shapeEls[iso].matches('path') ? [shapeEls[iso]] : Array.prototype.slice.call(shapeEls[iso].querySelectorAll('path'));
+      targets.forEach(function (t) {
+        t.addEventListener('mouseenter', function () { select(iso); });
+        t.addEventListener('click', function () { select(iso); });
+      });
+    });
+    listBtns.forEach(function (btn) {
+      btn.addEventListener('click', function () { select(btn.getAttribute('data-wm')); });
+      btn.addEventListener('mouseenter', function () { select(btn.getAttribute('data-wm')); });
+    });
+  }
+
   /* ---------------- iletişim formu ---------------- */
   function initContactForm() {
     var form = document.querySelector('[data-contact-form]');
@@ -1093,6 +1173,7 @@
     initProductGrid();
     initProjectGrid();
     initProjectDetail();
+    initWorldMap();
     initContactForm();
   });
 })();
