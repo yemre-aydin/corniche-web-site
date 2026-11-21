@@ -25,9 +25,16 @@
        İCAT EDİLMEDİ.
      - Sanat (Art) → koleksiyon/sanat.html. Aynı sebeple img: null — bu
        sayfada da hâlâ gerçek fotoğraf yok, placeholder kullanılıyor.
-   Otel Projeleri, Villa, Konut, Yat & Marin, Ticari Mekânlar, Yenileme
-   (ilk 6) aynı kaldı, dokunulmadı. isHotel alanı hâlâ yok — tüm 10 kart
-   aynı stilde (gümüş çerçeve), ayrım kavramı geçersiz.
+   Otel Projeleri, Konut, Yat & Marin, Ticari Mekânlar, Yenileme (ilk 6'nın
+   5'i) aynı kaldı, dokunulmadı. isHotel alanı hâlâ yok — tüm 10 kart aynı
+   stilde (gümüş çerçeve), ayrım kavramı geçersiz.
+
+   AYRICA BU TURDA DÜZELTİLDİ: Villa kartının görseli 404 veriyordu —
+   `savoy-project` klasörü 32a011e'deki mükerrer-kayıt temizliğinde silinmişti
+   (dragos/proje-a-b/savoy-project aynı 5 fotoğrafı taşıyordu, tek projeye
+   indirildi) ama ring-categories.js buraya hâlâ eski yolu gösteriyordu.
+   Gerçek Villa kategorisindeki proje artık "baku-villa" (bkz. projects-data.js)
+   — görsel path'i oraya güncellendi.
 
    Alan notları (önceki turdan, hâlâ geçerli):
    - "tr" ve "en" alanları ayrı tutuluyor — "en" alanı ileride gerçek EN
@@ -43,7 +50,7 @@
      main.js'te sabit bir "6" veya "10" değeri yok. */
 (function (global) {
   var RING_CATEGORIES = [
-    { id: 'villa',       tr: 'Villa',             en: 'Villa',             img: 'assets/projeler-web/savoy-project/02-salon.webp',       link: 'projeler/index.html?kategori=villa',  w: 180, h: 120 },
+    { id: 'villa',       tr: 'Villa',             en: 'Villa',             img: 'assets/projeler-web/baku-villa/01-giris.webp',          link: 'projeler/index.html?kategori=villa',  w: 180, h: 120 },
     { id: 'renovation',  tr: 'Yenileme',          en: 'Renovation',        img: 'assets/projeler-web/proje-h-a/07-yemek-odasi.webp',     link: 'projeler/index.html?kategori=yenileme', w: 180, h: 120 },
     { id: 'residential', tr: 'Konut',             en: 'Residential',       img: 'assets/projeler-web/yenikoy-project/08-salon.webp',     link: 'projeler/index.html?kategori=konut',   w: 180, h: 120 },
     { id: 'hospitality', tr: 'Otel Projeleri',    en: 'Hospitality',       img: 'assets/projeler-web/kemer-prive/01-merdiven-alti.webp', link: 'projeler/index.html?kategori=otel',    w: 180, h: 120 },
