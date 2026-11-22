@@ -5,10 +5,20 @@
    içine gömülü GERÇEK görseller pypdf ile birebir çıkarıldı (ekran görüntüsü değil).
    Görseller WebP'ye dönüştürüldü (max 2000px, kalite ~82) -> assets/projeler-web/.
 
-   BAŞLIK KURALI (Emel Hanım, 2026-11-19, madde 1): proje adı/alt satır/şehir
-   satırlarında SITE ADI, SEMT veya ADRES geçmez — sadece konut/mekân TİPİ
-   (örn. "Daire Projesi", "Villa Projesi") + şehir. "name" alanı bu yüzden kısa ve
-   jenerik; sourceFolder/eski isimler sadece yorum olarak saklandı.
+   BAŞLIK KURALI GÜNCELLENDİ (2026-11-22): Eski kural (adres/site/semt adı
+   kesinlikle yok, sadece "Daire Projesi" + şehir) altı farklı projenin aynı
+   jenerik başlığı paylaşmasına yol açtı — ayırt edilemiyorlardı. Müşteri
+   talimatı: TAM ADRES hâlâ yok ama PDF'teki her görselin altında zaten
+   basılı duran ÜLKE/ŞEHİR/SEMT bilgisi (örn. "Azerbaycan – Bakü Villa",
+   "İstanbul – Sarıyer, Salon-Bar Tasarımı", "Mildon Holding ... İstanbul-
+   Ortaköy") artık "name" alanına ayırt edici olarak geri eklendi — bu bilgi
+   zaten PDF'te açıkça basılıydı, uydurulmadı. "city" alanı yabancı
+   şehirlerde PDF'teki gibi ülke+şehir olarak dolduruldu (örn. "Rusya –
+   Moskova"). Sadece ham WhatsApp klasör ismi dışında HİÇBİR konum bilgisi
+   bulunmayan (PDF'te sayfası yok, kimliği doğrulanamayan) 3 proje — dragos,
+   proje-02, proje-h-a — generic "Daire Projesi" kaldı; bunlar için
+   müşteriden kimlik teyidi hâlâ bekleniyor, folder adı veya uydurma bir
+   semt adı KULLANILMADI.
 
    MÜKERRER KAYIT DÜZELTİLDİ: eski "dragos", "proje-a-b" ve "savoy-project" kayıtları
    AYNI 5 fotoğrafı içeriyordu (md5 ile doğrulanmıştı — müşteri tarafı kopyalama
@@ -26,8 +36,8 @@
   {
     "id": "berkozan",
     "slug": "berkozan",
-    "name": "Ofis Projesi",
-    "sourceFolder": "corniche istanbul berkozan (ham klasör ismi — başlıkta kullanılmadı)",
+    "name": "Berkozan Ofis Projesi",
+    "sourceFolder": "corniche istanbul berkozan — müşterinin kendi verdiği klasör ismi, PDF sayfası yok ama kimlik şüphesi de yok (dragos/proje-02/proje-h-a'dan farklı olarak)",
     "category": "ticari",
     "city": "İstanbul",
     "subtitle": "İç Mimari Konsept Proje ve Uygulaması",
@@ -68,8 +78,8 @@
   {
     "id": "grel-maya-project",
     "slug": "grel-maya-project",
-    "name": "Daire Projesi",
-    "sourceFolder": "corniche istanbul grel maya project — PDF s.17-23 ile eşleşiyor (İstanbul Etiler Maya Sitesi Daire Projesi), bu yüzden başlıkta site adı yok",
+    "name": "Etiler Maya Sitesi Dairesi",
+    "sourceFolder": "corniche istanbul grel maya project — PDF s.17-23 ile eşleşiyor (İstanbul Etiler Maya Sitesi Daire Projesi), PDF'teki semt+site adı geri eklendi",
     "category": "konut",
     "city": "İstanbul",
     "subtitle": "İç Mimari Konsept Proje ve Uygulaması",
@@ -93,8 +103,8 @@
   {
     "id": "kemer-prive",
     "slug": "kemer-prive",
-    "name": "Daire Projesi",
-    "sourceFolder": "corniche istanbul kemer prive (ham klasör ismi — başlıkta kullanılmadı)",
+    "name": "Kemer Prive Daire Projesi",
+    "sourceFolder": "corniche istanbul kemer prive — müşterinin kendi verdiği klasör ismi, PDF sayfası yok ama kimlik şüphesi yok",
     "category": "konut",
     "city": "İstanbul",
     "subtitle": "İç Mimari Konsept Proje ve Uygulaması",
@@ -111,8 +121,8 @@
   {
     "id": "kozan",
     "slug": "kozan",
-    "name": "Daire Projesi",
-    "sourceFolder": "corniche istanbul kozan (ham klasör ismi — başlıkta kullanılmadı). Çocuk odası fotoğrafları BU projede kalıyor — Emel Hanım'ın ayrı 'Çocuk Odaları' talimatı sadece Etiler/Maya ve Arnavutköy içindi.",
+    "name": "Kozan Daire Projesi",
+    "sourceFolder": "corniche istanbul kozan — müşterinin kendi verdiği klasör ismi, PDF sayfası yok ama kimlik şüphesi yok. Çocuk odası fotoğrafları BU projede kalıyor — Emel Hanım'ın ayrı 'Çocuk Odaları' talimatı sadece Etiler/Maya ve Arnavutköy içindi.",
     "category": "konut",
     "city": "İstanbul",
     "subtitle": "İç Mimari Konsept Proje ve Uygulaması",
@@ -191,8 +201,8 @@
   {
     "id": "yenikoy-project",
     "slug": "yenikoy-project",
-    "name": "Yalı Dairesi Projesi",
-    "sourceFolder": "corniche istanbul0 yeniköy project — PDF s.12-16 ile eşleşiyor (İstanbul Yeniköy Yalı Dairesi), 'Yalı Dairesi' PDF'in kendi mekân tipi ifadesi (site adı değil)",
+    "name": "Yeniköy Yalı Dairesi",
+    "sourceFolder": "corniche istanbul0 yeniköy project — PDF s.12-16 ile eşleşiyor (İstanbul Yeniköy Yalı Dairesi), PDF'teki semt adı geri eklendi",
     "category": "konut",
     "city": "İstanbul",
     "subtitle": "İç Mimari Konsept Proje ve Uygulaması",
@@ -222,10 +232,10 @@
   {
     "id": "baku-villa",
     "slug": "baku-villa",
-    "name": "Villa Projesi",
-    "sourceFolder": "PDF s.6-7 — 'Azerbaycan – Bakü Villa'",
+    "name": "Bakü Villa Projesi",
+    "sourceFolder": "PDF s.6-7 — 'Azerbaycan – Bakü Villa', PDF'teki ülke+şehir bilgisi geri eklendi",
     "category": "villa",
-    "city": "Bakü",
+    "city": "Azerbaycan – Bakü",
     "subtitle": "İç Mimari Konsept Proje ve Uygulaması",
     "cover": { "src": "assets/projeler-web/baku-villa/01-giris.webp", "label": "Giriş" },
     "gallery": [
@@ -239,8 +249,8 @@
   {
     "id": "mildon-holding",
     "slug": "mildon-holding",
-    "name": "Yönetim Binası Projesi",
-    "sourceFolder": "PDF s.8-10 — 'Mildon Holding Yönetim Binası İstanbul-Ortaköy' (3B konsept render)",
+    "name": "Mildon Holding Yönetim Binası (Ortaköy)",
+    "sourceFolder": "PDF s.8-10 — 'Mildon Holding Yönetim Binası İstanbul-Ortaköy' (3B konsept render), PDF'teki şirket adı+semt geri eklendi",
     "category": "ticari",
     "city": "İstanbul",
     "subtitle": "İç Mimari Konsept Proje ve Uygulaması",
@@ -257,8 +267,8 @@
   {
     "id": "rumelihisari-evi",
     "slug": "rumelihisari-evi",
-    "name": "Ev Projesi",
-    "sourceFolder": "PDF s.11 — 'Rumelihisarı Evi, Renovasyon'",
+    "name": "Rumelihisarı Evi",
+    "sourceFolder": "PDF s.11 — 'Rumelihisarı Evi, Renovasyon', PDF'teki semt adı geri eklendi",
     "category": "yenileme",
     "city": "İstanbul",
     "subtitle": "Renovasyon, İç Mimari Konsept Proje ve Uygulaması",
@@ -272,10 +282,10 @@
   {
     "id": "moskova-malikanesi",
     "slug": "moskova-malikanesi",
-    "name": "Malikâne Projesi",
-    "sourceFolder": "PDF s.25-27 — 'Rusya – Moskova Malikane Tasarım' (s.25 'Salon' başlığı konum tekrarlamıyor ama sayfa sırasına göre aynı projeye bağlandı — teyit bekliyor)",
+    "name": "Moskova Malikânesi",
+    "sourceFolder": "PDF s.25-27 — 'Rusya – Moskova Malikane Tasarım' (s.25 'Salon' başlığı konum tekrarlamıyor ama sayfa sırasına göre aynı projeye bağlandı — teyit bekliyor). PDF'teki ülke+şehir bilgisi geri eklendi.",
     "category": "konut",
-    "city": "Moskova",
+    "city": "Rusya – Moskova",
     "subtitle": "İç Mimari Konsept Proje",
     "cover": { "src": "assets/projeler-web/moskova-malikanesi/01-salon.webp", "label": "Salon" },
     "gallery": [
@@ -290,8 +300,8 @@
   {
     "id": "sariyer-salon-bar",
     "slug": "sariyer-salon-bar",
-    "name": "Daire Projesi",
-    "sourceFolder": "PDF s.28 — 'İstanbul – Sarıyer, Salon-Bar Tasarımı' (semt adı 'Sarıyer' başlıkta kullanılmadı, kurala uyuldu)",
+    "name": "Sarıyer Dairesi",
+    "sourceFolder": "PDF s.28 — 'İstanbul – Sarıyer, Salon-Bar Tasarımı', PDF'teki semt adı geri eklendi",
     "category": "konut",
     "city": "İstanbul",
     "subtitle": "İç Mimari Konsept Proje",
@@ -305,8 +315,8 @@
   {
     "id": "bursa-bademli",
     "slug": "bursa-bademli",
-    "name": "Daire Projesi",
-    "sourceFolder": "PDF s.29 — 'Bursa – Bademli, Salon-Mutfak Tasarımı' (semt adı 'Bademli' başlıkta kullanılmadı)",
+    "name": "Bademli Dairesi",
+    "sourceFolder": "PDF s.29 — 'Bursa – Bademli, Salon-Mutfak Tasarımı', PDF'teki semt adı geri eklendi",
     "category": "konut",
     "city": "Bursa",
     "subtitle": "İç Mimari Konsept Proje",
@@ -320,8 +330,8 @@
   {
     "id": "bilfen-genel-mudurluk",
     "slug": "bilfen-genel-mudurluk",
-    "name": "Yönetim Binası Projesi",
-    "sourceFolder": "PDF s.32 — 'Bilfen Şirketler Topluluğu Genel Müdürlük Binası, Perde Uygulama' (ayrıca Referanslar listesinde)",
+    "name": "Bilfen Genel Müdürlük Binası",
+    "sourceFolder": "PDF s.32 — 'Bilfen Şirketler Topluluğu Genel Müdürlük Binası, Perde Uygulama' (ayrıca Referanslar listesinde), PDF'teki şirket adı geri eklendi",
     "category": "ticari",
     "city": "İstanbul",
     "subtitle": "Perde Uygulaması",
@@ -333,8 +343,8 @@
   {
     "id": "tekirdag-corlu-evi",
     "slug": "tekirdag-corlu-evi",
-    "name": "Ev Projesi",
-    "sourceFolder": "PDF s.33 — 'Tekirdağ - Çorlu Evi, Perde Uygulama' (semt adı 'Çorlu' başlıkta kullanılmadı, şehir Tekirdağ)",
+    "name": "Çorlu Evi",
+    "sourceFolder": "PDF s.33 — 'Tekirdağ - Çorlu Evi, Perde Uygulama', PDF'teki semt adı geri eklendi",
     "category": "konut",
     "city": "Tekirdağ",
     "subtitle": "Perde Uygulaması",
@@ -348,8 +358,8 @@
   {
     "id": "kalender-kasri",
     "slug": "kalender-kasri",
-    "name": "Kasır Projesi",
-    "sourceFolder": "PDF s.34 — 'İstanbul – Kalender Orduevi Kalender Kasrı, Perde Uygulama' (özel adı başlıkta kullanılmadı, ayrıca Referanslar listesinde)",
+    "name": "Kalender Kasrı",
+    "sourceFolder": "PDF s.34 — 'İstanbul – Kalender Orduevi Kalender Kasrı, Perde Uygulama' (ayrıca Referanslar listesinde), PDF'teki özel adı geri eklendi",
     "category": "yenileme",
     "city": "İstanbul",
     "subtitle": "Perde Uygulaması",
@@ -362,8 +372,8 @@
   {
     "id": "fethiye-gocek-tekne",
     "slug": "fethiye-gocek-tekne",
-    "name": "Tekne Projesi",
-    "sourceFolder": "PDF s.35 — 'Fethiye – Göcek Tekne, İç Mimari Konsept Tasarım ve Uygulama'",
+    "name": "Göcek Tekne Projesi",
+    "sourceFolder": "PDF s.35 — 'Fethiye – Göcek Tekne, İç Mimari Konsept Tasarım ve Uygulama', PDF'teki semt adı geri eklendi",
     "category": "yat",
     "city": "Fethiye",
     "subtitle": "İç Mimari Konsept Tasarım ve Uygulama",
@@ -376,8 +386,8 @@
   {
     "id": "abant-kosk-otel",
     "slug": "abant-kosk-otel",
-    "name": "Otel Projesi",
-    "sourceFolder": "PDF s.30-31 — 'Abant Köşk Otel' + 'Otel İç Mekan Konseptleri' (s.31 konum tekrarlamıyor, aynı spreade bağlı kabul edildi — teyit bekliyor). Ayrıca Referanslar listesinde 'Abant Köşk Otel' olarak geçiyor.",
+    "name": "Abant Köşk Otel",
+    "sourceFolder": "PDF s.30-31 — 'Abant Köşk Otel' + 'Otel İç Mekan Konseptleri' (s.31 konum tekrarlamıyor, aynı spreade bağlı kabul edildi — teyit bekliyor). Ayrıca Referanslar listesinde 'Abant Köşk Otel' olarak geçiyor, PDF'teki özel adı geri eklendi.",
     "category": "otel",
     "city": "Bolu",
     "subtitle": "İç Mimari Konsept Proje ve Uygulaması",
@@ -392,8 +402,8 @@
   {
     "id": "hazal-aslan-hukuk-burosu",
     "slug": "hazal-aslan-hukuk-burosu",
-    "name": "Ofis Projesi",
-    "sourceFolder": "'08_HAZAL ASLAN HUKUK BÜROSU' ham klasörü — PDF'te sayfası yok, sadece müşteri WhatsApp fotoğrafları. Kimlik/kategori orchestrator notuyla tahmin edildi, teyit bekliyor.",
+    "name": "Hazal Aslan Hukuk Bürosu",
+    "sourceFolder": "'08_HAZAL ASLAN HUKUK BÜROSU' ham klasörü — PDF'te sayfası yok, sadece müşteri WhatsApp fotoğrafları. Şirket adı klasör isminden geri eklendi (bu bir site/semt adı değil, müşterinin kendi verdiği gerçek firma adı). Kategori/şehir tahmini hâlâ teyit bekliyor.",
     "category": "ticari",
     "city": "İstanbul",
     "subtitle": "İç Mimari Konsept Proje ve Uygulaması",
